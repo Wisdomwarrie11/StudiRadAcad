@@ -1,33 +1,44 @@
-import React, { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
-import { adminAuth } from "../../firebase";
+import React, { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
+import { adminAuth } from '../../firebase';
+import { Loader2 } from 'lucide-react';
 
 interface AdminProtectedRouteProps {
   children: React.ReactNode;
 }
 
 const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ children }) => {
-  const [checking, setChecking] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check authentication state on the Admin Auth instance
-    const unsubscribe = adminAuth.onAuthStateChanged((user: any) => {
-      setAuthenticated(!!user);
-      setChecking(false);
+    // Listen for auth state changes
+    const unsubscribe = adminAuth.onAuthStateChanged((currentUser: any) => {
+      setUser(currentUser);
+      setLoading(false);
     });
+
+    // Cleanup subscription
     return () => unsubscribe();
   }, []);
 
-  if (checking) {
+  // Show loading spinner while checking auth status
+  if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+        <Loader2 size={48} className="text-indigo-600 animate-spin mb-4" />
+        <p className="text-gray-500 font-medium">Verifying access...</p>
       </div>
     );
   }
 
-  return authenticated ? <>{children}</> : <Navigate to="/admin/login" replace />;
+  // If not authenticated, redirect to login
+  if (!user) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  // If authenticated, render the protected page
+  return <>{children}</>;
 };
 
 export default AdminProtectedRoute;

@@ -9,7 +9,7 @@ const courses: Course[] = [
     level: "Beginner",
     duration: "4 Weeks",
     rating: 4.7,
-    image: "https://images.unsplash.com/photo-1516549655169-df83a083fc9b?auto=format&fit=crop&q=80&w=800"
+    image: "x-ray.jpeg"
   },
   {
     id: "2",
@@ -17,15 +17,14 @@ const courses: Course[] = [
     level: "Intermediate",
     duration: "6 Weeks",
     rating: 4.9,
-    image: "https://images.unsplash.com/photo-1559757175-7b24982df466?auto=format&fit=crop&q=80&w=800"
-  },
+    image: "obs.jpeg"},
   {
     id: "3",
     title: "Advanced MRI Imaging",
     level: "Advanced",
     duration: "8 Weeks",
     rating: 4.8,
-    image: "https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&q=80&w=800"
+    image: "MRIpro.jpeg"
   },
   {
     id: "4",
@@ -33,7 +32,7 @@ const courses: Course[] = [
     level: "Beginner",
     duration: "8 Weeks",
     rating: 4.3,
-    image: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=800"
+    image: "CtInter.jpeg"
   }
 ];
 

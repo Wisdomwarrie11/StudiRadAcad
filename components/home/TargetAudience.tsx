@@ -5,13 +5,13 @@ const audiences = [
   {
     title: "Students",
     description: "Access structured radiography courses, image interpretation practice, and mentorship to build a solid career foundation.",
-    image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=800",
+    image: "students.jpeg",
     features: ["Exam Prep", "Mentorship", "Basics"]
   },
   {
     title: "Professionals",
     description: "Stay updated with the latest techniques, collaborate with peers worldwide, and earn certifications that advance your career.",
-    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=800",
+    image: "nurse.jpeg",
     features: ["CPD Points", "Networking", "Advanced"]
   },
   {
@@ -23,7 +23,7 @@ const audiences = [
   {
     title: "Teachers",
     description: "Enhance your teaching with digital radiographs, case libraries, and interactive lessons tailored for radiography education.",
-    image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&q=80&w=800",
+    image: "lecturer.jpg",
     features: ["Resources", "Tools", "Library"]
   }
 ];

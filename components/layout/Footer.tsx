@@ -1,5 +1,6 @@
 import React from 'react';
 import { Radiation, Facebook, Twitter, Linkedin, Instagram, Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   return (
@@ -18,9 +19,13 @@ const Footer: React.FC = () => {
             </p>
             <div className="flex gap-4">
               {[Facebook, Twitter, Linkedin, Instagram].map((Icon, i) => (
-                <a key={i} href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-accent hover:text-brand-dark transition-all">
+                <Link 
+                  key={i} 
+                  to="#" 
+                  className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-accent hover:text-brand-dark transition-all"
+                >
                   <Icon size={18} />
-                </a>
+                </Link>
               ))}
             </div>
           </div>
@@ -29,11 +34,11 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-lg font-bold mb-6">Quick Links</h4>
             <ul className="space-y-3 text-gray-400">
-              <li><a href="#" className="hover:text-brand-accent transition-colors">Home</a></li>
-              <li><a href="#about" className="hover:text-brand-accent transition-colors">About Us</a></li>
-              <li><a href="#classes" className="hover:text-brand-accent transition-colors">Classes</a></li>
-              <li><a href="#opportunities" className="hover:text-brand-accent transition-colors">Opportunities</a></li>
-              <li><a href="#" className="hover:text-brand-accent transition-colors">Contact</a></li>
+              <li><Link to="/" className="hover:text-brand-accent transition-colors">Home</Link></li>
+              <li><Link to="/about" className="hover:text-brand-accent transition-colors">About Us</Link></li>
+              <li><Link to="/classes" className="hover:text-brand-accent transition-colors">Classes</Link></li>
+              <li><Link to="/opportunities" className="hover:text-brand-accent transition-colors">Opportunities</Link></li>
+              <li><Link to="/contact" className="hover:text-brand-accent transition-colors">Contact</Link></li>
             </ul>
           </div>
 
@@ -41,11 +46,11 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-lg font-bold mb-6">Resources</h4>
             <ul className="space-y-3 text-gray-400">
-              <li><a href="#" className="hover:text-brand-accent transition-colors">Blog & News</a></li>
-              <li><a href="#" className="hover:text-brand-accent transition-colors">Case Studies</a></li>
-              <li><a href="#" className="hover:text-brand-accent transition-colors">Exam Prep</a></li>
-              <li><a href="#" className="hover:text-brand-accent transition-colors">Anatomy Library</a></li>
-              <li><a href="#" className="hover:text-brand-accent transition-colors">Scholarships</a></li>
+              <li><Link to="/resources/blog" className="hover:text-brand-accent transition-colors">Blog & News</Link></li>
+              <li><Link to="/resources/case-studies" className="hover:text-brand-accent transition-colors">Case Studies</Link></li>
+              <li><Link to="/resources/exam-prep" className="hover:text-brand-accent transition-colors">Exam Prep</Link></li>
+              <li><Link to="/resources/anatomy" className="hover:text-brand-accent transition-colors">Anatomy Library</Link></li>
+              <li><Link to="/scholarships" className="hover:text-brand-accent transition-colors">Scholarships</Link></li>
             </ul>
           </div>
 

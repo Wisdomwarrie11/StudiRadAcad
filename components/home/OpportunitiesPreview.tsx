@@ -1,14 +1,16 @@
 import React from 'react';
 import { MapPin, Briefcase, GraduationCap, Building2, ChevronRight } from 'lucide-react';
 import { Opportunity } from '../../types';
+import { Link, useLocation } from 'react-router-dom';
+
 
 const opportunities: Opportunity[] = [
   {
     id: "1",
-    title: "Senior MRI Technologist",
+    title: "Senior CT Radiographer",
     organization: "St. Mary's General Hospital",
     type: "Job",
-    location: "London, UK",
+    location: "Lagos, Nigeria",
     datePosted: "2 days ago"
   },
   {
@@ -16,21 +18,21 @@ const opportunities: Opportunity[] = [
     title: "Radiography Research Fellow",
     organization: "HealthTech Innovations",
     type: "Research",
-    location: "Remote / Boston",
+    location: "Remote",
     datePosted: "5 days ago"
   },
   {
     id: "3",
-    title: "Summer Clinical Internship",
-    organization: "Regional Medical Center",
+    title: "One-Year radiography Internship",
+    organization: "University of Uyo Teaching Hospital (UNIUYO)",
     type: "Internship",
-    location: "Sydney, AU",
+    location: "Uyo, Nigeria",
     datePosted: "1 week ago"
   },
   {
     id: "4",
-    title: "Excellence in Imaging Scholarship",
-    organization: "StudiRad Foundation",
+    title: "Canada Scholarship for Msc Students",
+    organization: "Canada University",
     type: "Scholarship",
     location: "Global",
     datePosted: "Just now"
@@ -60,9 +62,10 @@ const OpportunitiesPreview: React.FC = () => {
             <h2 className="text-brand-accent font-bold uppercase tracking-wider mb-2">Career Hub</h2>
             <h3 className="text-3xl md:text-4xl font-bold">Latest Opportunities</h3>
           </div>
-          <button className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl backdrop-blur-sm transition-all flex items-center gap-2">
+        
+           <a href="#/opportunities">  <button className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl backdrop-blur-sm transition-all flex items-center gap-2">
             Browse All <ChevronRight size={18} />
-          </button>
+          </button></a>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

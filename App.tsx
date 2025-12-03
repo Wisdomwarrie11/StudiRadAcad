@@ -1,13 +1,26 @@
+
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Home from './pages/Home';
+import AboutPage from './pages/AboutPage';
+import ActivitiesPage from './pages/ActivitiesPage';
+
+// Resources
 import BlogPage from './pages/resources/BlogPage';
 import MaterialsPage from './pages/resources/MaterialsPage';
 import NewsPage from './pages/resources/NewsPage';
 import SubmitMaterialPage from './pages/resources/SubmitMaterialPage';
+
+// Classes
 import ClassesPage from './pages/classes/ClassesPage';
+
+// Opportunities
+import OpportunitiesPage from './pages/opportunities/OpportunitiesPage';
+import JobsPage from './pages/opportunities/JobsPage';
+import InternshipsPage from './pages/opportunities/InternshipsPage';
+import ScholarshipsPage from './pages/opportunities/ScholarshipsPage';
 
 // Admin Imports
 import AdminLoginPage from './pages/admin/AdminLoginPage';
@@ -51,6 +64,8 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
+          <Route path="about" element={<AboutPage />} />
+          <Route path="activities" element={<ActivitiesPage />} />
           
           {/* Resources */}
           <Route path="resources/blog" element={<BlogPage />} />
@@ -61,8 +76,12 @@ const App: React.FC = () => {
           {/* Classes Route */}
           <Route path="classes" element={<ClassesPage />} />
 
-          {/* Placeholders */}
-          <Route path="opportunities" element={<div className="pt-24 text-center p-10 font-bold text-gray-500">Opportunities Page Coming Soon</div>} />
+          {/* Opportunities */}
+          <Route path="opportunities" element={<OpportunitiesPage />} />
+          <Route path="jobs" element={<JobsPage />} />
+          <Route path="internship" element={<InternshipsPage />} />
+          <Route path="scholarship" element={<ScholarshipsPage />} />
+          
         </Route>
 
         {/* Admin Login (Public) */}
