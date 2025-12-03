@@ -46,18 +46,8 @@ const Hero: React.FC = () => {
             </button>
           </div>
 
-          <div className="mt-12 flex items-center gap-4 text-gray-400 text-sm">
-            <div className="flex -space-x-3">
-              {[1, 2, 3, 4].map((i) => (
-                <img 
-                  key={i}
-                  src={`https://picsum.photos/40/40?random=${i}`} 
-                  alt="User" 
-                  className="w-10 h-10 rounded-full border-2 border-brand-dark"
-                />
-              ))}
-            </div>
-            <p>Trusted by <span className="text-white font-bold">2,000+</span> Radiographers</p>
+          <div style={{marginBottom: "20px"}} className="mt-12 flex items-center gap-4 text-gray-400 text-sm">
+            <p>Trusted by over <span className="text-white font-bold">2,000+</span> Radiographers</p>
           </div>
         </div>
       </div>
