@@ -40,3 +40,23 @@ export interface Testimonial {
   quote: string;
   avatar: string;
 }
+
+export interface HowItWorksItem {
+  icon: LucideIcon;
+  title: string;
+  details: string[];
+}
+
+export interface Course {
+  week: string;
+  title: string;
+  topics: string;
+  alignment: string;
+  icon: LucideIcon;
+}
+
+export interface TimelineEvent {
+  date: string;
+  title: string;
+  isHighlight?: boolean;
+}

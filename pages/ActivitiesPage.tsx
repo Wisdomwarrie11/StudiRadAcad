@@ -9,7 +9,7 @@ const activities = [
     date: "Coming Soon",
     description: "6 weeks of intense Studies and assessment designed to push your limits and master core concepts.",
     image: "LockedIn.jpg",
-    link: "/challenge",
+    link: "#/locked-in",
     badge: "Challenge"
   },
   {
@@ -26,7 +26,7 @@ const activities = [
     title: "From Induction to Impact: Navigating the Radiographer’s Journey",
     date: "September 20, 2025, 8:00 PM (WAT)",
     description: "Join four keynote speakers as they share insights on making the best use of your induction period and navigating your career path.",
-    image: "StudiRad[1].jpg",
+    image: "StudiRad.jpg",
     link: "/webinarRegistration",
     badge: "Past Event"
   },

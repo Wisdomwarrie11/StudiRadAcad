@@ -49,9 +49,11 @@ const Header: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            <Link to="/classes" className="text-sm font-medium hover:text-brand-accent transition-colors">Classes</Link>
+            <Link to="/activities" className="text-sm font-medium hover:text-brand-accent transition-colors">Our Activities</Link>
+            <Link to="/classes" className="text-sm font-medium hover:text-brand-accent transition-colors">Our Academy</Link>
             <Link to="/opportunities" className="text-sm font-medium hover:text-brand-accent transition-colors">Opportunities</Link>
+            <Link to="/about" className="text-sm font-medium hover:text-brand-accent transition-colors">About Us</Link>
+
             
             <button className="px-5 py-2 bg-brand-accent text-brand-dark font-semibold rounded-full hover:bg-white transition-colors">
               Get Started
@@ -89,10 +91,10 @@ const Header: React.FC = () => {
                 </div>
               )}
             </div>
-
-            <Link to="/classes" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium hover:text-brand-accent">Classes</Link>
+            <Link to="/activities" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium hover:text-brand-accent">Our Activities</Link>
+            <Link to="/classes" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium hover:text-brand-accent">Our Academy</Link>
             <Link to="/opportunities" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium hover:text-brand-accent">Opportunities</Link>
-            
+            <Link to="/about" className="text-sm font-medium hover:text-brand-accent transition-colors">About Us</Link>
             <button className="w-full py-3 bg-brand-accent text-brand-dark font-bold rounded-lg mt-4">
               Get Started
             </button>

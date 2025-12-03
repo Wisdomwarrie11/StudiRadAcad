@@ -17,13 +17,13 @@ const Hero: React.FC = () => {
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/30 border border-brand-primary/50 text-brand-light text-sm font-medium mb-6">
+          {/* <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/30 border border-brand-primary/50 text-brand-light text-sm font-medium mb-6">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-accent opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-accent"></span>
             </span>
             Now offering AI in Radiology courses
-          </div>
+          </div> */}
           
           <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6 tracking-tight">
             Transform Your <br />

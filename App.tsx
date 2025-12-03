@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import Header from './components/layout/Header';
@@ -15,6 +14,7 @@ import SubmitMaterialPage from './pages/resources/SubmitMaterialPage';
 
 // Classes
 import ClassesPage from './pages/classes/ClassesPage';
+import LockedInChallenge from './pages/LockedInChallenge';
 
 // Opportunities
 import OpportunitiesPage from './pages/opportunities/OpportunitiesPage';
@@ -75,6 +75,7 @@ const App: React.FC = () => {
 
           {/* Classes Route */}
           <Route path="classes" element={<ClassesPage />} />
+          <Route path="locked-in" element={<LockedInChallenge />} />
 
           {/* Opportunities */}
           <Route path="opportunities" element={<OpportunitiesPage />} />

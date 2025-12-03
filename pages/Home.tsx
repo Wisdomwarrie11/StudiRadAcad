@@ -18,11 +18,11 @@ const Home: React.FC = () => {
       <Stats />
       <Features />
       <ClassesPreview />
-      <OpportunitiesPreview />
       <HowItWorks />
       <TargetAudience />
-      <WeeklyQuiz />
       <Testimonials />
+      <OpportunitiesPreview />
+      <WeeklyQuiz />
       <NewsletterSignup />
       <FloatingCTA />
     </div>

@@ -94,7 +94,7 @@ const AboutPage = () => {
                   src="vision.jpeg" 
                   alt="Our Vision" 
                   className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700"
-                  onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?auto=format&fit=crop&w=800&q=80'; }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = 'visionpeople.jpg'; }}
                 />
              </div>
           </motion.div>
