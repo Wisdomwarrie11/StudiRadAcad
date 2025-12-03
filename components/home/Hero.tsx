@@ -47,7 +47,7 @@ const Hero: React.FC = () => {
           </div>
 
           <div style={{marginBottom: "20px"}} className="mt-12 flex items-center gap-4 text-gray-400 text-sm">
-            <p>Trusted by over <span className="text-white font-bold">2,000+</span> Radiographers</p>
+            <p>Trusted by over <span className="text-white font-bold">1000+</span> Radiographers and Students</p>
           </div>
         </div>
       </div>
