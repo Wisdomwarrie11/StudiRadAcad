@@ -4,24 +4,24 @@ import { Quote } from 'lucide-react';
 const testimonials = [
   {
     id: 1,
-    name: "Sarah Jenkins",
-    role: "Radiographer, NHS",
+    name: "Ayi Effiom",
+    role: "Radiographer",
     quote: "StudiRad's MRI safety course was exactly what I needed to advance my career. The mentorship feature connected me with a senior tech who guided my application process.",
-    avatar: "https://randomuser.me/api/portraits/women/44.jpg"
+    avatar: "Ayi.jpg"
   },
   {
     id: 2,
     name: "David Chen",
     role: "Student Radiographer",
     quote: "The weekly quizzes and interactive anatomy tools make studying so much more engaging than textbooks. I aced my board exams thanks to this platform!",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg"
+    avatar: "manmed.jpeg"
   },
   {
     id: 3,
-    name: "Dr. Emily Alcott",
-    role: "Radiology Dept Head",
-    quote: "We use StudiRad to post our fellowship opportunities. The quality of applicants coming from this community is consistently higher than other job boards.",
-    avatar: "https://randomuser.me/api/portraits/women/68.jpg"
+    name: "Gloria Ekeata",
+    role: "Intern Radiographer",
+    quote: "The webinars organized by StudiRad has been a constant source of motivation for me. It keeps me going in this journey. Thank you StudiRad",
+    avatar: "Gloria.jpg"
   }
 ];
 
