@@ -11,6 +11,7 @@ import BlogPage from './pages/resources/BlogPage';
 import MaterialsPage from './pages/resources/MaterialsPage';
 import NewsPage from './pages/resources/NewsPage';
 import SubmitMaterialPage from './pages/resources/SubmitMaterialPage';
+import QuizPage from './pages/resources/QuizPage';
 
 // Classes
 import ClassesPage from './pages/classes/ClassesPage';
@@ -72,10 +73,11 @@ const App: React.FC = () => {
           <Route path="resources/news" element={<NewsPage />} />
           <Route path="resources/materials" element={<MaterialsPage />} />
           <Route path="resources/submit-material" element={<SubmitMaterialPage />} />
+          <Route path="quiz" element={<QuizPage />} />
 
           {/* Classes Route */}
           <Route path="classes" element={<ClassesPage />} />
-          <Route path="locked-in" element={<LockedInChallenge />} />
+          <Route path="classes/locked-in" element={<LockedInChallenge />} />
 
           {/* Opportunities */}
           <Route path="opportunities" element={<OpportunitiesPage />} />
