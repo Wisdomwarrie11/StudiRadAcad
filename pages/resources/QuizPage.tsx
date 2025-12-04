@@ -218,8 +218,10 @@ const QuizPage: React.FC = () => {
 
   // Helper to determine time limit based on level
   const getTimeLimitForLevel = (level: Difficulty): number => {
-    if (level === 'Advanced') return 40;
-    return 30; // Basic and Intermediate
+    if (level === 'Basic') return 10;
+    if (level === 'Intermediate') return 15;
+    if (level === 'Advanced') return 20;
+    return 30; // Fallback
   };
 
   // --- VIEWS ---
@@ -227,7 +229,7 @@ const QuizPage: React.FC = () => {
   // 1. Start Screen
   if (gameState === 'START') {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div style={{marginTop: "70px"}} className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl shadow-xl p-8 max-w-lg w-full text-center border border-slate-100">
           
           <div className="flex justify-center mb-6">
@@ -246,15 +248,15 @@ const QuizPage: React.FC = () => {
           <div className="grid grid-cols-3 gap-4 mb-8">
             <div className="p-4 bg-green-50 rounded-xl border border-green-100">
               <span className="block text-green-700 font-bold text-lg">Basic</span>
-              <span className="text-xs text-green-600 font-semibold">10 Qs • 30s</span>
+              <span className="text-xs text-green-600 font-semibold">10 Qs • 10s</span>
             </div>
             <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
               <span className="block text-amber-700 font-bold text-lg">Inter.</span>
-              <span className="text-xs text-amber-600 font-semibold">10 Qs • 30s</span>
+              <span className="text-xs text-amber-600 font-semibold">10 Qs • 15s</span>
             </div>
             <div className="p-4 bg-red-50 rounded-xl border border-red-100">
               <span className="block text-red-700 font-bold text-lg">Master</span>
-              <span className="text-xs text-red-600 font-semibold">10 Qs • 40s</span>
+              <span className="text-xs text-red-600 font-semibold">10 Qs • 20s</span>
             </div>
           </div>
 
