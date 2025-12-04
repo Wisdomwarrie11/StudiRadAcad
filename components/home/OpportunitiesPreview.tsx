@@ -12,21 +12,58 @@ const OpportunitiesPreview: React.FC = () => {
     const fetchOpportunities = async () => {
       try {
         // We use adminDb because the data is stored in the 'studirad-admin-portal' project
-        // based on the context provided in the source files (JobsPage, etc.)
         
         // Fetch latest items from all 3 collections in parallel
-        // Using 'createdAt' for sorting as seen in source pages
         const [jobsSnap, internshipsSnap, scholarshipsSnap] = await Promise.all([
           adminDb.collection('jobs').orderBy('createdAt', 'desc').limit(4).get(),
           adminDb.collection('internships').orderBy('createdAt', 'desc').limit(4).get(),
           adminDb.collection('scholarships').orderBy('createdAt', 'desc').limit(4).get()
         ]);
 
+        const parseDate = (val: any): Date => {
+          if (!val) return new Date();
+          
+          // Handle Firestore Timestamp (has toDate method)
+          if (val && typeof val.toDate === 'function') {
+            return val.toDate();
+          }
+          
+          // Handle Firestore Timestamp serialized as object {seconds, nanoseconds}
+          if (val && val.seconds !== undefined && typeof val.seconds === 'number') {
+            return new Date(val.seconds * 1000);
+          }
+
+          // Handle standard Date strings or numbers
+          const d = new Date(val);
+          if (!isNaN(d.getTime())) {
+            return d;
+          }
+          
+          return new Date();
+        };
+
         const formatData = (doc: any, type: 'Job' | 'Internship' | 'Scholarship'): Opportunity => {
           const data = doc.data();
-          // Use createdAt as the source of truth for sorting, fallback to postedAt or current date
-          const rawDate = data.createdAt || data.postedAt || new Date().toISOString();
           
+          // Determine the display date:
+          // 1. Try 'postedAt' (manual entry, usually string in Jobs)
+          // 2. Try 'createdAt' (system entry, usually Timestamp)
+          // 3. Fallback to now
+          
+          let dateObj: Date;
+          
+          if (data.postedAt) {
+             dateObj = parseDate(data.postedAt);
+             // If parseDate returned "now" because of invalid string, fallback to createdAt
+             // We can check if the parsed date is reasonably valid, or just check the input string validity
+             const testDate = new Date(data.postedAt);
+             if (isNaN(testDate.getTime())) {
+                 dateObj = parseDate(data.createdAt);
+             }
+          } else {
+             dateObj = parseDate(data.createdAt);
+          }
+
           return {
             id: doc.id,
             title: data.title,
@@ -34,7 +71,7 @@ const OpportunitiesPreview: React.FC = () => {
             type: type,
             // Scholarships might not have location, so we default based on type
             location: data.location || (type === 'Scholarship' ? 'Global/Online' : 'Remote'),
-            datePosted: rawDate
+            datePosted: dateObj.toISOString()
           };
         };
 
@@ -54,7 +91,6 @@ const OpportunitiesPreview: React.FC = () => {
         setOpportunities(allOpportunities);
       } catch (error) {
         console.error("Error fetching opportunities:", error);
-        // Fallback or empty state is handled in render
       } finally {
         setLoading(false);
       }
