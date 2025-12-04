@@ -29,6 +29,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminMaterialsPage from './pages/admin/AdminMaterialsPage';
 import AdminReviewPage from './pages/admin/AdminReviewPage';
 import AdminBlogPage from './pages/admin/AdminBlogPage';
+import AdminPostOpportunity from './pages/admin/AdminPostOpportunity';
 import AdminProtectedRoute from './components/auth/AdminProtectedRoute';
 
 // Layout wrapper for consistent Header/Footer
@@ -73,7 +74,7 @@ const App: React.FC = () => {
           <Route path="resources/news" element={<NewsPage />} />
           <Route path="resources/materials" element={<MaterialsPage />} />
           <Route path="resources/submit-material" element={<SubmitMaterialPage />} />
-          <Route path="quiz" element={<QuizPage />} />
+          <Route path="resources/quiz" element={<QuizPage />} />
 
           {/* Classes Route */}
           <Route path="classes" element={<ClassesPage />} />
@@ -96,6 +97,7 @@ const App: React.FC = () => {
           <Route path="materials" element={<AdminMaterialsPage />} />
           <Route path="review" element={<AdminReviewPage />} />
           <Route path="blog" element={<AdminBlogPage />} />
+          <Route path="post-opportunity" element={<AdminPostOpportunity />} />
         </Route>
       </Routes>
     </Router>

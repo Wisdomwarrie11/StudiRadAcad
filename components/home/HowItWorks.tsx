@@ -30,7 +30,7 @@ const HowItWorks: React.FC = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center mb-16">
           <h2 className="text-base font-bold text-brand-primary uppercase tracking-wider mb-2">Process</h2>
-          <h3 className="text-3xl md:text-4xl font-bold text-brand-dark mb-4">How the Academy Works</h3>
+          <h3 className="text-3xl md:text-4xl font-bold text-brand-dark mb-4">How Our Academy Works</h3>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Your journey to mastery is just four simple steps away.
           </p>

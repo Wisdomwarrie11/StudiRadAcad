@@ -4,7 +4,7 @@ import { CheckCircle2 } from 'lucide-react';
 const audiences = [
   {
     title: "Students",
-    description: "Access structured radiography courses, image interpretation practice, and mentorship to build a solid career foundation.",
+    description: "Access structured radiography courses, opportunities, and mentorship to build a solid career foundation.",
     image: "students.jpeg",
     features: ["Exam Prep", "Mentorship", "Basics"]
   },

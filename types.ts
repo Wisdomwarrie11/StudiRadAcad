@@ -17,8 +17,8 @@ export interface Course {
   price: string;
   rating: number;
   img: string;
-  enrolled?: string; // Optional for mock data
-  duration?: string; // Optional for mock data
+  enrolled?: string;
+  duration?: string;
 }
 
 export interface Feature {
@@ -47,7 +47,7 @@ export interface HowItWorksItem {
   details: string[];
 }
 
-export interface Course {
+export interface CourseOutline {
   week: string;
   title: string;
   topics: string;
@@ -59,4 +59,47 @@ export interface TimelineEvent {
   date: string;
   title: string;
   isHighlight?: boolean;
+}
+
+// --- New Types for Opportunities ---
+
+export interface JobListing {
+  id: number | string;
+  title: string;
+  company: string;
+  location: string;
+  type: string;
+  posted: string;
+  description: string;
+  requirements: string[];
+  salary?: string;
+  deadline: string;
+  contactAddress?: string; // Physical or Email
+  directApplyLink?: string; // If null, "Apply Direct" is disabled
+}
+
+export interface InternshipListing {
+  id: number | string;
+  title: string;
+  organization: string;
+  location: string;
+  duration: string;
+  deadline: string;
+  description: string;
+  requirements?: string[];
+  stipend?: string;
+  contactInfo?: string;
+}
+
+export interface ScholarshipListing {
+  id: number | string;
+  title: string;
+  provider: string;
+  amount: string;
+  eligibility: string;
+  deadline: string;
+  type: string;
+  description?: string;
+  requirements?: string[];
+  applyLink?: string;
 }

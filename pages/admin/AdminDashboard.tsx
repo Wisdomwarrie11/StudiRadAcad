@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { adminAuth } from "../../firebase";
-import { FileText, Book, Bell, Settings, LogOut, LayoutDashboard, ChevronRight } from "lucide-react";
+import { FileText, Book, Bell, Settings, LogOut, LayoutDashboard, ChevronRight, Briefcase } from "lucide-react";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -36,6 +36,13 @@ const AdminDashboard = () => {
       icon: Bell,
       path: "/admin/review",
       color: "bg-orange-100 text-orange-600",
+    },
+    {
+        title: "Post Opportunity",
+        description: "Post Jobs, Internships, and Scholarship openings.",
+        icon: Briefcase,
+        path: "/admin/post-opportunity",
+        color: "bg-purple-100 text-purple-600",
     },
     {
       title: "Settings",

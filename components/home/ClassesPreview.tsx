@@ -1,6 +1,7 @@
 import React from 'react';
 import { Star, Clock, ChevronRight, Zap, Activity, Brain, Disc } from 'lucide-react';
 import { Course } from '../../types';
+import { Link, useLocation } from 'react-router-dom';
 
 const courses: Course[] = [
   {
@@ -74,9 +75,9 @@ const ClassesPreview: React.FC = () => {
             <h2 className="text-base font-bold text-brand-primary uppercase tracking-wider mb-2">New Arrivals</h2>
             <h3 className="text-3xl font-bold text-brand-dark">Latest Courses</h3>
           </div>
-          <button className="hidden md:flex items-center gap-2 text-brand-primary font-bold hover:text-brand-accent transition-colors">
+          <Link to = "/classes" className="hidden md:flex items-center gap-2 text-brand-primary font-bold hover:text-brand-accent transition-colors">
             View All Courses <ChevronRight size={20} />
-          </button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -113,9 +114,12 @@ const ClassesPreview: React.FC = () => {
         </div>
         
         <div className="mt-8 text-center md:hidden">
+          <a href= "classes">
           <button className="px-6 py-3 border-2 border-brand-primary text-brand-primary font-bold rounded-lg hover:bg-brand-primary hover:text-white transition-colors">
             View All Courses
           </button>
+          </a>
+         
         </div>
       </div>
     </section>
