@@ -7,7 +7,7 @@ import { Trophy, RefreshCcw, Home, Frown, Share2, Mail, Lock, Unlock, Star, Aler
 
 // --- Configuration ---
 const MAX_DAILY_ATTEMPTS = 2;
-const DAILY_QUESTION_COUNT = 30; // 10 + 10 + 10
+// const DAILY_QUESTION_COUNT = 30; // Implicit via distribution
 
 // Distribution of questions for the daily set
 const LEVEL_DISTRIBUTION = {
@@ -62,8 +62,9 @@ const QuizPage: React.FC = () => {
   }, []);
 
   // Pseudo-Random Number Generator based on Seed (Date)
-  const seededRandom = (seed: number) => {
-    var x = Math.sin(seed++) * 10000;
+  // We pass the seed value to the function
+  const seededRandom = (val: number) => {
+    var x = Math.sin(val) * 10000;
     return x - Math.floor(x);
   };
 
@@ -75,22 +76,52 @@ const QuizPage: React.FC = () => {
        seed |= 0;
     }
 
-    const selectQuestions = (diff: Difficulty, count: number) => {
-      const pool = quizQuestions.filter(q => q.difficulty === diff);
+    // Helper to pick n random items from a pool
+    const pickRandomFromPool = (pool: Question[], n: number) => {
       const selected: Question[] = [];
       const usedIndices = new Set<number>();
-      
-      // Safety check if pool is smaller than requested count
-      const safeCount = Math.min(count, pool.length);
+      const safeCount = Math.min(n, pool.length);
       
       while (selected.length < safeCount) {
-        const randIndex = Math.floor(seededRandom(seed++) * pool.length);
+        const randVal = seededRandom(seed++);
+        const randIndex = Math.floor(randVal * pool.length);
         if (!usedIndices.has(randIndex)) {
           selected.push(pool[randIndex]);
           usedIndices.add(randIndex);
         }
       }
       return selected;
+    };
+
+    // Helper to shuffle array deterministically
+    const shuffleArray = (array: Question[]) => {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(seededRandom(seed++) * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    };
+
+    const selectQuestions = (diff: Difficulty, count: number) => {
+      // SPECIAL LOGIC FOR ADVANCED: Ensure Mix of Theory & Case Studies
+      if (diff === 'Advanced') {
+        const caseStudies = quizQuestions.filter(q => q.difficulty === 'Advanced' && q.category === 'Case Study');
+        const theory = quizQuestions.filter(q => q.difficulty === 'Advanced' && q.category !== 'Case Study');
+        
+        // Target: Ensure at least 3 Case Studies are included if available
+        const targetCase = Math.min(3, caseStudies.length);
+        const targetTheory = count - targetCase;
+
+        const selectedCase = pickRandomFromPool(caseStudies, targetCase);
+        const selectedTheory = pickRandomFromPool(theory, targetTheory);
+        
+        // Combine and Shuffle
+        return shuffleArray([...selectedCase, ...selectedTheory]);
+      }
+
+      // Default Logic for Basic/Intermediate
+      const pool = quizQuestions.filter(q => q.difficulty === diff);
+      return pickRandomFromPool(pool, count);
     };
 
     setDailyQuestions({
@@ -160,19 +191,28 @@ const QuizPage: React.FC = () => {
   };
 
   const handleShare = async () => {
-    const text = `I scored ${score}/${totalQuestionsAnswered} points on today's StudiRad Daily Challenge! Beat my score at:`;
+    const text = `I just participated in the StudiRad Daily Challenge and I scored ${score}/${totalQuestionsAnswered}. You want to know how good you are? Try it out and share what you got!`;
+    const url = window.location.href;
+    const shareData = {
+      title: 'StudiRad Daily Quiz Result',
+      text: text,
+      url: url,
+    };
+
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: 'StudiRad Daily Quiz Result',
-          text: text,
-          url: window.location.href,
-        });
+        await navigator.share(shareData);
       } catch (error) {
         console.log('Error sharing:', error);
       }
     } else {
-      alert("Sharing not supported on this browser. Copy link to share!");
+      // Fallback: Copy to clipboard for Desktop/Unsupported browsers
+      try {
+        await navigator.clipboard.writeText(`${text} ${url}`);
+        alert("Result text copied to clipboard!");
+      } catch (err) {
+        alert("Could not share automatically. You can take a screenshot!");
+      }
     }
   };
 
@@ -187,7 +227,7 @@ const QuizPage: React.FC = () => {
   // 1. Start Screen
   if (gameState === 'START') {
     return (
-      <div style={{marginTop: '70px'}} className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl shadow-xl p-8 max-w-lg w-full text-center border border-slate-100">
           
           <div className="flex justify-center mb-6">
