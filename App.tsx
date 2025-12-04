@@ -77,7 +77,7 @@ const App: React.FC = () => {
 
           {/* Classes Route */}
           <Route path="classes" element={<ClassesPage />} />
-          <Route path="classes/locked-in" element={<LockedInChallenge />} />
+          <Route path="locked-in" element={<LockedInChallenge />} />
 
           {/* Opportunities */}
           <Route path="opportunities" element={<OpportunitiesPage />} />
