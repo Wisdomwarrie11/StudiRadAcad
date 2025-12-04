@@ -187,7 +187,7 @@ const QuizPage: React.FC = () => {
   // 1. Start Screen
   if (gameState === 'START') {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div style={{marginTop: '70px'}} className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl shadow-xl p-8 max-w-lg w-full text-center border border-slate-100">
           
           <div className="flex justify-center mb-6">
