@@ -17,6 +17,11 @@ import QuizPage from './pages/resources/QuizPage';
 import ClassesPage from './pages/classes/ClassesPage';
 import LockedInChallenge from './pages/LockedInChallenge';
 
+// Daily Challenge
+import DailyChallengeLanding from './pages/challenge/DailyChallengeLanding';
+import DailyChallengeDashboard from './pages/challenge/DailyChallengeDashboard';
+import DailyChallengeQuiz from './pages/challenge/DailyChallengeQuiz';
+
 // Opportunities
 import OpportunitiesPage from './pages/opportunities/OpportunitiesPage';
 import JobsPage from './pages/opportunities/JobsPage';
@@ -79,6 +84,11 @@ const App: React.FC = () => {
           {/* Classes Route */}
           <Route path="classes" element={<ClassesPage />} />
           <Route path="locked-in" element={<LockedInChallenge />} />
+          
+          {/* Daily Challenge Routes */}
+          <Route path="challenge" element={<DailyChallengeLanding />} />
+          <Route path="challenge/dashboard" element={<DailyChallengeDashboard />} />
+          <Route path="challenge/quiz/:dayId" element={<DailyChallengeQuiz />} />
 
           {/* Opportunities */}
           <Route path="opportunities" element={<OpportunitiesPage />} />

@@ -1,0 +1,354 @@
+
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Lock, CheckCircle, Play, Trophy, Star, Loader2, AlertCircle, Coins, Plus, Unlock } from 'lucide-react';
+import { UserChallengeProfile, ChallengeTopic, ChallengeLevel } from '../../types';
+import { getLeaderboard, canPlayDay, getUserProfile, addCoins, unlockDay, switchLevel } from '../../services/challengeService';
+
+const DailyChallengeDashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState<UserChallengeProfile | null>(null);
+  const [leaderboard, setLeaderboard] = useState<UserChallengeProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [purchasing, setPurchasing] = useState(false);
+  const [unlocking, setUnlocking] = useState<number | null>(null);
+  const [switchingLevel, setSwitchingLevel] = useState<ChallengeLevel | null>(null);
+
+  const fetchProfileData = async () => {
+    try {
+      const email = sessionStorage.getItem('studiRad_challenge_email');
+      if (!email) {
+        navigate('/challenge');
+        return;
+      }
+      const [userProfile, leaderboardData] = await Promise.all([
+        getUserProfile(email),
+        getLeaderboard()
+      ]);
+
+      if (!userProfile) {
+        setError("User profile not found. Please register again.");
+        navigate('/challenge');
+        return;
+      }
+
+      setProfile(userProfile);
+      setLeaderboard(leaderboardData);
+    } catch (e) {
+      console.error("Failed to load dashboard data", e);
+      setError("Failed to load data. Please check connection.");
+    }
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    fetchProfileData().finally(() => setLoading(false));
+  }, [navigate]);
+
+  const handleBuyGrey = async () => {
+    if (!profile) return;
+    setPurchasing(true);
+    try {
+      // Simulation of payment gateway
+      await new Promise(resolve => setTimeout(resolve, 1500)); 
+      await addCoins(profile.email, 1);
+      await fetchProfileData(); 
+      alert("Successfully purchased 1 Grey Coin!");
+    } catch (e) {
+      alert("Payment failed.");
+    } finally {
+      setPurchasing(false);
+    }
+  };
+
+  const handleUnlockDay = async (dayNum: number) => {
+    if (!profile) return;
+    if (profile.coins < 2) {
+      alert("Insufficient Grey Coins. You need 2 Coins (₦500) to unlock a day.");
+      return;
+    }
+    
+    if (window.confirm(`Unlock Day ${dayNum} for 2 Grey Coins (₦500)?`)) {
+      setUnlocking(dayNum);
+      try {
+        const success = await unlockDay(profile.email, dayNum);
+        if (success) {
+          await fetchProfileData();
+        } else {
+          alert("Could not unlock.");
+        }
+      } catch (e) {
+        console.error(e);
+        alert("Error unlocking day.");
+      } finally {
+        setUnlocking(null);
+      }
+    }
+  };
+
+  const handleLevelSwitch = async (targetLevel: ChallengeLevel) => {
+    if (!profile) return;
+    if (profile.level === targetLevel) return;
+
+    // Check if user completed current level (assuming checking completions array)
+    const isCompleted = profile.completedLevels?.includes(profile.level);
+    const targetIsCompleted = profile.completedLevels?.includes(targetLevel);
+    
+    // If completed current level, allowing switch is logically fine.
+    // Prompt says: "Users can only assess other levels once they are done with their current level. If they want to access another level before... 1 miligrey is needed"
+    
+    // Logic: Free if current level is done. Cost 1 coin if not.
+    if (isCompleted || targetIsCompleted) {
+        setSwitchingLevel(targetLevel);
+        await switchLevel(profile.email, targetLevel);
+        await fetchProfileData();
+        setSwitchingLevel(null);
+        return;
+    }
+
+    if (profile.coins < 1) {
+        alert("You must complete your current level first or pay 1 Grey Coin (₦250) to switch.");
+        return;
+    }
+
+    if (window.confirm(`Switch to ${targetLevel}? \n\nSince you haven't completed your current level, this will cost 1 Grey Coin (₦250).`)) {
+        setSwitchingLevel(targetLevel);
+        try {
+            const success = await switchLevel(profile.email, targetLevel);
+            if (success) {
+                await fetchProfileData();
+            } else {
+                alert("Insufficient coins.");
+            }
+        } catch (e) {
+            alert("Failed to switch level.");
+        } finally {
+            setSwitchingLevel(null);
+        }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center">
+        <Loader2 className="w-10 h-10 text-amber-500 animate-spin mb-4" />
+        <p className="text-slate-500 font-medium">Loading your challenge profile...</p>
+      </div>
+    );
+  }
+
+  if (error || !profile) {
+     return (
+       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+         <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+           <p className="text-lg text-slate-800 mb-4">{error || "Something went wrong."}</p>
+           <button onClick={() => navigate('/challenge')} className="text-amber-600 font-bold hover:underline">Return to Start</button>
+         </div>
+       </div>
+     )
+  }
+
+  const days = [
+    { num: 1, topic: ChallengeTopic.TECHNIQUE },
+    { num: 2, topic: ChallengeTopic.PHYSICS },
+    { num: 3, topic: ChallengeTopic.MRI },
+    { num: 4, topic: ChallengeTopic.CT },
+    { num: 5, topic: ChallengeTopic.USS },
+    { num: 6, topic: ChallengeTopic.SAFETY },
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-50 py-24 px-4">
+      <div className="container mx-auto max-w-6xl">
+        <div className="flex flex-col lg:flex-row gap-8">
+          
+          {/* Main Challenge Path */}
+          <div className="flex-grow">
+            
+            {/* Header Card */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-8">
+              <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
+                <div>
+                  <h1 className="text-3xl font-extrabold text-slate-900">Welcome back, {profile.displayName}</h1>
+                  <p className="text-slate-500 mt-2">Goal: <span className="font-semibold text-slate-700">{profile.purpose}</span></p>
+                </div>
+                
+                {/* Wallet UI */}
+                <div className="flex items-center bg-slate-50 px-4 py-3 rounded-xl border border-slate-200">
+                  <div className="mr-4">
+                    <p className="text-xs text-slate-500 font-bold uppercase">Grey Balance</p>
+                    <div className="flex items-center text-slate-900 font-black text-xl">
+                      <Coins className="w-5 h-5 text-slate-400 mr-2" />
+                      {profile.coins || 0}
+                    </div>
+                  </div>
+                  <button 
+                    onClick={handleBuyGrey}
+                    disabled={purchasing}
+                    className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center hover:bg-slate-800 transition-colors"
+                  >
+                    {purchasing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4 mr-1" />}
+                    Buy Grey (₦250)
+                  </button>
+                </div>
+              </div>
+
+              {/* Level Switcher */}
+              <div className="bg-slate-50 p-2 rounded-xl flex flex-wrap gap-2 mb-6">
+                {[ChallengeLevel.BASIC, ChallengeLevel.ADVANCED, ChallengeLevel.MASTER].map((lvl) => {
+                    const isActive = profile.level === lvl;
+                    const isCompleted = profile.completedLevels?.includes(profile.level); // Current level completed?
+                    const thisLevelCompleted = profile.completedLevels?.includes(lvl);
+                    const isLocked = !isActive && !isCompleted && !thisLevelCompleted;
+
+                    return (
+                        <button
+                            key={lvl}
+                            onClick={() => handleLevelSwitch(lvl)}
+                            disabled={switchingLevel === lvl || isActive}
+                            className={`flex-1 px-4 py-3 rounded-lg text-sm font-bold flex items-center justify-center transition-all
+                                ${isActive ? 'bg-white shadow-md text-slate-900' : 'text-slate-500 hover:bg-slate-100'}
+                                ${isLocked ? 'opacity-70' : ''}
+                            `}
+                        >
+                            {switchingLevel === lvl ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                <>
+                                    {lvl}
+                                    {isLocked && <Lock className="w-3 h-3 ml-2 text-slate-400" />}
+                                    {!isLocked && !isActive && <Unlock className="w-3 h-3 ml-2 text-emerald-500" />}
+                                </>
+                            )}
+                        </button>
+                    )
+                })}
+              </div>
+
+              <div className="mt-2 flex items-center space-x-4">
+                <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-amber-500 rounded-full transition-all duration-1000" 
+                    style={{ width: `${((profile.currentDay - 1) / 6) * 100}%` }}
+                  />
+                </div>
+                <span className="text-sm font-bold text-slate-600">{profile.totalScore} Total Points</span>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {days.map((day) => {
+                const status = canPlayDay(day.num, profile);
+                const score = profile.scores[`day${day.num}`];
+                const isPlayed = score !== undefined;
+                const isLocked = !status.allowed;
+
+                return (
+                  <div 
+                    key={day.num}
+                    className={`relative overflow-hidden rounded-2xl p-6 border-2 transition-all duration-300 group flex flex-col justify-between
+                      ${isPlayed ? 'bg-emerald-50 border-emerald-200' : ''}
+                      ${!isPlayed && !isLocked ? 'bg-white border-amber-400 shadow-lg scale-[1.02]' : ''}
+                      ${isLocked ? 'bg-slate-100 border-slate-200 opacity-90' : ''}
+                    `}
+                  >
+                    <div>
+                      <div className="flex justify-between items-start mb-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
+                          ${isPlayed ? 'bg-emerald-200 text-emerald-800' : ''}
+                          ${!isPlayed && !isLocked ? 'bg-amber-100 text-amber-800' : ''}
+                          ${isLocked ? 'bg-slate-200 text-slate-500' : ''}
+                        `}>
+                          Day {day.num}
+                        </span>
+                        {isPlayed && (
+                          <div className="flex items-center text-emerald-600 font-bold">
+                            <Star className="w-4 h-4 mr-1 fill-emerald-600" /> {score}/30
+                          </div>
+                        )}
+                      </div>
+
+                      <h3 className="text-xl font-bold text-slate-900 mb-2">{day.topic}</h3>
+                      <p className="text-sm text-slate-500 mb-6">
+                        30 Questions • {profile.level === 'Master' ? '30s' : '20s'} per question
+                      </p>
+                    </div>
+
+                    {isLocked ? (
+                      <button 
+                        onClick={() => handleUnlockDay(day.num)}
+                        disabled={unlocking === day.num}
+                        className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl flex items-center justify-center transition-colors"
+                      >
+                        {unlocking === day.num ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <>
+                            <Lock className="w-4 h-4 mr-2" /> Unlock (2 Greys)
+                          </>
+                        )}
+                      </button>
+                    ) : isPlayed ? (
+                      <button disabled className="w-full py-3 bg-emerald-100 text-emerald-700 font-bold rounded-xl flex items-center justify-center cursor-default">
+                        <CheckCircle className="w-5 h-5 mr-2" /> Completed
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => navigate(`/challenge/quiz/${day.num}`)}
+                        className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl flex items-center justify-center shadow-md transition-colors"
+                      >
+                        <Play className="w-5 h-5 mr-2" /> Start Challenge
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Leaderboard Sidebar */}
+          <div className="lg:w-80">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sticky top-24">
+              <div className="flex items-center mb-6">
+                <Trophy className="text-amber-500 w-6 h-6 mr-3" />
+                <h2 className="text-xl font-bold text-slate-900">Leaderboard</h2>
+              </div>
+              
+              <div className="space-y-4">
+                {leaderboard.length === 0 ? (
+                  <p className="text-sm text-slate-500 text-center py-4">Be the first to join!</p>
+                ) : (
+                  leaderboard.slice(0, 10).map((user, idx) => (
+                    <div key={idx} className="flex items-center p-3 rounded-xl bg-slate-50 border border-slate-100">
+                      <div className={`w-8 h-8 flex items-center justify-center rounded-full font-bold mr-3 
+                        ${idx === 0 ? 'bg-yellow-400 text-yellow-900' : ''}
+                        ${idx === 1 ? 'bg-slate-300 text-slate-800' : ''}
+                        ${idx === 2 ? 'bg-amber-700 text-amber-100' : ''}
+                        ${idx > 2 ? 'bg-white text-slate-500 border border-slate-200' : ''}
+                      `}>
+                        {idx + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-slate-900 truncate">
+                          {user.email === profile.email ? `${user.displayName} (You)` : user.displayName}
+                        </p>
+                        <p className="text-xs text-slate-500">{user.level ? user.level.split(' ')[0] : 'User'}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="block text-sm font-bold text-amber-600">{user.totalScore || 0}</span>
+                        <span className="text-[10px] text-slate-400">pts</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DailyChallengeDashboard;

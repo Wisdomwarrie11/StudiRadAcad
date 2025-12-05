@@ -1,3 +1,4 @@
+
 import { LucideIcon } from 'lucide-react';
 
 export interface Opportunity {
@@ -102,4 +103,87 @@ export interface ScholarshipListing {
   description?: string;
   requirements?: string[];
   applyLink?: string;
+}
+
+// --- Daily Challenge Types ---
+
+export enum ChallengeLevel {
+  BASIC = 'Basic',
+  ADVANCED = 'Advanced',
+  MASTER = 'Master'
+}
+
+export enum ChallengePurpose {
+  READING = 'Reading',
+  EXAMS = 'Exams',
+  FUN = 'Fun',
+  GROWTH = 'Track Growth'
+}
+
+export enum ChallengeTopic {
+  TECHNIQUE = 'Radiographic Techniques',
+  SAFETY = 'Radiation Safety',
+  PHYSICS = 'Radiation Physics',
+  MRI = 'Magnetic Resonance Imaging (MRI)',
+  CT = 'Computed Tomography (CT)',
+  USS = 'Ultrasound (USS)'
+}
+
+export interface ChallengeQuestion {
+  id?: string;
+  text: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+  referenceLink?: string;
+  level?: ChallengeLevel;
+  topic?: ChallengeTopic;
+}
+
+export interface UserChallengeProfile {
+  uid: string; // Firebase Document ID (usually email or auth UID)
+  email: string;
+  displayName: string;
+  level: ChallengeLevel;
+  purpose: ChallengePurpose;
+  currentDay: number; // 1 to 6
+  lastPlayedDate: string | null; // ISO Date string
+  scores: Record<string, number>; // "day1": 25
+  totalScore: number;
+  coins: number; // "Grey" currency
+  unlockedDays: number[]; // Array of day numbers unlocked via coins [1, 2, 5]
+  completedLevels: ChallengeLevel[]; // Track which levels are fully completed
+}
+
+export interface QuestionReport {
+  questionId: string;
+  userEmail: string;
+  reason: string;
+  timestamp: string;
+}
+export interface ChallengeQuestion {
+  text: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+  referenceLink?: string;
+}
+
+export interface QuestionCategory {
+  id: string;
+  title: string;
+  description: string;
+  level: 'Basic' | 'Advanced' | 'Master';
+  questions: ChallengeQuestion[];
+  icon?: React.ReactNode;
+}
+
+export type AppState = 'home' | 'quiz' | 'summary';
+
+export interface QuizState {
+  categoryId: string | null;
+  currentQuestionIndex: number;
+  score: number;
+  answers: (number | null)[]; // Index of selected answer per question
+  isCompleted: boolean;
 }
