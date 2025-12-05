@@ -74,7 +74,7 @@ const App: React.FC = () => {
           <Route path="resources/news" element={<NewsPage />} />
           <Route path="resources/materials" element={<MaterialsPage />} />
           <Route path="resources/submit-material" element={<SubmitMaterialPage />} />
-          <Route path="resources/quiz" element={<QuizPage />} />
+          <Route path="quiz" element={<QuizPage />} />
 
           {/* Classes Route */}
           <Route path="classes" element={<ClassesPage />} />
