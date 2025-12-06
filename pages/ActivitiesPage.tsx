@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, ExternalLink, Flame } from "lucide-react";
 
-const ActivitiesPage: React.FC = () => {
+const ActivitiesPage = () => {
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ const ActivitiesPage: React.FC = () => {
       description:
         "A 6-day intensive challenge tailored to your level. Physics, Technique, MRI, CT and more. Join the leaderboard!",
       image:
-        "https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1632&q=80",
+        "Radstudent.jpg",
       link: loggedIn ? "/challenge/dashboard" : "/challenge",
       badge: "New Feature",
       isHot: true,
