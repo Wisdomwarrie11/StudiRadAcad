@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, CheckCircle, Play, Trophy, Star, Loader2, AlertCircle, Coins, Plus, Unlock, CalendarClock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Lock, CheckCircle, Play, Trophy, Star, Loader2, AlertCircle, Coins, Plus, Unlock, CalendarClock, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { UserChallengeProfile, ChallengeTopic, ChallengeLevel } from '../../types';
 import { getLeaderboard, canPlayDay, getUserProfile, unlockDay, switchLevel } from '../../services/challengeService';
 import CoinPurchaseModal from './CoinPurchaseModal';
@@ -380,16 +380,29 @@ const DailyChallengeDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Leaderboard Sidebar - Toggled on mobile */}
-          <div className={`lg:w-80 lg:block ${showLeaderboard ? 'block' : 'hidden'}`}>
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sticky top-24">
-              <div className="flex items-center justify-between mb-6">
+          {/* Leaderboard Sidebar */}
+          <div className={`
+            lg:block lg:w-80 lg:relative
+            ${showLeaderboard 
+              ? 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm' 
+              : 'hidden'}
+          `}>
+            <div className={`
+                bg-white rounded-2xl border border-slate-100 p-6 
+                w-full max-w-md lg:max-w-none lg:w-full lg:sticky lg:top-24 
+                shadow-2xl lg:shadow-sm
+                max-h-[85vh] lg:max-h-none overflow-y-auto lg:overflow-visible
+            `}>
+              <div className="flex items-center justify-between mb-6 sticky top-0 bg-white z-10 pb-2 border-b border-slate-100 lg:border-none lg:pb-0 lg:static">
                 <div className="flex items-center">
                     <Trophy className="text-amber-500 w-6 h-6 mr-3" />
                     <h2 className="text-xl font-bold text-slate-900">Leaderboard</h2>
                 </div>
-                <button onClick={() => setShowLeaderboard(false)} className="lg:hidden text-slate-400">
-                    <ChevronUp className="w-5 h-5" />
+                <button 
+                    onClick={() => setShowLeaderboard(false)} 
+                    className="lg:hidden p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors"
+                >
+                    <X className="w-5 h-5" />
                 </button>
               </div>
               
