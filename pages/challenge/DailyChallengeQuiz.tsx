@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, Flag, ArrowRight, Check, X, ExternalLink, Loader2, LogOut, ChevronLeft } from 'lucide-react';
 import { getQuestionsForDay, updateUserProgress, getUserProfile } from '../../services/challengeService';
 import { ChallengeLevel, ChallengeQuestion, UserChallengeProfile } from '../../types';
+import CustomAlert, { AlertConfig } from '../../components/ui/CustomAlert';
 
 const DailyChallengeQuiz: React.FC = () => {
   const { dayId } = useParams<{ dayId: string }>();
@@ -22,6 +22,15 @@ const DailyChallengeQuiz: React.FC = () => {
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Alert State
+  const [alertConfig, setAlertConfig] = useState<AlertConfig>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'warning',
+    singleButton: true
+  });
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -113,9 +122,17 @@ const DailyChallengeQuiz: React.FC = () => {
   };
 
   const handleQuit = () => {
-    if (window.confirm(`Are you sure you want to end this session? \n\nYou have ${score} points so far. These points will be counted, but the day won't be marked as 'Complete' unless you finish.`)) {
-      finishQuiz(false); // Early Quit
-    }
+    setAlertConfig({
+        isOpen: true,
+        title: 'End Session?',
+        message: `Are you sure you want to quit? You have ${score} points so far. These points will be counted, but the day won't be marked as 'Complete' unless you finish all questions.`,
+        type: 'warning',
+        singleButton: false,
+        confirmText: 'End Session',
+        cancelText: 'Continue Quiz',
+        onConfirm: () => finishQuiz(false), // Early Quit
+        onCancel: () => setAlertConfig(prev => ({...prev, isOpen: false}))
+    });
   };
 
   const finishQuiz = async (completed: boolean) => {
@@ -186,7 +203,9 @@ const DailyChallengeQuiz: React.FC = () => {
   const currentQ = questions[currentQIndex];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col mt-16">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <CustomAlert config={alertConfig} onClose={() => setAlertConfig(prev => ({...prev, isOpen: false}))} />
+      
       {/* Top Bar */}
       <div className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
         <div className="flex items-center gap-4">
@@ -202,16 +221,16 @@ const DailyChallengeQuiz: React.FC = () => {
           </div>
         </div>
         
-        <div className="flex items-center space-x-6">
-          <div className={`flex items-center space-x-2 font-mono font-bold text-xl ${timeLeft < 5 ? 'text-red-500 animate-pulse' : 'text-slate-700'}`}>
+        <div className="flex items-center">
+          <div className={`flex items-center space-x-2 font-mono font-bold text-xl mr-6 ${timeLeft < 5 ? 'text-red-500 animate-pulse' : 'text-slate-700'}`}>
             <Clock className="w-5 h-5" />
             <span>00:{timeLeft.toString().padStart(2, '0')}</span>
           </div>
           <button 
             onClick={handleQuit}
-            className="text-red-500 hover:text-red-700 flex items-center text-sm font-bold transition-colors border border-red-200 hover:bg-red-50 px-3 py-1 rounded-lg"
+            className="text-red-500 hover:text-red-700 flex items-center text-sm font-bold transition-colors border border-red-200 hover:bg-red-50 px-4 py-2 rounded-lg"
           >
-            <LogOut className="w-4 h-4 mr-1" /> End Session
+            <LogOut className="w-4 h-4 mr-2" /> End Session
           </button>
         </div>
       </div>

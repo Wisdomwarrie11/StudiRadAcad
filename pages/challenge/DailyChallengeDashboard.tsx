@@ -1,10 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, CheckCircle, Play, Trophy, Star, Loader2, AlertCircle, Coins, Plus, Unlock, CalendarClock, ChevronDown, ChevronUp } from 'lucide-react';
 import { UserChallengeProfile, ChallengeTopic, ChallengeLevel } from '../../types';
 import { getLeaderboard, canPlayDay, getUserProfile, unlockDay, switchLevel } from '../../services/challengeService';
 import CoinPurchaseModal from './CoinPurchaseModal';
+import CustomAlert, { AlertConfig } from '../../components/ui/CustomAlert';
 
 const DailyChallengeDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +16,33 @@ const DailyChallengeDashboard: React.FC = () => {
   const [switchingLevel, setSwitchingLevel] = useState<ChallengeLevel | null>(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showBuyModal, setShowBuyModal] = useState(false);
+
+  // Alert State
+  const [alertConfig, setAlertConfig] = useState<AlertConfig>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info',
+    singleButton: true
+  });
+
+  const showAlert = (config: Partial<AlertConfig>) => {
+    setAlertConfig({
+        isOpen: true,
+        title: config.title || 'Notification',
+        message: config.message || '',
+        type: config.type || 'info',
+        singleButton: config.singleButton ?? true,
+        confirmText: config.confirmText || 'OK',
+        cancelText: config.cancelText || 'Cancel',
+        onConfirm: config.onConfirm,
+        onCancel: config.onCancel
+    });
+  };
+
+  const closeAlert = () => {
+    setAlertConfig(prev => ({ ...prev, isOpen: false }));
+  };
 
   const fetchProfileData = async () => {
     try {
@@ -50,34 +77,55 @@ const DailyChallengeDashboard: React.FC = () => {
 
   const handlePurchaseSuccess = async () => {
     await fetchProfileData();
-    alert("Coins added successfully!");
+    showAlert({
+      title: 'Coins Added',
+      message: 'Your Grey Coins have been added to your wallet successfully.',
+      type: 'success'
+    });
   };
 
   const handleUnlockDay = async (dayNum: number) => {
     if (!profile) return;
+    
+    const performUnlock = async () => {
+        setUnlocking(dayNum);
+        try {
+            const success = await unlockDay(profile.email, dayNum);
+            if (success) {
+                await fetchProfileData();
+            } else {
+                showAlert({ title: "Unlock Failed", message: "Could not unlock day. Please try again.", type: 'error' });
+            }
+        } catch (e) {
+            console.error(e);
+            showAlert({ title: "Error", message: "An error occurred while unlocking.", type: 'error' });
+        } finally {
+            setUnlocking(null);
+        }
+    };
+
     if (profile.coins < 2) {
-      if(window.confirm("Insufficient Grey Coins. You need 2 Coins (₦200) to unlock early. Buy coins now?")) {
-        setShowBuyModal(true);
-      }
+      showAlert({
+        title: 'Insufficient Coins',
+        message: 'You need 2 Coins (₦200) to unlock this day early.',
+        type: 'warning',
+        confirmText: 'Buy Coins',
+        cancelText: 'Cancel',
+        singleButton: false,
+        onConfirm: () => setShowBuyModal(true)
+      });
       return;
     }
     
-    if (window.confirm(`Unlock Day ${dayNum} early for 2 Grey Coins?`)) {
-      setUnlocking(dayNum);
-      try {
-        const success = await unlockDay(profile.email, dayNum);
-        if (success) {
-          await fetchProfileData();
-        } else {
-          alert("Could not unlock.");
-        }
-      } catch (e) {
-        console.error(e);
-        alert("Error unlocking day.");
-      } finally {
-        setUnlocking(null);
-      }
-    }
+    showAlert({
+        title: 'Unlock Day?',
+        message: `Unlock Day ${dayNum} early for 2 Grey Coins?`,
+        type: 'info',
+        confirmText: 'Yes, Unlock',
+        cancelText: 'No, Wait',
+        singleButton: false,
+        onConfirm: performUnlock
+    });
   };
 
   const handleLevelSwitch = async (targetLevel: ChallengeLevel) => {
@@ -87,7 +135,24 @@ const DailyChallengeDashboard: React.FC = () => {
     const isCompleted = profile.completedLevels?.includes(profile.level);
     const targetIsCompleted = profile.completedLevels?.includes(targetLevel);
     
+    const performSwitch = async () => {
+        setSwitchingLevel(targetLevel);
+        try {
+            const success = await switchLevel(profile.email, targetLevel);
+            if (success) {
+                await fetchProfileData();
+            } else {
+                showAlert({ title: "Error", message: "Insufficient coins or connection error.", type: 'error' });
+            }
+        } catch (e) {
+            showAlert({ title: "Error", message: "Failed to switch level.", type: 'error' });
+        } finally {
+            setSwitchingLevel(null);
+        }
+    };
+
     if (isCompleted || targetIsCompleted) {
+        // Free switch
         setSwitchingLevel(targetLevel);
         await switchLevel(profile.email, targetLevel);
         await fetchProfileData();
@@ -96,27 +161,25 @@ const DailyChallengeDashboard: React.FC = () => {
     }
 
     if (profile.coins < 1) {
-        if(window.confirm("You need 1 Grey Coin to switch levels before completing your current one. Buy coins now?")) {
-            setShowBuyModal(true);
-        }
+        showAlert({
+            title: 'Insufficient Coins',
+            message: 'You need 1 Grey Coin to switch levels before completing your current one.',
+            type: 'warning',
+            confirmText: 'Buy Coins',
+            singleButton: false,
+            onConfirm: () => setShowBuyModal(true)
+        });
         return;
     }
 
-    if (window.confirm(`Switch to ${targetLevel}? \n\nSince you haven't completed your current level, this will cost 1 Grey Coin.`)) {
-        setSwitchingLevel(targetLevel);
-        try {
-            const success = await switchLevel(profile.email, targetLevel);
-            if (success) {
-                await fetchProfileData();
-            } else {
-                alert("Insufficient coins.");
-            }
-        } catch (e) {
-            alert("Failed to switch level.");
-        } finally {
-            setSwitchingLevel(null);
-        }
-    }
+    showAlert({
+        title: `Switch to ${targetLevel}?`,
+        message: `Since you haven't completed your current level, this will cost 1 Grey Coin (₦100).`,
+        type: 'warning',
+        confirmText: 'Pay & Switch',
+        singleButton: false,
+        onConfirm: performSwitch
+    });
   };
 
   if (loading) {
@@ -151,6 +214,8 @@ const DailyChallengeDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 py-24 px-4">
+      <CustomAlert config={alertConfig} onClose={closeAlert} />
+      
       <div className="container mx-auto max-w-6xl">
         <div className="flex flex-col lg:flex-row gap-8">
           

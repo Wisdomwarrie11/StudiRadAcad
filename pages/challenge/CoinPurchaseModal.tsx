@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Coins, Check, ShieldCheck, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { addCoins } from '../../services/challengeService';
+import CustomAlert, { AlertConfig } from '../../components/ui/CustomAlert';
 
 interface CoinPackage {
   id: string;
@@ -19,7 +20,7 @@ const PACKAGES: CoinPackage[] = [
 ];
 
 // REPLACE WITH YOUR ACTUAL PAYSTACK PUBLIC KEY
-const PAYSTACK_PUBLIC_KEY = 'pk_test_506419021ce400c858655a17fbc73ff4dd6757bd';
+const PAYSTACK_PUBLIC_KEY = 'pk_test_YOUR_PAYSTACK_PUBLIC_KEY_HERE';
 
 interface CoinPurchaseModalProps {
   userEmail: string;
@@ -32,6 +33,27 @@ const CoinPurchaseModal: React.FC<CoinPurchaseModalProps> = ({ userEmail, onClos
   const [processing, setProcessing] = useState(false);
   const [processingMessage, setProcessingMessage] = useState("");
   const [longProcess, setLongProcess] = useState(false);
+
+  // Alert State
+  const [alertConfig, setAlertConfig] = useState<AlertConfig>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info',
+    singleButton: true
+  });
+
+  const showAlert = (config: Partial<AlertConfig>) => {
+    setAlertConfig({
+        isOpen: true,
+        title: config.title || 'Notification',
+        message: config.message || '',
+        type: config.type || 'info',
+        singleButton: true,
+        confirmText: 'OK',
+        onConfirm: config.onConfirm,
+    });
+  };
 
   // Safe mounted check
   const mountedRef = React.useRef(true);
@@ -65,7 +87,7 @@ const CoinPurchaseModal: React.FC<CoinPurchaseModalProps> = ({ userEmail, onClos
     const paystack = (window as any).PaystackPop;
     
     if (!paystack) {
-        alert("Paystack failed to load. Please check your internet connection.");
+        showAlert({ title: "Connection Error", message: "Paystack failed to load. Please check your internet connection.", type: 'error' });
         setProcessing(false);
         return;
     }
@@ -106,8 +128,12 @@ const CoinPurchaseModal: React.FC<CoinPurchaseModalProps> = ({ userEmail, onClos
                 } catch (error) {
                     console.error("Failed to add coins after payment", error);
                     // Important: User actually paid, but DB update failed/timed out.
-                    alert(`Payment Successful! \n\nHowever, we couldn't automatically update your coin balance due to a connection issue.\n\nTransaction Ref: ${response.reference}\n\nPlease contact support with this reference code.`);
-                    if (mountedRef.current) onClose(); // Close modal so user isn't stuck
+                    showAlert({ 
+                        title: "Payment Successful", 
+                        message: `However, we couldn't automatically update your coin balance due to a connection issue. \n\nTransaction Ref: ${response.reference} \n\nPlease contact support with this reference code.`,
+                        type: 'warning',
+                        onConfirm: onClose
+                    });
                 } finally {
                     if (mountedRef.current) setProcessing(false);
                 }
@@ -127,12 +153,14 @@ const CoinPurchaseModal: React.FC<CoinPurchaseModalProps> = ({ userEmail, onClos
     } catch (err) {
         console.error("Paystack Init Error", err);
         setProcessing(false);
-        alert("Could not initialize payment gateway. Please try again.");
+        showAlert({ title: "Initialization Error", message: "Could not initialize payment gateway. Please try again.", type: 'error' });
     }
   };
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <CustomAlert config={alertConfig} onClose={() => setAlertConfig(prev => ({...prev, isOpen: false}))} />
+      
       <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}

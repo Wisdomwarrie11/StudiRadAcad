@@ -5,29 +5,24 @@ import Footer from './components/layout/Footer';
 import Home from './pages/Home';
 import AboutPage from './pages/AboutPage';
 import ActivitiesPage from './pages/ActivitiesPage';
-
 // Resources
 import BlogPage from './pages/resources/BlogPage';
 import MaterialsPage from './pages/resources/MaterialsPage';
 import NewsPage from './pages/resources/NewsPage';
 import SubmitMaterialPage from './pages/resources/SubmitMaterialPage';
 import QuizPage from './pages/resources/QuizPage';
-
 // Classes
 import ClassesPage from './pages/classes/ClassesPage';
 import LockedInChallenge from './pages/LockedInChallenge';
-
 // Daily Challenge
 import DailyChallengeLanding from './pages/challenge/DailyChallengeLanding';
 import DailyChallengeDashboard from './pages/challenge/DailyChallengeDashboard';
 import DailyChallengeQuiz from './pages/challenge/DailyChallengeQuiz';
-
 // Opportunities
 import OpportunitiesPage from './pages/opportunities/OpportunitiesPage';
 import JobsPage from './pages/opportunities/JobsPage';
 import InternshipsPage from './pages/opportunities/InternshipsPage';
 import ScholarshipsPage from './pages/opportunities/ScholarshipsPage';
-
 // Admin Imports
 import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -73,7 +68,7 @@ const App: React.FC = () => {
           <Route index element={<Home />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="activities" element={<ActivitiesPage />} />
-          
+
           {/* Resources */}
           <Route path="resources/blog" element={<BlogPage />} />
           <Route path="resources/news" element={<NewsPage />} />
@@ -88,15 +83,16 @@ const App: React.FC = () => {
           {/* Daily Challenge Routes */}
           <Route path="challenge" element={<DailyChallengeLanding />} />
           <Route path="challenge/dashboard" element={<DailyChallengeDashboard />} />
-          <Route path="challenge/quiz/:dayId" element={<DailyChallengeQuiz />} />
-
+          
           {/* Opportunities */}
           <Route path="opportunities" element={<OpportunitiesPage />} />
           <Route path="jobs" element={<JobsPage />} />
           <Route path="internship" element={<InternshipsPage />} />
           <Route path="scholarship" element={<ScholarshipsPage />} />
-          
         </Route>
+
+        {/* Daily Challenge Quiz (Standalone - No Header/Footer) */}
+        <Route path="challenge/quiz/:dayId" element={<DailyChallengeQuiz />} />
 
         {/* Admin Login (Public) */}
         <Route path="admin/login" element={<AdminLoginPage />} />
