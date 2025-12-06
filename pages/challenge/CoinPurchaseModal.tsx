@@ -20,7 +20,7 @@ const PACKAGES: CoinPackage[] = [
 ];
 
 // REPLACE WITH YOUR ACTUAL PAYSTACK PUBLIC KEY
-const PAYSTACK_PUBLIC_KEY = 'pk_test_YOUR_PAYSTACK_PUBLIC_KEY_HERE';
+const PAYSTACK_PUBLIC_KEY = 'pk_test_506419021ce400c858655a17fbc73ff4dd6757bd';
 
 interface CoinPurchaseModalProps {
   userEmail: string;
