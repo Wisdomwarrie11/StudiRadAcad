@@ -132,18 +132,15 @@ export const updateUserProgress = async (
       // Natural progression: currentDay only moves forward if we completed the currentDay
       const nextDay = currentData.currentDay + 1;
       updatePayload.currentDay = Math.min(Math.max(currentData.currentDay, nextDay), 7);
-      
-      // Also ensure the new day is in the unlocked list for natural progression
-      const newUnlocked = new Set(currentData.unlockedDays || []);
-      if (updatePayload.currentDay <= 6) {
-          newUnlocked.add(updatePayload.currentDay);
-      }
-      updatePayload.unlockedDays = Array.from(newUnlocked);
       updatePayload.lastPlayedDate = new Date().toISOString();
+      
+      // NOTE: We do NOT automatically add nextDay to unlockedDays anymore.
+      // unlockedDays is reserved for Day 1 and PAIDs unlocks.
+      // Natural progression relies on currentDay and date checking in canPlayDay.
     }
 
     // Check for Level Completion (If Day 6 is finished)
-    if (day === 6 && score > 0) { // Assuming score > 0 means they participated
+    if (day === 6 && score > 0) { 
       const completedLevels = new Set(currentData.completedLevels || []);
       completedLevels.add(currentData.level);
       updatePayload.completedLevels = Array.from(completedLevels);
@@ -169,29 +166,11 @@ export const switchLevel = async (email: string, newLevel: ChallengeLevel): Prom
     if (!doc.exists) throw new Error("User not found");
     const userData = doc.data() as UserChallengeProfile;
 
-    // Check if level is already completed (Free switch)
     const isCompleted = userData.completedLevels?.includes(userData.level);
     
-    // If attempting to switch without completing current, check coins
-    // NOTE: The prompt implies completing *current* level allows access to others.
-    // But logically, we check if the TARGET level is accessible? 
-    // Prompt: "Users can only assess other levels once they are done with their current level."
-    
-    // If they have completed their CURRENT level, they can switch freely.
     if (isCompleted) {
-        // Reset progression for new level or keep it? 
-        // Usually, a level switch implies a new set of questions. 
-        // For this simple app, we reset currentDay to 1 if switching to a new level
-        // But we keep scores? The data model uses 'day1', 'day2'. 
-        // This implies scores are shared or overwritten. 
-        // To keep it simple per prompt, we just switch the level flag.
-        
         await userRef.update({
             level: newLevel,
-            // We might want to reset day progress if it's a fresh start on a new level
-            // but keeping it simple: just switch context.
-            // A more complex app would have nested scores: scores: { basic: {}, advanced: {} }
-            // For now, we assume the user accepts scores might be mixed or they just play.
         });
         return true;
     }
@@ -293,7 +272,6 @@ export const getLeaderboard = async (): Promise<UserChallengeProfile[]> => {
 // --- Helper Functions ---
 
 export const getQuestionsForDay = (day: number, level: ChallengeLevel): { topic: ChallengeTopic, questions: ChallengeQuestion[] } => {
-  // Define Topic Order
   const topicMap: Record<number, ChallengeTopic> = {
     1: ChallengeTopic.TECHNIQUE,
     2: ChallengeTopic.PHYSICS,
@@ -306,7 +284,6 @@ export const getQuestionsForDay = (day: number, level: ChallengeLevel): { topic:
   const topic = topicMap[day] || ChallengeTopic.SAFETY;
   let rawQuestions: any[] = [];
 
-  // Select Questions based on Level and Topic
   if (level === ChallengeLevel.BASIC) {
     switch(topic) {
       case ChallengeTopic.TECHNIQUE: rawQuestions = BASIC_TECHNIQUE; break;
@@ -336,14 +313,11 @@ export const getQuestionsForDay = (day: number, level: ChallengeLevel): { topic:
     }
   }
 
-  // Fallback if data missing (shouldn't happen with full data provided)
   if (!rawQuestions || rawQuestions.length === 0) {
     rawQuestions = []; 
   }
 
-  // Map and Shuffle Options
   const processedQuestions: ChallengeQuestion[] = rawQuestions.map((q, i) => {
-    // We shuffle options and need to find where the correct answer went
     const correctOptionText = q.options[q.correctIndex];
     const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
     const newCorrectIndex = shuffledOptions.indexOf(correctOptionText);
@@ -363,12 +337,51 @@ export const getQuestionsForDay = (day: number, level: ChallengeLevel): { topic:
   return { topic, questions: processedQuestions };
 };
 
-export const canPlayDay = (day: number, profile: UserChallengeProfile): { allowed: boolean, reason?: string, requiresUnlock?: boolean } => {
+export const canPlayDay = (day: number, profile: UserChallengeProfile): { allowed: boolean, reason?: string, requiresUnlock?: boolean, canPayToUnlock?: boolean } => {
   const unlockedDays = new Set(profile.unlockedDays || [1]);
   
-  // If explicitly unlocked via coin or natural progression
+  // 1. If previously unlocked (paid or Day 1), allow
   if (unlockedDays.has(day)) return { allowed: true };
   
-  // Logic for Locked Day
-  return { allowed: false, reason: "Locked.", requiresUnlock: true };
+  // 2. Previous days can always be replayed
+  if (day < profile.currentDay) {
+    return { allowed: true };
+  }
+
+  // 3. Current progression day
+  if (day === profile.currentDay) {
+    // Check Date logic
+    if (!profile.lastPlayedDate) {
+      return { allowed: true }; // First time playing ever
+    }
+
+    const lastDate = new Date(profile.lastPlayedDate);
+    const today = new Date();
+
+    // Check if it's the same calendar day (ignoring time)
+    const isSameDay = lastDate.getDate() === today.getDate() &&
+                      lastDate.getMonth() === today.getMonth() &&
+                      lastDate.getFullYear() === today.getFullYear();
+
+    if (isSameDay) {
+      // Played today, so next sequential day is locked until tomorrow
+      return { 
+        allowed: false, 
+        reason: "Next challenge opens tomorrow!", 
+        requiresUnlock: true, 
+        canPayToUnlock: true 
+      };
+    } else {
+      // It's a new day, allow access
+      return { allowed: true };
+    }
+  }
+
+  // 4. Future days
+  return { 
+    allowed: false, 
+    reason: "Locked. Complete previous days first.", 
+    requiresUnlock: true, 
+    canPayToUnlock: true // Technically can pay to jump ahead
+  };
 };

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, ClipboardCheck, Activity, BookOpen, Loader2 } from 'lucide-react';
+import { GraduationCap, ClipboardCheck, Activity, BookOpen, Loader2, Info, X } from 'lucide-react';
 import { ChallengeLevel, ChallengePurpose } from '../../types';
 import { registerUserForChallenge, checkUserExists } from '../../services/challengeService';
 
@@ -10,6 +10,7 @@ const DailyChallengeLanding: React.FC = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showRules, setShowRules] = useState(false);
   
   const [formData, setFormData] = useState<{
     name: string;
@@ -111,13 +112,19 @@ const DailyChallengeLanding: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 py-24 px-4">
+    <div className="min-h-screen bg-slate-50 py-24 px-4 relative">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">Daily Radiography Challenge</h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-6">
             6 Days. 6 Topics. One Goal. Master your craft with our intensive, level-based daily quizzes.
           </p>
+          <button 
+            onClick={() => setShowRules(true)}
+            className="inline-flex items-center text-slate-500 hover:text-amber-600 font-semibold transition-colors"
+          >
+            <Info className="w-4 h-4 mr-2" /> Rules & Disclaimer
+          </button>
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
@@ -137,10 +144,10 @@ const DailyChallengeLanding: React.FC = () => {
                 <h2 className="text-2xl font-bold text-slate-800 text-center">Let's get you registered</h2>
                 <div className="max-w-md mx-auto space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">User Name</label>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Display Name</label>
                     <input
                       type="text"
-                      placeholder="e.g. Rad Sarah"
+                      placeholder="e.g. RadTech Sarah"
                       className="w-full px-6 py-4 rounded-xl border-2 border-slate-200 focus:border-amber-500 focus:outline-none text-lg"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -247,6 +254,55 @@ const DailyChallengeLanding: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Rules Modal */}
+      {showRules && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10">
+              <h3 className="text-xl font-bold text-slate-900">Rules & Disclaimer</h3>
+              <button onClick={() => setShowRules(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4 text-slate-600">
+              <div>
+                <h4 className="font-bold text-slate-800 mb-2">How it Works</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>The challenge consists of 6 Days, each covering a different topic.</li>
+                  <li>Questions are timed (30s for Basic, 40s for Advanced/Master).</li>
+                  <li>You must complete the current day to unlock the next one naturally (tomorrow).</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-bold text-slate-800 mb-2">Coins & Economy</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><strong>Wait for Tomorrow:</strong> The next day unlocks for free at midnight.</li>
+                  <li><strong>Unlock Early:</strong> Pay 2 Coins (₦200) to unlock the next day immediately.</li>
+                  <li><strong>Switch Level:</strong> Pay 1 Coin (₦100) to switch difficulty levels before completing your current one.</li>
+                  <li><strong>Purchase Coins:</strong> 1 Coin = ₦100.</li>
+                </ul>
+              </div>
+
+              <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 text-sm">
+                <h4 className="font-bold text-amber-800 mb-1">Disclaimer</h4>
+                <p>
+                  This platform is for educational and study purposes only. Content is not intended as medical advice or definitive clinical guidance. While we strive for accuracy, users should verify information with standard medical texts and institutional protocols.
+                </p>
+              </div>
+            </div>
+            <div className="p-6 border-t border-slate-100">
+              <button 
+                onClick={() => setShowRules(false)}
+                className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

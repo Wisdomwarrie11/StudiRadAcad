@@ -11,8 +11,8 @@ const DailyChallengeQuiz: React.FC = () => {
   
   const [questions, setQuestions] = useState<ChallengeQuestion[]>([]);
   const [currentQIndex, setCurrentQIndex] = useState(0);
-  const [timerSeconds, setTimerSeconds] = useState(20);
-  const [timeLeft, setTimeLeft] = useState(20);
+  const [timerSeconds, setTimerSeconds] = useState(30);
+  const [timeLeft, setTimeLeft] = useState(30);
   const [isAnswered, setIsAnswered] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -42,8 +42,9 @@ const DailyChallengeQuiz: React.FC = () => {
         }
         
         setLevel(profile.level);
-        // Master level gets 30 seconds, others 20s
-        const tSeconds = profile.level === ChallengeLevel.MASTER ? 30 : 20;
+        
+        // Timer Logic: Basic = 30s, Advanced/Master = 40s
+        const tSeconds = profile.level === ChallengeLevel.BASIC ? 30 : 40;
         setTimerSeconds(tSeconds);
         setTimeLeft(tSeconds);
 

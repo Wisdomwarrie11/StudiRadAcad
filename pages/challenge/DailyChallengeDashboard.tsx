@@ -1,9 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, CheckCircle, Play, Trophy, Star, Loader2, AlertCircle, Coins, Plus, Unlock } from 'lucide-react';
+import { Lock, CheckCircle, Play, Trophy, Star, Loader2, AlertCircle, Coins, Plus, Unlock, CalendarClock, ChevronDown, ChevronUp } from 'lucide-react';
 import { UserChallengeProfile, ChallengeTopic, ChallengeLevel } from '../../types';
-import { getLeaderboard, canPlayDay, getUserProfile, addCoins, unlockDay, switchLevel } from '../../services/challengeService';
+import { getLeaderboard, canPlayDay, getUserProfile, unlockDay, switchLevel } from '../../services/challengeService';
+import CoinPurchaseModal from './coinPurchaseModal';
 
 const DailyChallengeDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -11,9 +12,10 @@ const DailyChallengeDashboard: React.FC = () => {
   const [leaderboard, setLeaderboard] = useState<UserChallengeProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [purchasing, setPurchasing] = useState(false);
   const [unlocking, setUnlocking] = useState<number | null>(null);
   const [switchingLevel, setSwitchingLevel] = useState<ChallengeLevel | null>(null);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showBuyModal, setShowBuyModal] = useState(false);
 
   const fetchProfileData = async () => {
     try {
@@ -46,30 +48,21 @@ const DailyChallengeDashboard: React.FC = () => {
     fetchProfileData().finally(() => setLoading(false));
   }, [navigate]);
 
-  const handleBuyGrey = async () => {
-    if (!profile) return;
-    setPurchasing(true);
-    try {
-      // Simulation of payment gateway
-      await new Promise(resolve => setTimeout(resolve, 1500)); 
-      await addCoins(profile.email, 1);
-      await fetchProfileData(); 
-      alert("Successfully purchased 1 Grey Coin!");
-    } catch (e) {
-      alert("Payment failed.");
-    } finally {
-      setPurchasing(false);
-    }
+  const handlePurchaseSuccess = async () => {
+    await fetchProfileData();
+    alert("Coins added successfully!");
   };
 
   const handleUnlockDay = async (dayNum: number) => {
     if (!profile) return;
     if (profile.coins < 2) {
-      alert("Insufficient Grey Coins. You need 2 Coins (₦500) to unlock a day.");
+      if(window.confirm("Insufficient Grey Coins. You need 2 Coins (₦200) to unlock early. Buy coins now?")) {
+        setShowBuyModal(true);
+      }
       return;
     }
     
-    if (window.confirm(`Unlock Day ${dayNum} for 2 Grey Coins (₦500)?`)) {
+    if (window.confirm(`Unlock Day ${dayNum} early for 2 Grey Coins?`)) {
       setUnlocking(dayNum);
       try {
         const success = await unlockDay(profile.email, dayNum);
@@ -91,14 +84,9 @@ const DailyChallengeDashboard: React.FC = () => {
     if (!profile) return;
     if (profile.level === targetLevel) return;
 
-    // Check if user completed current level (assuming checking completions array)
     const isCompleted = profile.completedLevels?.includes(profile.level);
     const targetIsCompleted = profile.completedLevels?.includes(targetLevel);
     
-    // If completed current level, allowing switch is logically fine.
-    // Prompt says: "Users can only assess other levels once they are done with their current level. If they want to access another level before... 1 miligrey is needed"
-    
-    // Logic: Free if current level is done. Cost 1 coin if not.
     if (isCompleted || targetIsCompleted) {
         setSwitchingLevel(targetLevel);
         await switchLevel(profile.email, targetLevel);
@@ -108,11 +96,13 @@ const DailyChallengeDashboard: React.FC = () => {
     }
 
     if (profile.coins < 1) {
-        alert("You must complete your current level first or pay 1 Grey Coin (₦250) to switch.");
+        if(window.confirm("You need 1 Grey Coin to switch levels before completing your current one. Buy coins now?")) {
+            setShowBuyModal(true);
+        }
         return;
     }
 
-    if (window.confirm(`Switch to ${targetLevel}? \n\nSince you haven't completed your current level, this will cost 1 Grey Coin (₦250).`)) {
+    if (window.confirm(`Switch to ${targetLevel}? \n\nSince you haven't completed your current level, this will cost 1 Grey Coin.`)) {
         setSwitchingLevel(targetLevel);
         try {
             const success = await switchLevel(profile.email, targetLevel);
@@ -178,19 +168,18 @@ const DailyChallengeDashboard: React.FC = () => {
                 {/* Wallet UI */}
                 <div className="flex items-center bg-slate-50 px-4 py-3 rounded-xl border border-slate-200">
                   <div className="mr-4">
-                    <p className="text-xs text-slate-500 font-bold uppercase">Grey Balance</p>
+                    <p className="text-xs text-slate-500 font-bold uppercase">Coins</p>
                     <div className="flex items-center text-slate-900 font-black text-xl">
-                      <Coins className="w-5 h-5 text-slate-400 mr-2" />
+                      <Coins className="w-5 h-5 text-amber-500 mr-2" />
                       {profile.coins || 0}
                     </div>
                   </div>
                   <button 
-                    onClick={handleBuyGrey}
-                    disabled={purchasing}
+                    onClick={() => setShowBuyModal(true)}
                     className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center hover:bg-slate-800 transition-colors"
                   >
-                    {purchasing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4 mr-1" />}
-                    Buy Grey (₦250)
+                    <Plus className="w-4 h-4 mr-1" />
+                    Buy Coins
                   </button>
                 </div>
               </div>
@@ -199,7 +188,7 @@ const DailyChallengeDashboard: React.FC = () => {
               <div className="bg-slate-50 p-2 rounded-xl flex flex-wrap gap-2 mb-6">
                 {[ChallengeLevel.BASIC, ChallengeLevel.ADVANCED, ChallengeLevel.MASTER].map((lvl) => {
                     const isActive = profile.level === lvl;
-                    const isCompleted = profile.completedLevels?.includes(profile.level); // Current level completed?
+                    const isCompleted = profile.completedLevels?.includes(profile.level); 
                     const thisLevelCompleted = profile.completedLevels?.includes(lvl);
                     const isLocked = !isActive && !isCompleted && !thisLevelCompleted;
 
@@ -209,7 +198,7 @@ const DailyChallengeDashboard: React.FC = () => {
                             onClick={() => handleLevelSwitch(lvl)}
                             disabled={switchingLevel === lvl || isActive}
                             className={`flex-1 px-4 py-3 rounded-lg text-sm font-bold flex items-center justify-center transition-all
-                                ${isActive ? 'bg-white shadow-md text-slate-900' : 'text-slate-500 hover:bg-slate-100'}
+                                ${isActive ? 'bg-white shadow-md text-slate-900 ring-2 ring-slate-100' : 'text-slate-500 hover:bg-slate-100'}
                                 ${isLocked ? 'opacity-70' : ''}
                             `}
                         >
@@ -225,14 +214,24 @@ const DailyChallengeDashboard: React.FC = () => {
                 })}
               </div>
 
-              <div className="mt-2 flex items-center space-x-4">
-                <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-amber-500 rounded-full transition-all duration-1000" 
-                    style={{ width: `${((profile.currentDay - 1) / 6) * 100}%` }}
-                  />
+              <div className="mt-2 flex items-center justify-between">
+                <div className="flex items-center space-x-4 flex-grow mr-4">
+                    <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <div 
+                        className="h-full bg-amber-500 rounded-full transition-all duration-1000" 
+                        style={{ width: `${((profile.currentDay - 1) / 6) * 100}%` }}
+                    />
+                    </div>
+                    <span className="text-sm font-bold text-slate-600">{profile.totalScore} Pts</span>
                 </div>
-                <span className="text-sm font-bold text-slate-600">{profile.totalScore} Total Points</span>
+                {/* Mobile/Tablet Leaderboard Toggle */}
+                <button 
+                    onClick={() => setShowLeaderboard(!showLeaderboard)}
+                    className="flex items-center text-sm font-bold text-slate-500 hover:text-slate-800 lg:hidden"
+                >
+                    {showLeaderboard ? 'Hide Leaderboard' : 'Show Leaderboard'}
+                    {showLeaderboard ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
+                </button>
               </div>
             </div>
 
@@ -246,7 +245,7 @@ const DailyChallengeDashboard: React.FC = () => {
                 return (
                   <div 
                     key={day.num}
-                    className={`relative overflow-hidden rounded-2xl p-6 border-2 transition-all duration-300 group flex flex-col justify-between
+                    className={`relative overflow-hidden rounded-2xl p-6 border-2 transition-all duration-300 group flex flex-col justify-between min-h-[220px]
                       ${isPlayed ? 'bg-emerald-50 border-emerald-200' : ''}
                       ${!isPlayed && !isLocked ? 'bg-white border-amber-400 shadow-lg scale-[1.02]' : ''}
                       ${isLocked ? 'bg-slate-100 border-slate-200 opacity-90' : ''}
@@ -270,24 +269,34 @@ const DailyChallengeDashboard: React.FC = () => {
 
                       <h3 className="text-xl font-bold text-slate-900 mb-2">{day.topic}</h3>
                       <p className="text-sm text-slate-500 mb-6">
-                        30 Questions • {profile.level === 'Master' ? '30s' : '20s'} per question
+                        30 Questions • {profile.level === ChallengeLevel.BASIC ? '30s' : '40s'} per question
                       </p>
                     </div>
 
                     {isLocked ? (
-                      <button 
-                        onClick={() => handleUnlockDay(day.num)}
-                        disabled={unlocking === day.num}
-                        className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl flex items-center justify-center transition-colors"
-                      >
-                        {unlocking === day.num ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
+                      <div>
+                        {status.reason && <p className="text-xs text-center text-slate-500 mb-3 font-medium flex items-center justify-center"><CalendarClock className="w-3 h-3 mr-1"/> {status.reason}</p>}
+                        
+                        {status.canPayToUnlock ? (
+                            <button 
+                                onClick={() => handleUnlockDay(day.num)}
+                                disabled={unlocking === day.num}
+                                className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl flex items-center justify-center transition-colors"
+                            >
+                                {unlocking === day.num ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                <>
+                                    <Unlock className="w-4 h-4 mr-2" /> Unlock Now (2 Coins)
+                                </>
+                                )}
+                            </button>
                         ) : (
-                          <>
-                            <Lock className="w-4 h-4 mr-2" /> Unlock (2 Greys)
-                          </>
+                            <button disabled className="w-full py-3 bg-slate-200 text-slate-400 font-bold rounded-xl flex items-center justify-center cursor-not-allowed">
+                                <Lock className="w-5 h-5 mr-2" /> Locked
+                            </button>
                         )}
-                      </button>
+                      </div>
                     ) : isPlayed ? (
                       <button disabled className="w-full py-3 bg-emerald-100 text-emerald-700 font-bold rounded-xl flex items-center justify-center cursor-default">
                         <CheckCircle className="w-5 h-5 mr-2" /> Completed
@@ -306,12 +315,17 @@ const DailyChallengeDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Leaderboard Sidebar */}
-          <div className="lg:w-80">
+          {/* Leaderboard Sidebar - Toggled on mobile */}
+          <div className={`lg:w-80 lg:block ${showLeaderboard ? 'block' : 'hidden'}`}>
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sticky top-24">
-              <div className="flex items-center mb-6">
-                <Trophy className="text-amber-500 w-6 h-6 mr-3" />
-                <h2 className="text-xl font-bold text-slate-900">Leaderboard</h2>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                    <Trophy className="text-amber-500 w-6 h-6 mr-3" />
+                    <h2 className="text-xl font-bold text-slate-900">Leaderboard</h2>
+                </div>
+                <button onClick={() => setShowLeaderboard(false)} className="lg:hidden text-slate-400">
+                    <ChevronUp className="w-5 h-5" />
+                </button>
               </div>
               
               <div className="space-y-4">
@@ -347,6 +361,14 @@ const DailyChallengeDashboard: React.FC = () => {
 
         </div>
       </div>
+
+      {showBuyModal && profile && (
+        <CoinPurchaseModal 
+            userEmail={profile.email}
+            onClose={() => setShowBuyModal(false)}
+            onSuccess={handlePurchaseSuccess}
+        />
+      )}
     </div>
   );
 };
