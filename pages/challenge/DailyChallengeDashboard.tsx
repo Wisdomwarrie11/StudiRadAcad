@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, CheckCircle, Play, Trophy, Star, Loader2, AlertCircle, Coins, Plus, Unlock, CalendarClock, ChevronDown, ChevronUp } from 'lucide-react';
 import { UserChallengeProfile, ChallengeTopic, ChallengeLevel } from '../../types';
 import { getLeaderboard, canPlayDay, getUserProfile, unlockDay, switchLevel } from '../../services/challengeService';
-import CoinPurchaseModal from './coinPurchaseModal';
+import CoinPurchaseModal from './CoinPurchaseModal';
 
 const DailyChallengeDashboard: React.FC = () => {
   const navigate = useNavigate();
