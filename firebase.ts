@@ -37,3 +37,23 @@ const adminApp = existingAdminApp || firebase.initializeApp(adminFirebaseConfig,
 export const adminAuth = adminApp.auth() as any;
 export const adminDb = adminApp.firestore() as any;
 export const adminStorage = adminApp.storage() as any;
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+
+
+// Your web app's Firebase configuration
+const challengefirebaseConfig = {
+  apiKey: "AIzaSyA8mJa5WAKn8OnIgglrw1-xsAvxcIe1CKI",
+  authDomain: "studirad-6days-challenge.firebaseapp.com",
+  projectId: "studirad-6days-challenge",
+  storageBucket: "studirad-6days-challenge.firebasestorage.app",
+  messagingSenderId: "597844120330",
+  appId: "1:597844120330:web:2bc864b40125ff8422a0f3"
+};
+
+// Initialize Firebase
+const challengeapp = firebase.apps.length === 0 ? firebase.initializeApp(firebaseConfig) : firebase.app();
+export const challengedb = firebase.firestore(app) as any;
+export const challengeauth = firebase.auth(app) as any;
+export const challengestorage = firebase.storage(app) as any;

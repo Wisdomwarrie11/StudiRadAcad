@@ -66,39 +66,6 @@ export const MASTER_SAFETY: ChallengeQuestion[] = [
   { text: "An interventional suite shows elevated staff dose on monthly review. What system-level change is most effective?", options: ["Swap staff positions randomly", "Conduct targeted radiation safety refresher + optimize C-arm protocols", "Disable DRLs", "Increase fluoroscopy frame rate"], correctIndex: 1, explanation: "Training + protocol optimization consistently reduce occupational dose.", referenceLink: "IAEA Radiation Protection Training Guidelines" },
 ];
 
-export const MASTER_PHYSICS: ChallengeQuestion[] = [
-  { text: "A patient is undergoing fluoroscopic ERCP. The radiologist increases kVp from 70 to 90 while reducing mAs to maintain image brightness. What happens to patient entrance dose?", options: ["Entrance dose significantly increases", "Entrance dose decreases", "Entrance dose stays the same", "Entrance dose becomes unpredictable"], correctIndex: 1, explanation: "Higher kVp increases beam penetration and allows lowering mAs, resulting in reduced patient entrance dose.", referenceLink: "FDA – Fluoroscopy Dose Reduction Principles" },
-  { text: "During mammography, lowering kVp below optimal range (22–32 kVp) results in:", options: ["Higher subject contrast but increased dose", "Lower subject contrast and decreased dose", "Higher contrast and decreased dose", "Scatter reduction without affecting dose"], correctIndex: 0, explanation: "Low kVp improves contrast but significantly increases dose because breast tissue attenuates low-energy photons.", referenceLink: "ACR Mammography Quality Standards" },
-  { text: "A technologist shifts from 400 to 100 speed class to visualize fine bony detail in a trauma case. What is the radiation physics consequence?", options: ["Patient dose increases ×4", "Patient dose decreases ×4", "Dose unchanged", "Image noise decreases with lower dose"], correctIndex: 0, explanation: "Slower speed class requires higher mAs → dose increases proportionally.", referenceLink: "Bushberg – The Essential Physics of Medical Imaging" },
-  { text: "A CT scanner increases pitch from 0.8 to 1.6 during a chest CT. What is the expected result?", options: ["CTDI doubles", "CTDI decreases by half", "CTDI unchanged", "Reconstruction fails"], correctIndex: 1, explanation: "Higher pitch spreads radiation across a longer table movement → reduces dose per slice.", referenceLink: "AAPM CT Physics Primer" },
-  { text: "A 3-year-old child undergoes abdominal CT. Why is tube current modulation essential?", options: ["Children require harder beams", "Photon starvation improves contrast", "Modulation reduces unnecessary radiation to radiosensitive organs", "Modulation increases sharpness due to scatter"], correctIndex: 2, explanation: "Automatic tube current modulation reduces mA in less attenuating areas → key to pediatric dose reduction.", referenceLink: "Image Gently Campaign" },
-  { text: "In digital radiography, doubling SID from 100 cm to 200 cm affects exposure at the detector by:", options: ["4× increase", "4× decrease", "No change", "2× increase"], correctIndex: 1, explanation: "Inverse square law → doubling distance reduces intensity to ¼.", referenceLink: "RSNA Physics Tutorial" },
-  { text: "An obese patient requires higher kVp for abdominal imaging. Why?", options: ["To increase photoelectric effect", "To increase penetration and reduce dose from repeat imaging", "To reduce scatter production", "To improve detector MTF"], correctIndex: 1, explanation: "Higher kVp penetrates thick anatomy → avoids repeat exposures → reduces total dose.", referenceLink: "ACR Radiography Technique Guidelines" },
-  { text: "A technologist switches from FFD 120 cm to 80 cm for C-spine radiography. What happens?", options: ["Distortion decreases", "Magnification increases", "Sharpness increases", "Dose decreases"], correctIndex: 1, explanation: "Shorter SID increases magnification and geometric unsharpness.", referenceLink: "Bushberg – Imaging Geometry Concepts" },
-  { text: "In a DR system, increasing bit depth from 12-bit to 14-bit improves:", options: ["Spatial resolution", "Contrast resolution", "Temporal resolution", "Scatter absorption"], correctIndex: 1, explanation: "Bit depth determines the number of gray shades → affects contrast discrimination.", referenceLink: "ICRU Digital Imaging Standards" },
-  { text: "In CT, beam hardening occurs primarily because:", options: ["High-energy photons are absorbed more", "Low-energy photons are preferentially absorbed", "Scatter increases at high tube currents", "Tube cooling affects beam quality"], correctIndex: 1, explanation: "Lower-energy photons are removed, leaving a 'harder' beam → causes cupping artifact.", referenceLink: "AAPM CT Artifacts Manual" },
-  { text: "A mobile radiography unit uses 80 kVp and 5 mAs; the technologist increases mAs to 20. What happens to patient dose?", options: ["decreases by 4×", "increases by 4×", "No change", "Slight increase (logarithmic)"], correctIndex: 1, explanation: "mAs directly proportional to dose.", referenceLink: "Radiography Exposure Physics Texts" },
-  { text: "An IVP exam is performed using 70 kVp. The radiologist requests improved renal contrast. Best physics modification?", options: ["Lower kVp to 60", "Increase SID", "Add aluminum filtration", "Increase mAs only"], correctIndex: 0, explanation: "Lower kVp enhances photoelectric effect → better iodine contrast.", referenceLink: "Radiopaedia – Contrast & kVp Relationship" },
-  { text: "A technologist performs lateral lumbar spine with a large field size. What happens to scatter?", options: ["Decreases", "Increases significantly", "Stays the same", "Reduced contrast"], correctIndex: 1, explanation: "Larger field size → more tissue irradiated → more scatter → reduced contrast.", referenceLink: "ACR Radiographic Contrast Factors" },
-  { text: "What is the main reason grids increase patient dose?", options: ["They reduce noise", "They absorb primary photons, requiring higher mAs", "They reduce SID requirements", "They convert x-rays to electrons"], correctIndex: 1, explanation: "Grid absorption → higher mAs needed → higher dose.", referenceLink: "Bushberg – Anti-scatter Grids" },
-  { text: "A CT scanner adopts bow-tie filtration. Why?", options: ["To reduce detector afterglow", "To equalize photon flux across patient thickness", "To increase scan time", "To enhance scatter"], correctIndex: 1, explanation: "Bow-tie filters harden beam periphery → reduce skin dose → improve uniformity.", referenceLink: "Siemens CT Physics Guide" },
-  { text: "What is the effect of increasing filtration in an x-ray tube?", options: ["Increases low-energy photons at patient skin", "Hardens beam and reduces patient dose", "Reduces HVL", "Increases contrast"], correctIndex: 1, explanation: "Removes low-energy photons → reduces entrance dose.", referenceLink: "ICRP Beam Quality Guidelines" },
-  { text: "A radiographer notes an x-ray tube with reduced anode rotation speed. Main image effect?", options: ["Reduced heat capacity", "Increased spatial resolution", "Increased focal spot blooming", "Heat spots on detector"], correctIndex: 0, explanation: "Slower rotation → heat concentrated → reduced load capacity.", referenceLink: "X-ray Tube Design Principles – RSNA" },
-  { text: "The heel effect is most pronounced when:", options: ["Large SID, large field size", "Short SID, small field size", "Short SID, large field size", "Long SID, small field size"], correctIndex: 2, explanation: "Short SID + large field = more heel effect variation.", referenceLink: "Radiopaedia – Heel Effect Tutorial" },
-  { text: "In fluoroscopy, using magnification mode results in:", options: ["Lower patient dose", "Higher patient dose", "No change", "Dose reduction only at edges"], correctIndex: 1, explanation: "Magnification reduces input area → machine boosts mA → increases dose.", referenceLink: "FDA Fluoroscopy Safety Guide" },
-  { text: "A DR detector with low MTF at high spatial frequencies affects:", options: ["Fine detail visibility", "Noise", "Quantum mottle only", "Dynamic range"], correctIndex: 0, explanation: "MTF defines spatial resolution → low MTF means loss of fine detail.", referenceLink: "ICRU Detector Performance Standards" },
-  { text: "Increasing HVL from 3 mm Al to 5 mm Al indicates:", options: ["Softer beam", "Harder beam", "Lower photon energy", "Lower penetrating power"], correctIndex: 1, explanation: "Higher HVL → beam requires more material to attenuate → higher energy.", referenceLink: "IAEA Radiation Physics Fundamentals" },
-  { text: "During chest CT, automatic kVp selection chooses 100 kVp instead of 120. This improves:", options: ["Spatial resolution", "Iodine contrast", "Beam hardening", "Motion blur"], correctIndex: 1, explanation: "Lower kVp increases photoelectric interaction with iodine → stronger vessel contrast.", referenceLink: "ACR CT Protocol Optimization" },
-  { text: "A radiographer increases collimation. What happens to dose and contrast?", options: ["Dose ↑, contrast ↑", "Dose ↓, contrast ↑", "Dose ↑, contrast ↓", "Dose unchanged"], correctIndex: 1, explanation: "Smaller field → less scatter → lower dose and better contrast.", referenceLink: "Bushberg – Collimation & Scatter" },
-  { text: "A generator switches from single-phase to high-frequency. Result?", options: ["More ripple → less penetration", "Lower ripple → more effective kVp → more dose efficiency", "Less penetration", "No change"], correctIndex: 1, explanation: "HF generators have near-constant voltage → more efficient x-ray production.", referenceLink: "RSNA Generator Physics Guide" },
-  { text: "Why does CT use fan-beam geometry instead of broad-beam like radiography?", options: ["Reduces scatter and improves signal-to-noise", "Increases scatter", "Reduces spatial resolution", "For cost-saving reasons"], correctIndex: 0, explanation: "Fan beam limits scatter → improves image quality and dose efficiency.", referenceLink: "AAPM CT Physics Handbook" },
-  { text: "A technologist increases mAs from 50 to 200 but keeps kVp constant. What happens to noise?", options: ["Noise decreases", "Noise increases", "No change", "Noise unpredictable"], correctIndex: 0, explanation: "Higher mAs → more photons → better SNR → lower noise.", referenceLink: "Radiography Image Quality Principles" },
-  { text: "The primary cause of quantum mottle is:", options: ["Too much filtration", "Too few photons reaching detector", "Excessive kVp", "Scatter reduction"], correctIndex: 1, explanation: "Low photon flux causes statistical noise (quantum mottle).", referenceLink: "Bushberg – Noise in Imaging" },
-  { text: "A technologist adjusts tube current from 300 mA to 150 mA and doubles exposure time. Effect?", options: ["Dose increases", "Dose decreases", "Dose unchanged", "HVL changes"], correctIndex: 2, explanation: "mAs determines dose; 300×1 = 300; 150×2 = 300 → same mAs = same dose.", referenceLink: "Radiography Exposure Principles" },
-  { text: "Why do CT scanners rotate the anode disk at high speed?", options: ["Spread heat over larger area", "Reduce heel effect", "Increase beam divergence", "Reduce tungsten vaporization"], correctIndex: 0, explanation: "Rotating anode spreads heat → increases allowable tube current.", referenceLink: "Siemens CT Tube Handbook" },
-  { text: "A technologist observes focal spot blooming at high mA. Cause?", options: ["Tungsten evaporation", "Space charge effect at filament", "Overheated detector", "Excess filtration"], correctIndex: 1, explanation: "High mA → larger electron cloud → focal spot expands (blooming).", referenceLink: "RSNA X-ray Tube Physics" }
-];
-
 export const MASTER_MRI: ChallengeQuestion[] = [
   { text: "A brain MRI for seizure protocol requires better visualization of hippocampal sclerosis. Which adjustment gives the biggest improvement?", options: ["Increase slice thickness", "Switch to a 32-channel head coil", "Decrease matrix size", "Reduce TE"], correctIndex: 1, explanation: "A 32-channel coil increases SNR, enabling high-resolution coronal T2 for hippocampal imaging.", referenceLink: "ISMRM – Coil Technology Advances" },
   { text: "A spine MRI shows wrap-around artifact in the phase direction. Which correction is most effective?", options: ["Increase bandwidth", "Swap phase and frequency direction", "Increase TR", "Reduce flip angle"], correctIndex: 1, explanation: "Aliasing occurs in the phase direction; swapping phase/frequency moves aliasing away from the spine.", referenceLink: "Radiopaedia – Aliasing Artifact" },
@@ -197,3 +164,428 @@ export const MASTER_USS: ChallengeQuestion[] = [
   { text: "Post-trauma lower limb Doppler shows continuous high-velocity venous flow. Likely cause?", options: ["Normal vein", "Arteriovenous fistula", "DVT", "Venous thrombophlebitis"], correctIndex: 1, explanation: "Continuous high-velocity venous flow → AVF.", referenceLink: "Radiopaedia – Arteriovenous Fistula" },
   { text: "2-year-old presents with recurrent UTIs. US shows moderate hydronephrosis on the left with normal right kidney. Doppler shows normal RI. Most likely etiology?", options: ["Obstructive uropathy (UPJ obstruction)", "Vesicoureteral reflux", "Intrinsic renal disease", "Normal variant"], correctIndex: 0, explanation: "Unilateral hydronephrosis in a child with normal RI → likely obstructive lesion at ureteropelvic junction.", referenceLink: "Radiopaedia – Pediatric Hydronephrosis" }
 ];
+
+export const MASTER_SPECIAL_PROCEDURES: ChallengeQuestion[] = [
+
+  /* ---------------------------- 1 ---------------------------- */
+  {
+    text: "During a hysterosalpingogram (HSG), contrast fails to enter the left fallopian tube. The patient reports a history of PID. What is the most likely explanation?",
+    options: [
+      "Normal anatomical variant",
+      "Proximal tubal obstruction secondary to inflammatory scarring",
+      "Uterine perforation",
+      "Air bubbles trapped in the catheter"
+    ],
+    correctIndex: 1,
+    explanation: "PID often causes proximal tubal blockage preventing contrast flow during HSG.",
+    referenceLink: "https://radiopaedia.org"
+  },
+  
+  /* ---------------------------- 2 ---------------------------- */
+  {
+    text: "During an IVU, the nephrogram phase shows persistently dense renal parenchyma with poor drainage into the calyces. What condition is most suspected?",
+    options: [
+      "Renal papillary necrosis",
+      "Acute renal obstruction (e.g., ureteric stone)",
+      "Chronic renal failure",
+      "Simple renal cyst"
+    ],
+    correctIndex: 1,
+    explanation: "An obstructed kidney often retains contrast, producing a prolonged nephrogram.",
+    referenceLink: "https://www.ncbi.nlm.nih.gov/pmc"
+  },
+  
+  /* ---------------------------- 3 ---------------------------- */
+  {
+    text: "During a Myelogram, the patient begins to complain of severe headache and nausea after contrast injection. What is the best immediate action?",
+    options: [
+      "Reduce table angle and keep head elevated to prevent contrast migration into the cranium",
+      "Place patient Trendelenburg",
+      "Administer oral barium",
+      "Continue procedure urgently"
+    ],
+    correctIndex: 0,
+    explanation: "Keeping the head elevated prevents contrast ascending intracranially and worsening symptoms.",
+    referenceLink: "https://radiopaedia.org"
+  },
+  
+  /* ---------------------------- 4 ---------------------------- */
+  {
+    text: "During an ERCP, fluoroscopy reveals no contrast passage beyond an abrupt cutoff in the distal CBD. The patient is jaundiced. What is most likely?",
+    options: [
+      "Choledocholithiasis",
+      "Pancreatic pseudocyst",
+      "Cholecystitis only",
+      "Normal variant"
+    ],
+    correctIndex: 0,
+    explanation: "ERCP showing abrupt CBD termination commonly indicates obstructing stones.",
+    referenceLink: "https://www.ncbi.nlm.nih.gov/pmc"
+  },
+  
+  /* ---------------------------- 5 ---------------------------- */
+  {
+    text: "While performing a sialogram, contrast outlines a dilated duct followed by multiple small strictures resembling a 'string of sausages'. What is the likely cause?",
+    options: [
+      "Acute bacterial infection",
+      "Sjogren’s syndrome",
+      "Salivary duct stone",
+      "Traumatic duct injury"
+    ],
+    correctIndex: 1,
+    explanation: "Sjogren’s syndrome produces alternating ductal dilations and strictures.",
+    referenceLink: "https://radiopaedia.org"
+  },
+  
+  /* ---------------------------- 6 ---------------------------- */
+  {
+    text: "During a barium swallow, the radiologist identifies a posterior indentation at the upper esophagus causing swallowing difficulty. Which condition fits best?",
+    options: [
+      "Zenker diverticulum",
+      "Esophageal web",
+      "Aortic arch impression",
+      "Achalasia"
+    ],
+    correctIndex: 2,
+    explanation: "The aortic arch produces a characteristic posterior impression visible on barium swallow.",
+    referenceLink: "https://www.ncbi.nlm.nih.gov/pmc"
+  },
+  
+  /* ---------------------------- 7 ---------------------------- */
+  {
+    text: "In a barium enema study, a patient on metformin shows multiple ‘apple-core’ lesions in the descending colon. Which next step is MOST appropriate?",
+    options: [
+      "Stop immediately and call resuscitation",
+      "Recommend colonoscopy for biopsy confirmation",
+      "Convert to double-contrast immediately",
+      "Administer IV contrast"
+    ],
+    correctIndex: 1,
+    explanation: "Apple-core lesions on barium enema suggest malignancy; biopsy confirmation via colonoscopy is required.",
+    referenceLink: "https://radiopaedia.org"
+  },
+  
+  /* ---------------------------- 8 ---------------------------- */
+  {
+    text: "A patient undergoing MCU demonstrates retrograde flow of contrast from the bladder into the ureters. The child has recurrent UTIs. What condition is confirmed?",
+    options: [
+      "Neurogenic bladder",
+      "Vesicoureteric reflux",
+      "Renal artery stenosis",
+      "Hydronephrosis"
+    ],
+    correctIndex: 1,
+    explanation: "MCU diagnoses VUR via retrograde filling of the ureters during voiding.",
+    referenceLink: "https://www.ncbi.nlm.nih.gov/pmc"
+  },
+  
+  /* ---------------------------- 9 ---------------------------- */
+  {
+    text: "A nephrostogram shows contrast extravasation around the renal pelvis after recent stone surgery. What does this likely indicate?",
+    options: [
+      "Normal postoperative finding",
+      "UPJ disruption or collecting system leak",
+      "Renal cyst rupture",
+      "Catheter blockage"
+    ],
+    correctIndex: 1,
+    explanation: "Contrast outside the renal pelvis indicates a leak from the collecting system.",
+    referenceLink: "https://radiopaedia.org"
+  },
+  
+  /* ---------------------------- 10 ---------------------------- */
+  {
+    text: "During arthrography of the shoulder, contrast accumulates in the subacromial bursa, indicating:",
+    options: [
+      "Normal communication",
+      "Full-thickness rotator cuff tear",
+      "Labral tear",
+      "Glenoid fracture"
+    ],
+    correctIndex: 1,
+    explanation: "Contrast entering the subacromial bursa signifies a full-thickness rotator cuff tear.",
+    referenceLink: "SpringerLink"
+  },
+  
+  /* ---------------------------- 11 ---------------------------- */
+  {
+    text: "A patient during fistulography shows contrast outlining multiple branching tracts extending toward the perineum. What is the most likely diagnosis?",
+    options: [
+      "Simple fistula",
+      "Complex fistula-in-ano",
+      "Anal fissure",
+      "Hemorrhoid"
+    ],
+    correctIndex: 1,
+    explanation: "Multiple branching tracts are typical of complex or recurrent fistulas.",
+    referenceLink: "https://www.ncbi.nlm.nih.gov/pmc"
+  },
+  
+  /* ---------------------------- 12 ---------------------------- */
+  {
+    text: "During a small bowel follow-through, there is marked delayed transit with dilated central loops and multiple air-fluid levels. What is most likely?",
+    options: [
+      "Normal peristalsis",
+      "Mechanical small bowel obstruction",
+      "Gastritis",
+      "Hiatal hernia"
+    ],
+    correctIndex: 1,
+    explanation: "Delayed transit and dilated loops are classic for SBO.",
+    referenceLink: "https://radiopaedia.org"
+  },
+  
+  /* ---------------------------- 13 ---------------------------- */
+  {
+    text: "While doing a double-contrast barium enema, the mucosa shows granular nodularity consistent with ‘lead-pipe’ colon. What condition is suspected?",
+    options: [
+      "Crohn disease",
+      "Ulcerative colitis",
+      "Diverticulitis",
+      "Volvulus"
+    ],
+    correctIndex: 1,
+    explanation: "Loss of haustra producing ‘lead-pipe’ colon indicates chronic ulcerative colitis.",
+    referenceLink: "https://radiopaedia.org"
+  },
+  
+  /* ---------------------------- 14 ---------------------------- */
+  {
+    text: "During ERCP, contrast refluxes into the pancreatic duct, and the patient develops pain. What complication is most feared?",
+    options: [
+      "Pancreatitis",
+      "Gallbladder perforation",
+      "Pneumonia",
+      "Splenic infarction"
+    ],
+    correctIndex: 0,
+    explanation: "Pancreatitis is a known complication of ERCP due to duct irritation.",
+    referenceLink: "SpringerLink"
+  },
+  
+  /* ---------------------------- 15 ---------------------------- */
+  {
+    text: "In a myelogram for suspected spinal stenosis, contrast pooling shows an ‘hourglass’ narrowing pattern. What is the likely cause?",
+    options: [
+      "Normal variant",
+      "Central canal stenosis due to disc bulge or ligament hypertrophy",
+      "Vertebral fracture",
+      "Syringomyelia"
+    ],
+    correctIndex: 1,
+    explanation: "Hourglass narrowing of contrast indicates central stenosis compressing the thecal sac.",
+    referenceLink: "https://www.ncbi.nlm.nih.gov/pmc"
+  },
+  
+  /* ---------------------------- 16 ---------------------------- */
+  {
+    text: "During HSG, contrast spills freely into the peritoneal cavity from both tubes. The patient presents with infertility. What does this result suggest?",
+    options: [
+      "Tubal blockage",
+      "Normal tubal patency",
+      "Pelvic abscess",
+      "Uterine septum"
+    ],
+    correctIndex: 1,
+    explanation: "Free peritoneal spill on HSG indicates patent fallopian tubes.",
+    referenceLink: "https://radiopaedia.org"
+  },
+  
+  /* ---------------------------- 17 ---------------------------- */
+  {
+    text: "A child undergoing MCU shows a trabeculated bladder with a dilated posterior urethra. What condition is suggested?",
+    options: [
+      "Posterior urethral valves",
+      "VUR only",
+      "Normal bladder maturation",
+      "Cystitis"
+    ],
+    correctIndex: 0,
+    explanation: "PUV causes dilation of the posterior urethra seen during MCU.",
+    referenceLink: "https://www.ncbi.nlm.nih.gov/pmc"
+  },
+  
+  /* ---------------------------- 18 ---------------------------- */
+  {
+    text: "During a small bowel enteroclysis, the jejunum shows thickened folds and ‘stacked coin’ appearance. What is likely?",
+    options: [
+      "Normal variant",
+      "Celiac disease",
+      "Gallstone ileus",
+      "Peptic ulcer disease"
+    ],
+    correctIndex: 1,
+    explanation: "Stacked coin sign suggests mucosal thickening typical in celiac disease.",
+    referenceLink: "SpringerLink"
+  },
+  
+  /* ---------------------------- 19 ---------------------------- */
+  {
+    text: "During a retrograde urethrogram (RUG), contrast fails to fill the bulbar urethra and leaks into surrounding tissues. What is most likely?",
+    options: [
+      "Urethral dilation",
+      "Urethral rupture",
+      "Neurogenic bladder",
+      "BPH"
+    ],
+    correctIndex: 1,
+    explanation: "Contrast extravasation indicates urethral injury or rupture.",
+    referenceLink: "https://radiopaedia.org"
+  },
+  
+  /* ---------------------------- 20 ---------------------------- */
+  {
+    text: "A patient undergoing sialography shows punctate sialectasis in multiple small ducts producing a ‘snowstorm’ pattern. What condition fits best?",
+    options: [
+      "Acute sialadenitis",
+      "Chronic parotitis",
+      "Mucocele",
+      "Stone obstruction"
+    ],
+    correctIndex: 1,
+    explanation: "Chronic parotitis produces punctate, diffused ductal dilations.",
+    referenceLink: "https://www.ncbi.nlm.nih.gov/pmc"
+  },
+  
+  /* ---------------------------- 21 ---------------------------- */
+  {
+    text: "During a CT-guided myelogram, contrast rises unevenly with blockage at T12-L1. What pathology best explains this?",
+    options: [
+      "Disc herniation compressing the thecal sac",
+      "Renal mass",
+      "Abdominal aortic aneurysm",
+      "Normal flow pattern"
+    ],
+    correctIndex: 0,
+    explanation: "Disc protrusions may obstruct CSF contrast spread.",
+    referenceLink: "Radiopaedia"
+  },
+  
+  /* ---------------------------- 22 ---------------------------- */
+  {
+    text: "In an IVU, the bladder does not opacify normally despite good renal concentration. What condition is suspected?",
+    options: [
+      "Bilateral renal failure",
+      "Ureteric obstruction",
+      "Neurogenic bladder with impaired emptying",
+      "Normal finding"
+    ],
+    correctIndex: 2,
+    explanation: "Neurogenic bladder may fail to fill or empty normally.",
+    referenceLink: "https://www.ncbi.nlm.nih.gov/pmc"
+  },
+  
+  /* ---------------------------- 23 ---------------------------- */
+  {
+    text: "During a barium swallow for dysphagia, contrast demonstrates a posterior outpouching at the pharyngoesophageal junction. What is it?",
+    options: [
+      "Achalasia",
+      "Zenker diverticulum",
+      "Peptic stricture",
+      "Normal valve"
+    ],
+    correctIndex: 1,
+    explanation: "Zenker diverticulum occurs posteriorly at Killian’s dehiscence.",
+    referenceLink: "Radiopaedia"
+  },
+  
+  /* ---------------------------- 24 ---------------------------- */
+  {
+    text: "A patient undergoing ERCP develops sudden abdominal pain and free air under the diaphragm on X-ray. What complication is likely?",
+    options: [
+      "ERCP-induced pancreatitis",
+      "Duodenal perforation",
+      "Pneumonia",
+      "Pulmonary embolism"
+    ],
+    correctIndex: 1,
+    explanation: "Free air suggests perforation, a known ERCP risk.",
+    referenceLink: "SpringerLink"
+  },
+  
+  /* ---------------------------- 25 ---------------------------- */
+  {
+    text: "During arthrography, the radiologist notices leakage of contrast outside the joint capsule. What does this strongly indicate?",
+    options: [
+      "Partial ligament tear",
+      "Capsular rupture",
+      "Normal variant",
+      "Bone island"
+    ],
+    correctIndex: 1,
+    explanation: "Extravasation outside the capsule is a hallmark of capsular disruption.",
+    referenceLink: "https://radiopaedia.org"
+  },
+  
+  /* ---------------------------- 26 ---------------------------- */
+  {
+    text: "While performing a barium meal, the stomach shows a persistent ‘niche’ that retains contrast. What suspicious pathology should be reported?",
+    options: [
+      "Gastric ulcer",
+      "Hiatal hernia",
+      "Normal rugae",
+      "Gastritis"
+    ],
+    correctIndex: 0,
+    explanation: "A contrast-filled niche suggests a gastric ulcer crater.",
+    referenceLink: "https://www.ncbi.nlm.nih.gov/pmc"
+  },
+  
+  /* ---------------------------- 27 ---------------------------- */
+  {
+    text: "In a barium enema, a twisted narrowing with ‘bird-beak’ appearance is seen in the sigmoid. What is suspected?",
+    options: [
+      "Polyps",
+      "Sigmoid volvulus",
+      "Bowel ischemia",
+      "Ulcerative colitis"
+    ],
+    correctIndex: 1,
+    explanation: "Sigmoid volvulus produces a tapered ‘bird-beak’ appearance.",
+    referenceLink: "Radiopaedia"
+  },
+  
+  /* ---------------------------- 28 ---------------------------- */
+  {
+    text: "During a nephrostogram, contrast outlines the calyces but abruptly stops at the mid ureter. What does this suggest?",
+    options: [
+      "Ureteral obstruction (stone or stricture)",
+      "VUR",
+      "Normal variant",
+      "Renal mass"
+    ],
+    correctIndex: 0,
+    explanation: "Abrupt stopping of contrast indicates obstruction.",
+    referenceLink: "https://www.ncbi.nlm.nih.gov/pmc"
+  },
+  
+  /* ---------------------------- 29 ---------------------------- */
+  {
+    text: "Retrograde ureteropyelography shows irregular filling defects in the ureter, described as ‘corkscrew’ appearance. What is likely?",
+    options: [
+      "Ureteral tumor",
+      "Inflammatory ureteritis",
+      "Ureterocele",
+      "Pyelonephritis only"
+    ],
+    correctIndex: 1,
+    explanation: "Inflammation may cause irregular mucosal outlines and filling defects.",
+    referenceLink: "SpringerLink"
+  },
+  
+  /* ---------------------------- 30 ---------------------------- */
+  {
+    text: "During a Myelogram, contrast fails to pass superiorly beyond C5. The patient has progressive limb weakness. What does this suggest?",
+    options: [
+      "Spinal stenosis or extradural mass at C5 level",
+      "Normal CSF flow",
+      "CSF leak",
+      "Scoliosis"
+    ],
+    correctIndex: 0,
+    explanation: "Abrupt contrast obstruction suggests compressive pathology at that level.",
+    referenceLink: "https://radiopaedia.org"
+  }
+  
+  ];
+  

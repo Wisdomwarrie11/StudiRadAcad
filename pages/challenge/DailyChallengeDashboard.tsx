@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, CheckCircle, Play, Trophy, Star, Loader2, AlertCircle, Coins, Plus, Unlock, CalendarClock, ChevronDown, ChevronUp, X, Clock } from 'lucide-react';
+import { Lock, CheckCircle, Play, Trophy, Star, Loader2, AlertCircle, Coins, Plus, Unlock, CalendarClock, ChevronDown, ChevronUp, X, Clock, Share2 } from 'lucide-react';
 import { UserChallengeProfile, ChallengeTopic, ChallengeLevel, AlertConfig } from '../../types';
-import { getLeaderboard, canPlayDay, getUserProfile, unlockDay, switchLevel } from '../../services/challengeService';
+import { getLeaderboard, canPlayDay, getUserProfile, unlockDay, switchLevel, rewardShare } from '../../services/challengeService';
 import CoinPurchaseModal from './CoinPurchaseModal';
 import CustomAlert from '../../components/ui/CustomAlert';
 
@@ -19,7 +19,7 @@ const UnlockTimer = ({ targetDate, onComplete }: { targetDate: Date, onComplete:
   const [timeLeft, setTimeLeft] = useState<string>("Loading...");
 
   useEffect(() => {
-    const tick = () => {
+    const calculateTime = () => {
       const now = new Date().getTime();
       const distance = targetDate.getTime() - now;
 
@@ -35,9 +35,21 @@ const UnlockTimer = ({ targetDate, onComplete }: { targetDate: Date, onComplete:
       setTimeLeft(`${h}h ${m}m ${s}s`);
     };
 
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
+    calculateTime();
+    const interval = setInterval(calculateTime, 1000);
+
+    const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+            calculateTime();
+        }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+        clearInterval(interval);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [targetDate, onComplete]);
 
   return (
@@ -128,6 +140,40 @@ const DailyChallengeDashboard: React.FC = () => {
       message: 'Your Grey Coins have been added to your wallet successfully.',
       type: 'success'
     });
+  };
+
+  const handleShare = async () => {
+    if (!profile) return;
+
+    const shareUrl = "https://studirad.vercel.app/#/activities";
+    const shareMessage = `Try out this quiz challenge on StudiRad. It is really educating. Use my referral code ${profile.referralCode || 'N/A'}`;
+    const fullShareText = `${shareMessage} ${shareUrl}`;
+
+    const shareData = {
+      title: 'StudiRad Daily Challenge',
+      text: shareMessage,
+      url: shareUrl
+    };
+
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.debug('Share cancelled');
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(fullShareText);
+        showAlert({
+            title: 'Copied!',
+            message: 'Referral link and code copied to clipboard.',
+            type: 'success',
+            singleButton: true
+        });
+      } catch (e) {
+        showAlert({ title: 'Error', message: 'Could not share automatically.', type: 'error' });
+      }
+    }
   };
 
   const handleUnlockDay = async (dayNum: number) => {
@@ -250,17 +296,18 @@ const DailyChallengeDashboard: React.FC = () => {
 
   const days = [
     { num: 1, topic: ChallengeTopic.TECHNIQUE },
-    { num: 2, topic: ChallengeTopic.PHYSICS },
+    { num: 2, topic: ChallengeTopic.SPECIAL_PROCEDURES },
     { num: 3, topic: ChallengeTopic.MRI },
     { num: 4, topic: ChallengeTopic.CT },
     { num: 5, topic: ChallengeTopic.USS },
     { num: 6, topic: ChallengeTopic.SAFETY },
   ];
 
-  // Determine if the *current* day is locked. If it is, we shouldn't show a 'start-based' timer for the *next* day,
-  // because the user effectively hasn't started the current day (they are waiting for it to unlock).
   const currentDayStatus = canPlayDay(profile.currentDay, profile);
   const isCurrentDayLocked = !currentDayStatus.allowed && currentDayStatus.requiresUnlock;
+
+  // Format coins to handle floats gracefully
+  const displayCoins = Number.isInteger(profile.coins) ? profile.coins : profile.coins.toFixed(1);
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 font-sans">
@@ -281,20 +328,33 @@ const DailyChallengeDashboard: React.FC = () => {
                 </div>
                 
                 {/* Wallet UI */}
-                <div className="flex items-center bg-slate-50 px-4 py-3 rounded-xl border border-slate-200 shadow-inner">
-                  <div className="mr-4">
-                    <p className="text-xs text-slate-500 font-bold uppercase">Coins</p>
-                    <div className="flex items-center text-slate-900 font-black text-xl">
-                      <Coins className="w-5 h-5 text-amber-500 mr-2" />
-                      {profile.coins || 0}
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center bg-slate-50 px-4 py-3 rounded-xl border border-slate-200 shadow-inner">
+                    <div className="mr-4">
+                      <p className="text-xs text-slate-500 font-bold uppercase">Coins</p>
+                      <div className="flex items-center text-slate-900 font-black text-xl">
+                        <Coins className="w-5 h-5 text-amber-500 mr-2" />
+                        {displayCoins}
+                      </div>
                     </div>
+                    <button 
+                      onClick={() => setShowBuyModal(true)}
+                      className="bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-bold flex items-center hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Buy
+                    </button>
                   </div>
+
                   <button 
-                    onClick={() => setShowBuyModal(true)}
-                    className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
+                    onClick={handleShare}
+                    className="flex-1 md:flex-none bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-3 rounded-xl font-bold flex items-center justify-center hover:bg-emerald-100 transition-colors shadow-sm"
                   >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Buy Coins
+                    <Share2 className="w-5 h-5 mr-2" />
+                    <div>
+                        <span className="block text-xs uppercase opacity-75 leading-none mb-1">Refer a Friend</span>
+                        <span className="block leading-none">+0.5 Coin</span>
+                    </div>
                   </button>
                 </div>
               </div>
@@ -411,7 +471,7 @@ const DailyChallengeDashboard: React.FC = () => {
 
                       <h3 className="text-xl font-bold text-slate-900 mb-2">{day.topic}</h3>
                       <p className="text-sm text-slate-500 mb-6">
-                        5 Questions • {profile.level === ChallengeLevel.BASIC ? '30s' : '40s'} per question
+                        30 Questions • {profile.level === ChallengeLevel.BASIC ? '30s' : '40s'} per question
                       </p>
                     </div>
 

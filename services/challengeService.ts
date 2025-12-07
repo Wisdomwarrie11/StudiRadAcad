@@ -2,9 +2,9 @@ import { db } from '../firebase';
 import { ChallengeLevel, ChallengePurpose, ChallengeQuestion, ChallengeTopic, UserChallengeProfile } from '../types';
 
 // Import Question Data
-import { BASIC_TECHNIQUE, BASIC_SAFETY, BASIC_PHYSICS, BASIC_MRI, BASIC_CT, BASIC_USS } from '../data/basicQuestions';
-import { ADVANCED_TECHNIQUE, ADVANCED_SAFETY, ADVANCED_PHYSICS, ADVANCED_MRI, ADVANCED_CT, ADVANCED_USS } from '../data/advancedqQuestions';
-import { MASTER_TECHNIQUE, MASTER_SAFETY, MASTER_PHYSICS, MASTER_MRI, MASTER_CT, MASTER_USS } from '../data/masterQuestions';
+import { BASIC_TECHNIQUE, BASIC_SAFETY, BASIC_MRI, BASIC_CT, BASIC_USS, BASIC_SPECIAL_PROCEDURES } from '../data/basicQuestions';
+import { ADVANCED_TECHNIQUE, ADVANCED_SAFETY, ADVANCED_SPECIAL_PROCEDURES, ADVANCED_MRI, ADVANCED_CT, ADVANCED_USS } from '../data/advancedqQuestions';
+import { MASTER_TECHNIQUE, MASTER_SAFETY, MASTER_SPECIAL_PROCEDURES, MASTER_MRI, MASTER_CT, MASTER_USS } from '../data/masterQuestions';
 
 // Collection Name in Firestore
 const COLLECTION_NAME = 'daily_challenge_users';
@@ -12,6 +12,11 @@ const COLLECTION_NAME = 'daily_challenge_users';
 // Helper to sanitize email for use as Document ID
 const sanitizeId = (email: string) => {
   return email.toLowerCase().trim().replace(/[^a-z0-9@._-]/g, '_');
+};
+
+// Generate a random 6-character referral code
+const generateReferralCode = () => {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
 };
 
 // --- Firestore Interactions ---
@@ -38,7 +43,8 @@ export const registerUserForChallenge = async (
   email: string, 
   name: string, 
   level: ChallengeLevel, 
-  purpose: ChallengePurpose
+  purpose: ChallengePurpose,
+  referrerCode?: string
 ): Promise<UserChallengeProfile> => {
   try {
     const docId = sanitizeId(email); 
@@ -52,6 +58,35 @@ export const registerUserForChallenge = async (
       return doc.data() as UserChallengeProfile;
     } else {
       console.log("User not found, creating new profile.");
+      
+      // Handle Referral Logic
+      if (referrerCode) {
+        try {
+          // Find the user who owns this referral code
+          const referrerQuery = await db.collection(COLLECTION_NAME)
+            .where('referralCode', '==', referrerCode)
+            .limit(1)
+            .get();
+
+          if (!referrerQuery.empty) {
+            const referrerDoc = referrerQuery.docs[0];
+            const referrerData = referrerDoc.data() as UserChallengeProfile;
+            
+            // Avoid self-referral if email matches (though ID check prevents this usually)
+            if (referrerData.email !== email) {
+                // Award 0.5 coins to referrer
+                await referrerDoc.ref.update({
+                    coins: (referrerData.coins || 0) + 0.5
+                });
+                console.log(`Referral reward applied to ${referrerData.email}`);
+            }
+          }
+        } catch (refError) {
+          console.error("Error processing referral code:", refError);
+          // Continue with registration even if referral fails
+        }
+      }
+
       // Create new profile
       const newProfile: UserChallengeProfile = {
         uid: docId,
@@ -61,6 +96,7 @@ export const registerUserForChallenge = async (
         purpose,
         currentDay: 1,
         lastPlayedDate: null,
+        referralCode: generateReferralCode(), // Generate unique code for new user
         scores: {},
         totalScore: 0,
         coins: 0,
@@ -85,7 +121,14 @@ export const getUserProfile = async (email: string): Promise<UserChallengeProfil
     const docId = sanitizeId(email);
     const doc = await db.collection(COLLECTION_NAME).doc(docId).get();
     if (doc.exists) {
-      return doc.data() as UserChallengeProfile;
+      // Ensure existing users get a referral code if they don't have one
+      const data = doc.data() as UserChallengeProfile;
+      if (!data.referralCode) {
+         const newCode = generateReferralCode();
+         await doc.ref.update({ referralCode: newCode });
+         data.referralCode = newCode;
+      }
+      return data;
     }
     return null;
   } catch (error) {
@@ -243,6 +286,49 @@ export const addCoins = async (email: string, amount: number): Promise<void> => 
 };
 
 /**
+ * Reward user for sharing. 
+ * Adds 0.5 coins, limited to once per day.
+ */
+export const rewardShare = async (email: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    const docId = sanitizeId(email);
+    const userRef = db.collection(COLLECTION_NAME).doc(docId);
+    
+    const doc = await userRef.get();
+    if (!doc.exists) throw new Error("User not found");
+    
+    const userData = doc.data() as UserChallengeProfile;
+    const now = new Date();
+    
+    // Check if shared today
+    if (userData.lastShareDate) {
+      const lastShare = new Date(userData.lastShareDate);
+      const isSameDay = 
+        lastShare.getDate() === now.getDate() &&
+        lastShare.getMonth() === now.getMonth() &&
+        lastShare.getFullYear() === now.getFullYear();
+        
+      if (isSameDay) {
+        return { success: false, message: "You have already earned your share reward for today. Come back tomorrow!" };
+      }
+    }
+    
+    // Add 0.5 coins
+    const currentCoins = userData.coins || 0;
+    
+    await userRef.update({
+      coins: currentCoins + 0.5,
+      lastShareDate: now.toISOString()
+    });
+    
+    return { success: true, message: "0.5 Coins added to your wallet for sharing!" };
+  } catch (error) {
+    console.error("SERVICE ERROR: rewardShare", error);
+    return { success: false, message: "Failed to process reward." };
+  }
+};
+
+/**
  * Unlock a specific day using coins
  */
 export const unlockDay = async (email: string, day: number): Promise<boolean> => {
@@ -301,7 +387,7 @@ export const getLeaderboard = async (): Promise<UserChallengeProfile[]> => {
 export const getQuestionsForDay = (day: number, level: ChallengeLevel): { topic: ChallengeTopic, questions: ChallengeQuestion[] } => {
   const topicMap: Record<number, ChallengeTopic> = {
     1: ChallengeTopic.TECHNIQUE,
-    2: ChallengeTopic.PHYSICS,
+    2: ChallengeTopic.SPECIAL_PROCEDURES,
     3: ChallengeTopic.MRI,
     4: ChallengeTopic.CT,
     5: ChallengeTopic.USS,
@@ -314,7 +400,7 @@ export const getQuestionsForDay = (day: number, level: ChallengeLevel): { topic:
   if (level === ChallengeLevel.BASIC) {
     switch(topic) {
       case ChallengeTopic.TECHNIQUE: rawQuestions = BASIC_TECHNIQUE; break;
-      case ChallengeTopic.PHYSICS: rawQuestions = BASIC_PHYSICS; break;
+      case ChallengeTopic.SPECIAL_PROCEDURES: rawQuestions = BASIC_SPECIAL_PROCEDURES; break;
       case ChallengeTopic.MRI: rawQuestions = BASIC_MRI; break;
       case ChallengeTopic.CT: rawQuestions = BASIC_CT; break;
       case ChallengeTopic.USS: rawQuestions = BASIC_USS; break;
@@ -323,7 +409,7 @@ export const getQuestionsForDay = (day: number, level: ChallengeLevel): { topic:
   } else if (level === ChallengeLevel.ADVANCED) {
     switch(topic) {
       case ChallengeTopic.TECHNIQUE: rawQuestions = ADVANCED_TECHNIQUE; break;
-      case ChallengeTopic.PHYSICS: rawQuestions = ADVANCED_PHYSICS; break;
+      case ChallengeTopic.SPECIAL_PROCEDURES: rawQuestions = ADVANCED_SPECIAL_PROCEDURES; break;
       case ChallengeTopic.MRI: rawQuestions = ADVANCED_MRI; break;
       case ChallengeTopic.CT: rawQuestions = ADVANCED_CT; break;
       case ChallengeTopic.USS: rawQuestions = ADVANCED_USS; break;
@@ -332,7 +418,7 @@ export const getQuestionsForDay = (day: number, level: ChallengeLevel): { topic:
   } else { // MASTER
     switch(topic) {
       case ChallengeTopic.TECHNIQUE: rawQuestions = MASTER_TECHNIQUE; break;
-      case ChallengeTopic.PHYSICS: rawQuestions = MASTER_PHYSICS; break;
+      case ChallengeTopic.SPECIAL_PROCEDURES: rawQuestions = MASTER_SPECIAL_PROCEDURES; break;
       case ChallengeTopic.MRI: rawQuestions = MASTER_MRI; break;
       case ChallengeTopic.CT: rawQuestions = MASTER_CT; break;
       case ChallengeTopic.USS: rawQuestions = MASTER_USS; break;

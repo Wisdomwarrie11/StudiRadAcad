@@ -1,5 +1,5 @@
-
 import { LucideIcon } from 'lucide-react';
+import React from 'react';
 
 export interface Opportunity {
   id: string;
@@ -123,7 +123,7 @@ export enum ChallengePurpose {
 export enum ChallengeTopic {
   TECHNIQUE = 'Radiographic Techniques',
   SAFETY = 'Radiation Safety',
-  PHYSICS = 'Radiation Physics',
+  SPECIAL_PROCEDURES = 'Special Procedures',
   MRI = 'Magnetic Resonance Imaging (MRI)',
   CT = 'Computed Tomography (CT)',
   USS = 'Ultrasound (USS)'
@@ -149,6 +149,8 @@ export interface UserChallengeProfile {
   currentDay: number; // 1 to 6
   lastPlayedDate: string | null; // ISO Date string
   lastChallengeStartedAt?: string | null; // When the current day was started
+  lastShareDate?: string | null; // Track last share reward date
+  referralCode?: string; // Unique code for referrals
   scores: Record<string, number>;
   totalScore: number;
   coins: number;
@@ -161,13 +163,6 @@ export interface QuestionReport {
   userEmail: string;
   reason: string;
   timestamp: string;
-}
-export interface ChallengeQuestion {
-  text: string;
-  options: string[];
-  correctIndex: number;
-  explanation: string;
-  referenceLink?: string;
 }
 
 export interface QuestionCategory {

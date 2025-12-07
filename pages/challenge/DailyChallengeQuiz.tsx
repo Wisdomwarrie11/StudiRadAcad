@@ -78,18 +78,27 @@ const DailyChallengeQuiz: React.FC = () => {
     init();
   }, [dayId, navigate]);
 
+  // Wall-clock based timer logic
   useEffect(() => {
     if (quizFinished || isAnswered || questions.length === 0) return;
 
+    // Calculate target time when effect starts (new question or init)
+    // We use the current timeLeft value to determine the end point relative to now.
+    // NOTE: This assumes timeLeft is reset to timerSeconds before this effect runs for a new question.
+    const targetTime = Date.now() + timeLeft * 1000;
+
     timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          handleTimeOut();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+      const now = Date.now();
+      const secondsRemaining = Math.ceil((targetTime - now) / 1000);
+
+      if (secondsRemaining <= 0) {
+        setTimeLeft(0);
+        handleTimeOut();
+        if (timerRef.current) clearInterval(timerRef.current);
+      } else {
+        setTimeLeft(secondsRemaining);
+      }
+    }, 200); // Check more frequently for responsiveness
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
