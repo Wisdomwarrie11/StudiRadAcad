@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, Flag, ArrowRight, Check, X, ExternalLink, Loader2, LogOut, ChevronLeft } from 'lucide-react';
-import { getQuestionsForDay, updateUserProgress, getUserProfile } from '../../services/challengeService';
-import { ChallengeLevel, ChallengeQuestion, UserChallengeProfile } from '../../types';
-import CustomAlert, { AlertConfig } from '../../components/ui/CustomAlert';
+import { getQuestionsForDay, updateUserProgress, getUserProfile, startChallengeDay } from '../../services/challengeService';
+import { ChallengeLevel, ChallengeQuestion, AlertConfig } from '../../types';
+import CustomAlert from '../../components/ui/CustomAlert';
 
 const DailyChallengeQuiz: React.FC = () => {
   const { dayId } = useParams<{ dayId: string }>();
@@ -23,7 +23,6 @@ const DailyChallengeQuiz: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Alert State
   const [alertConfig, setAlertConfig] = useState<AlertConfig>({
     isOpen: false,
     title: '',
@@ -34,7 +33,6 @@ const DailyChallengeQuiz: React.FC = () => {
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Load Data
   useEffect(() => {
     const init = async () => {
       try {
@@ -52,7 +50,6 @@ const DailyChallengeQuiz: React.FC = () => {
         
         setLevel(profile.level);
         
-        // Timer Logic: Basic = 30s, Advanced/Master = 40s
         const tSeconds = profile.level === ChallengeLevel.BASIC ? 30 : 40;
         setTimerSeconds(tSeconds);
         setTimeLeft(tSeconds);
@@ -61,6 +58,11 @@ const DailyChallengeQuiz: React.FC = () => {
         if (isNaN(dayNum)) {
           navigate('/challenge/dashboard');
           return;
+        }
+
+        // Start the day timer if this is the user's current progression day
+        if (profile.currentDay === dayNum) {
+            startChallengeDay(email, dayNum);
         }
 
         const { topic: loadedTopic, questions: loadedQuestions } = getQuestionsForDay(dayNum, profile.level);
@@ -76,7 +78,6 @@ const DailyChallengeQuiz: React.FC = () => {
     init();
   }, [dayId, navigate]);
 
-  // Timer Logic
   useEffect(() => {
     if (quizFinished || isAnswered || questions.length === 0) return;
 
@@ -93,12 +94,11 @@ const DailyChallengeQuiz: React.FC = () => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQIndex, isAnswered, quizFinished, questions.length]);
 
   const handleTimeOut = () => {
     setIsAnswered(true);
-    setSelectedOption(-1); // -1 indicates timeout
+    setSelectedOption(-1); 
   };
 
   const handleOptionClick = (index: number) => {
@@ -117,7 +117,7 @@ const DailyChallengeQuiz: React.FC = () => {
       setSelectedOption(null);
       setTimeLeft(timerSeconds);
     } else {
-      finishQuiz(true); // Normal finish
+      finishQuiz(true); 
     }
   };
 
@@ -130,7 +130,7 @@ const DailyChallengeQuiz: React.FC = () => {
         singleButton: false,
         confirmText: 'End Session',
         cancelText: 'Continue Quiz',
-        onConfirm: () => finishQuiz(false), // Early Quit
+        onConfirm: () => finishQuiz(false),
         onCancel: () => setAlertConfig(prev => ({...prev, isOpen: false}))
     });
   };
@@ -144,11 +144,12 @@ const DailyChallengeQuiz: React.FC = () => {
       try {
         const dayNum = parseInt(dayId, 10);
         
-        // Fetch current profile to check if we should advance day
         const profile = await getUserProfile(email);
         if (profile) {
-          // Only advance if it was a sequential play AND user finished all questions
-          const shouldAdvance = completed && (profile.currentDay === dayNum);
+          // Advance the day if it was the current progression day, regardless of whether 
+          // the user finished all questions ('completed' param). 
+          // An attempt counts as playing the day, starting the timer for the next day.
+          const shouldAdvance = (profile.currentDay === dayNum);
           await updateUserProgress(email, dayNum, score, shouldAdvance);
         }
       } catch (e) {
@@ -172,22 +173,22 @@ const DailyChallengeQuiz: React.FC = () => {
   if (quizFinished) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl p-12 max-w-lg w-full text-center fade-in">
+        <div className="bg-white rounded-3xl p-12 max-w-lg w-full text-center fade-in shadow-2xl">
           <div className="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Flag className="w-12 h-12 text-amber-500" />
           </div>
           <h2 className="text-3xl font-bold text-slate-900 mb-2">Day {dayId} Complete!</h2>
           <p className="text-slate-500 mb-8">You have completed the challenge for {topic}.</p>
           
-          <div className="text-6xl font-black text-slate-900 mb-2">{score} <span className="text-2xl text-slate-400 font-medium">/ 30</span></div>
+          <div className="text-6xl font-black text-slate-900 mb-2">{score} <span className="text-2xl text-slate-400 font-medium">/ {questions.length}</span></div>
           <p className="text-emerald-600 font-bold mb-8">
-            {score > 25 ? 'Outstanding Performance!' : score > 15 ? 'Good Job!' : 'Keep Practicing!'}
+            {score > 4 ? 'Outstanding Performance!' : score > 2 ? 'Good Job!' : 'Keep Practicing!'}
           </p>
 
           <button 
             disabled={isSaving}
             onClick={() => navigate('/challenge/dashboard')}
-            className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition-colors flex justify-center items-center"
+            className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition-colors flex justify-center items-center shadow-lg"
           >
             {isSaving ? (
               <>
@@ -203,7 +204,7 @@ const DailyChallengeQuiz: React.FC = () => {
   const currentQ = questions[currentQIndex];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <CustomAlert config={alertConfig} onClose={() => setAlertConfig(prev => ({...prev, isOpen: false}))} />
       
       {/* Top Bar */}
@@ -213,9 +214,9 @@ const DailyChallengeQuiz: React.FC = () => {
              <ChevronLeft className="w-6 h-6" />
           </button>
           <div>
-            <h2 className="font-bold text-slate-800 flex items-center">
-                <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded mr-2 uppercase">{level}</span>
-                Day {dayId}: {topic}
+            <h2 className="font-bold text-slate-800 flex items-center text-sm md:text-base">
+                <span className="bg-slate-100 text-slate-600 text-[10px] px-2 py-1 rounded mr-2 uppercase tracking-wide font-bold border border-slate-200">{level}</span>
+                Day {dayId}
             </h2>
             <div className="text-xs text-slate-500 mt-1">Question {currentQIndex + 1} of {questions.length}</div>
           </div>
@@ -230,15 +231,15 @@ const DailyChallengeQuiz: React.FC = () => {
             onClick={handleQuit}
             className="text-red-500 hover:text-red-700 flex items-center text-sm font-bold transition-colors border border-red-200 hover:bg-red-50 px-4 py-2 rounded-lg"
           >
-            <LogOut className="w-4 h-4 mr-2" /> End Session
+            <LogOut className="w-4 h-4 mr-2" /> <span className="hidden md:inline">End Session</span>
           </button>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="h-1 bg-slate-200 w-full">
+      <div className="h-1.5 bg-slate-200 w-full">
         <div 
-          className="h-full bg-amber-500 transition-all duration-300" 
+          className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-300 ease-linear" 
           style={{ width: `${((currentQIndex) / questions.length) * 100}%` }}
         />
       </div>
@@ -248,27 +249,27 @@ const DailyChallengeQuiz: React.FC = () => {
         <div className="max-w-3xl w-full">
           
           {/* Question Card */}
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden mb-6">
-            <div className="p-8">
+          <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden mb-6">
+            <div className="p-8 border-b border-slate-50">
               <p className="text-xl font-medium text-slate-900 leading-relaxed">
                 {currentQ.text}
               </p>
             </div>
             
-            <div className="bg-slate-50 p-6 space-y-3">
+            <div className="bg-slate-50/50 p-6 space-y-3">
               {currentQ.options.map((option, idx) => {
-                let btnClass = "bg-white border-slate-200 hover:border-slate-400 text-slate-700";
+                let btnClass = "bg-white border-slate-200 hover:border-slate-400 text-slate-700 hover:shadow-md";
                 
                 if (isAnswered) {
                   if (idx === currentQ.correctIndex) {
-                    btnClass = "bg-emerald-100 border-emerald-500 text-emerald-800"; // Correct
+                    btnClass = "bg-emerald-100 border-emerald-500 text-emerald-800 shadow-none"; // Correct
                   } else if (selectedOption === idx) {
-                    btnClass = "bg-red-100 border-red-500 text-red-800"; // Wrong selected
+                    btnClass = "bg-red-100 border-red-500 text-red-800 shadow-none"; // Wrong selected
                   } else {
-                    btnClass = "bg-slate-100 border-slate-200 text-slate-400 opacity-60"; // Others
+                    btnClass = "bg-slate-100 border-slate-200 text-slate-400 opacity-60 shadow-none"; // Others
                   }
                 } else if (selectedOption === idx) {
-                  btnClass = "bg-slate-800 text-white";
+                  btnClass = "bg-slate-800 text-white shadow-lg scale-[1.01] border-slate-800";
                 }
 
                 return (
@@ -276,11 +277,11 @@ const DailyChallengeQuiz: React.FC = () => {
                     key={idx}
                     disabled={isAnswered}
                     onClick={() => handleOptionClick(idx)}
-                    className={`w-full text-left p-4 rounded-xl border-2 font-medium transition-all duration-200 flex justify-between items-center ${btnClass}`}
+                    className={`w-full text-left p-5 rounded-xl border-2 font-medium transition-all duration-200 flex justify-between items-center ${btnClass}`}
                   >
                     <span>{option}</span>
-                    {isAnswered && idx === currentQ.correctIndex && <Check className="w-5 h-5 text-emerald-600" />}
-                    {isAnswered && selectedOption === idx && idx !== currentQ.correctIndex && <X className="w-5 h-5 text-red-600" />}
+                    {isAnswered && idx === currentQ.correctIndex && <Check className="w-6 h-6 text-emerald-600" />}
+                    {isAnswered && selectedOption === idx && idx !== currentQ.correctIndex && <X className="w-6 h-6 text-red-600" />}
                   </button>
                 );
               })}
@@ -291,7 +292,7 @@ const DailyChallengeQuiz: React.FC = () => {
           {isAnswered && (
             <div className="bg-white rounded-2xl shadow-lg border-l-4 border-blue-500 p-6 fade-in mb-8">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="font-bold text-slate-900">Explanation</h3>
+                <h3 className="font-bold text-slate-900 flex items-center"><div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div> Explanation</h3>
                 <div className="flex space-x-3">
                   <button className="text-xs text-slate-400 hover:text-red-500 flex items-center transition-colors">
                     <Flag className="w-3 h-3 mr-1" /> Report
@@ -307,7 +308,7 @@ const DailyChallengeQuiz: React.FC = () => {
               
               <button 
                 onClick={handleNext}
-                className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold flex items-center justify-center hover:bg-slate-800 transition-colors"
+                className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold flex items-center justify-center hover:bg-slate-800 transition-colors shadow-lg"
               >
                 {currentQIndex + 1 === questions.length ? 'Finish Quiz' : 'Next Question'} <ArrowRight className="ml-2 w-5 h-5" />
               </button>

@@ -6,8 +6,8 @@ const ActivitiesPage = () => {
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
-    // Check for the challenge-specific session key
-    const user = sessionStorage.getItem("studiRad_challenge_email");
+    // Check for the challenge-specific session key OR persistent local storage
+    const user = sessionStorage.getItem("studiRad_challenge_email") || localStorage.getItem("studiRad_challenge_email");
     setLoggedIn(!!user);
   }, []);
 

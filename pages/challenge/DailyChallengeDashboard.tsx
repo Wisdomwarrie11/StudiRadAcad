@@ -1,10 +1,58 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, CheckCircle, Play, Trophy, Star, Loader2, AlertCircle, Coins, Plus, Unlock, CalendarClock, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Lock, CheckCircle, Play, Trophy, Star, Loader2, AlertCircle, Coins, Plus, Unlock, CalendarClock, ChevronDown, ChevronUp, X, Clock } from 'lucide-react';
 import { UserChallengeProfile, ChallengeTopic, ChallengeLevel } from '../../types';
 import { getLeaderboard, canPlayDay, getUserProfile, unlockDay, switchLevel } from '../../services/challengeService';
 import CoinPurchaseModal from './CoinPurchaseModal';
 import CustomAlert, { AlertConfig } from '../../components/ui/CustomAlert';
+
+// Helper to safely parse dates (handles Firestore Timestamps and Strings)
+const safeParseDate = (dateInput: any): Date | null => {
+  if (!dateInput) return null;
+  // Handle Firestore Timestamp
+  if (typeof dateInput.toDate === 'function') {
+    return dateInput.toDate();
+  }
+  // Handle String or Date object
+  const d = new Date(dateInput);
+  return isNaN(d.getTime()) ? null : d;
+};
+
+const UnlockTimer = ({ targetDate, onComplete }: { targetDate: Date, onComplete: () => void }) => {
+  const [timeLeft, setTimeLeft] = useState<string>("Loading...");
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date().getTime();
+      const distance = targetDate.getTime() - now;
+
+      if (distance <= 0) {
+        onComplete();
+        return;
+      }
+
+      const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((distance % (1000 * 60)) / 1000);
+
+      setTimeLeft(`${h}h ${m}m ${s}s`);
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [targetDate, onComplete]);
+
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-center">
+      <p className="text-xs text-amber-800 font-bold uppercase tracking-wider mb-1">Next Challenge Unlocks In</p>
+      <div className="text-xl font-mono font-black text-amber-600 flex justify-center items-center">
+        <Clock className="w-5 h-5 mr-2" />
+        {timeLeft}
+      </div>
+    </div>
+  );
+};
 
 const DailyChallengeDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -46,11 +94,21 @@ const DailyChallengeDashboard: React.FC = () => {
 
   const fetchProfileData = async () => {
     try {
-      const email = sessionStorage.getItem('studiRad_challenge_email');
+      let email = sessionStorage.getItem('studiRad_challenge_email');
+      
+      // Fallback to localStorage logic to restore session
+      if (!email) {
+        email = localStorage.getItem('studiRad_challenge_email');
+        if (email) {
+            sessionStorage.setItem('studiRad_challenge_email', email);
+        }
+      }
+
       if (!email) {
         navigate('/challenge');
         return;
       }
+      
       const [userProfile, leaderboardData] = await Promise.all([
         getUserProfile(email),
         getLeaderboard()
@@ -58,6 +116,9 @@ const DailyChallengeDashboard: React.FC = () => {
 
       if (!userProfile) {
         setError("User profile not found. Please register again.");
+        // Clear stale storage if profile is gone
+        localStorage.removeItem('studiRad_challenge_email');
+        sessionStorage.removeItem('studiRad_challenge_email');
         navigate('/challenge');
         return;
       }
@@ -213,7 +274,7 @@ const DailyChallengeDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 py-24 px-4">
+    <div className="min-h-screen bg-slate-50 py-12 px-4">
       <CustomAlert config={alertConfig} onClose={closeAlert} />
       
       <div className="container mx-auto max-w-6xl">
@@ -306,6 +367,18 @@ const DailyChallengeDashboard: React.FC = () => {
                 const score = profile.scores[`day${day.num}`];
                 const isPlayed = score !== undefined;
                 const isLocked = !status.allowed;
+                
+                // Only specific check for the current progression day to show the timer
+                const isTimeLocked = day.num === profile.currentDay && !status.allowed && status.requiresUnlock;
+                
+                // Safely calculate target date for the timer
+                let targetUnlockDate = new Date();
+                if (isTimeLocked && profile.lastPlayedDate) {
+                  const lastPlayed = safeParseDate(profile.lastPlayedDate);
+                  if (lastPlayed) {
+                     targetUnlockDate = new Date(lastPlayed.getTime() + 24 * 60 * 60 * 1000);
+                  }
+                }
 
                 return (
                   <div 
@@ -340,7 +413,14 @@ const DailyChallengeDashboard: React.FC = () => {
 
                     {isLocked ? (
                       <div>
-                        {status.reason && <p className="text-xs text-center text-slate-500 mb-3 font-medium flex items-center justify-center"><CalendarClock className="w-3 h-3 mr-1"/> {status.reason}</p>}
+                        {isTimeLocked && profile.lastPlayedDate ? (
+                          <UnlockTimer 
+                            targetDate={targetUnlockDate}
+                            onComplete={fetchProfileData}
+                          />
+                        ) : (
+                           status.reason && <p className="text-xs text-center text-slate-500 mb-3 font-medium flex items-center justify-center"><CalendarClock className="w-3 h-3 mr-1"/> {status.reason}</p>
+                        )}
                         
                         {status.canPayToUnlock ? (
                             <button 
@@ -389,7 +469,7 @@ const DailyChallengeDashboard: React.FC = () => {
           `}>
             <div className={`
                 bg-white rounded-2xl border border-slate-100 p-6 
-                w-full max-w-md lg:max-w-none lg:w-full lg:sticky lg:top-24 
+                w-full max-w-md lg:max-w-none lg:w-full lg:sticky lg:top-8
                 shadow-2xl lg:shadow-sm
                 max-h-[85vh] lg:max-h-none overflow-y-auto lg:overflow-visible
             `}>

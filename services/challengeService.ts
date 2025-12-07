@@ -1,4 +1,3 @@
-
 import { db } from '../firebase';
 import { ChallengeLevel, ChallengePurpose, ChallengeQuestion, ChallengeTopic, UserChallengeProfile } from '../types';
 
@@ -95,6 +94,33 @@ export const getUserProfile = async (email: string): Promise<UserChallengeProfil
   }
 };
 
+export const startChallengeDay = async (email: string, day: number): Promise<void> => {
+  try {
+    const docId = sanitizeId(email);
+    const userRef = db.collection(COLLECTION_NAME).doc(docId);
+    const doc = await userRef.get();
+    
+    if (!doc.exists) return;
+    const data = doc.data() as UserChallengeProfile;
+
+    // Only update start time if it's the current day
+    if (data.currentDay === day) {
+      const now = new Date();
+      // If we haven't started yet, or if the last start was over 24h ago (re-start), update it
+      const lastStart = data.lastChallengeStartedAt ? new Date(data.lastChallengeStartedAt) : null;
+      const shouldUpdate = !lastStart || (now.getTime() - lastStart.getTime() > 24 * 60 * 60 * 1000);
+
+      if (shouldUpdate) {
+        await userRef.update({
+          lastChallengeStartedAt: now.toISOString()
+        });
+      }
+    }
+  } catch (error) {
+    console.error("SERVICE ERROR: startChallengeDay", error);
+  }
+};
+
 /**
  * Update user progress after a quiz
  */
@@ -121,7 +147,7 @@ export const updateUserProgress = async (
     const updatedScores = { ...currentData.scores, [`day${day}`]: newScoreToSave };
     
     // Calculate new total
-    const newTotal = Object.values(updatedScores).reduce((a, b) => a + b, 0);
+    const newTotal = (Object.values(updatedScores) as number[]).reduce((a, b) => a + b, 0);
 
     const updatePayload: any = {
       scores: updatedScores,
@@ -132,6 +158,7 @@ export const updateUserProgress = async (
       // Natural progression: currentDay only moves forward if we completed the currentDay
       const nextDay = currentData.currentDay + 1;
       updatePayload.currentDay = Math.min(Math.max(currentData.currentDay, nextDay), 7);
+      // SET THE TIMER TIMESTAMP HERE
       updatePayload.lastPlayedDate = new Date().toISOString();
       
       // NOTE: We do NOT automatically add nextDay to unlockedDays anymore.
@@ -313,12 +340,18 @@ export const getQuestionsForDay = (day: number, level: ChallengeLevel): { topic:
     }
   }
 
+  // Fallback to random questions if array is empty (mock safety)
   if (!rawQuestions || rawQuestions.length === 0) {
-    rawQuestions = []; 
+    rawQuestions = [
+        { text: `Placeholder question for ${topic} (${level})`, options: ["A", "B", "C", "D"], correctIndex: 0, explanation: "Placeholder", referenceLink: "" },
+        { text: `Another question for ${topic}`, options: ["1", "2", "3", "4"], correctIndex: 1, explanation: "Placeholder", referenceLink: "" }
+    ]; 
   }
 
   const processedQuestions: ChallengeQuestion[] = rawQuestions.map((q, i) => {
+    // Basic shuffle of options logic would go here, simplified for this response
     const correctOptionText = q.options[q.correctIndex];
+    // Shallow copy and sort random
     const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
     const newCorrectIndex = shuffledOptions.indexOf(correctOptionText);
 
@@ -355,24 +388,35 @@ export const canPlayDay = (day: number, profile: UserChallengeProfile): { allowe
       return { allowed: true }; // First time playing ever
     }
 
-    const lastDate = new Date(profile.lastPlayedDate);
-    const today = new Date();
+    // Helper to safely parse dates inside this function
+    const parseDate = (d: any) => {
+      if (typeof d === 'string') return new Date(d);
+      if (d?.toDate) return d.toDate();
+      return new Date(d);
+    };
 
-    // Check if it's the same calendar day (ignoring time)
-    const isSameDay = lastDate.getDate() === today.getDate() &&
-                      lastDate.getMonth() === today.getMonth() &&
-                      lastDate.getFullYear() === today.getFullYear();
+    const lastDate = parseDate(profile.lastPlayedDate);
+    
+    // If date is invalid, allow access as fail-safe
+    if (isNaN(lastDate.getTime())) return { allowed: true };
 
-    if (isSameDay) {
-      // Played today, so next sequential day is locked until tomorrow
+    const now = new Date();
+    
+    // Calculate difference in hours
+    const diffMs = now.getTime() - lastDate.getTime();
+    const diffHours = diffMs / (1000 * 60 * 60);
+
+    if (diffHours < 24) {
+      // It has been less than 24 hours
+      const remainingHours = Math.ceil(24 - diffHours);
       return { 
         allowed: false, 
-        reason: "Next challenge opens tomorrow!", 
+        reason: `Unlocks in ${remainingHours}h`, 
         requiresUnlock: true, 
         canPayToUnlock: true 
       };
     } else {
-      // It's a new day, allow access
+      // 24 hours passed, allow access
       return { allowed: true };
     }
   }

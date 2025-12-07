@@ -141,18 +141,19 @@ export interface ChallengeQuestion {
 }
 
 export interface UserChallengeProfile {
-  uid: string; // Firebase Document ID (usually email or auth UID)
+  uid: string;
   email: string;
   displayName: string;
   level: ChallengeLevel;
   purpose: ChallengePurpose;
   currentDay: number; // 1 to 6
   lastPlayedDate: string | null; // ISO Date string
-  scores: Record<string, number>; // "day1": 25
+  lastChallengeStartedAt?: string | null; // When the current day was started
+  scores: Record<string, number>;
   totalScore: number;
-  coins: number; // "Grey" currency
-  unlockedDays: number[]; // Array of day numbers unlocked via coins [1, 2, 5]
-  completedLevels: ChallengeLevel[]; // Track which levels are fully completed
+  coins: number;
+  unlockedDays: number[];
+  completedLevels: ChallengeLevel[];
 }
 
 export interface QuestionReport {
@@ -186,4 +187,16 @@ export interface QuizState {
   score: number;
   answers: (number | null)[]; // Index of selected answer per question
   isCompleted: boolean;
+}
+
+export interface AlertConfig {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  singleButton: boolean;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm?: () => void;
+  onCancel?: () => void;
 }
