@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, ClipboardCheck, Activity, BookOpen, Loader2, Info, X } from 'lucide-react';
 import { ChallengeLevel, ChallengePurpose } from '../../types';
@@ -17,12 +16,22 @@ const DailyChallengeLanding: React.FC = () => {
     email: string;
     level: ChallengeLevel | null;
     purpose: ChallengePurpose | null;
+    referralCode: string;
   }>({
     name: '',
     email: '',
     level: null,
-    purpose: null
+    purpose: null,
+    referralCode: ''
   });
+
+  // NEW: Check login on mount
+  useEffect(() => {
+    const user = sessionStorage.getItem("studiRad_challenge_email") || localStorage.getItem("studiRad_challenge_email");
+    if (user) {
+      navigate('/challenge/dashboard');
+    }
+  }, [navigate]);
 
   const handleNextStep1 = async () => {
     if (!formData.name || !formData.email) return;
@@ -34,6 +43,7 @@ const DailyChallengeLanding: React.FC = () => {
       if (exists) {
         // User exists, log them in directly
         sessionStorage.setItem('studiRad_challenge_email', formData.email);
+        localStorage.setItem('studiRad_challenge_email', formData.email);
         navigate('/challenge/dashboard');
       } else {
         // New user, proceed to level selection
@@ -61,11 +71,13 @@ const DailyChallengeLanding: React.FC = () => {
         formData.email,
         formData.name,
         formData.level,
-        formData.purpose
+        formData.purpose,
+        formData.referralCode // Pass the optional referral code
       );
       
-      // Store email in session storage to maintain "login" state for this session
+      // Store email in session storage and local storage to maintain "login" state
       sessionStorage.setItem('studiRad_challenge_email', formData.email);
+      localStorage.setItem('studiRad_challenge_email', formData.email);
       
       navigate('/challenge/dashboard');
     } catch (err: any) {
@@ -163,6 +175,18 @@ const DailyChallengeLanding: React.FC = () => {
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     />
                     <p className="text-xs text-slate-500 mt-2">Used to track your progress and leaderboard status. Returning users will be logged in automatically.</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Referral Code (Optional)</label>
+                    <input
+                      type="text"
+                      placeholder="Enter code (if you have one)"
+                      className="w-full px-6 py-4 rounded-xl border-2 border-slate-200 focus:border-amber-500 focus:outline-none text-lg uppercase"
+                      value={formData.referralCode}
+                      onChange={(e) => setFormData({ ...formData, referralCode: e.target.value.toUpperCase() })}
+                    />
+                    <p className="text-xs text-slate-500 mt-2">If a friend referred you, enter their code here.</p>
                   </div>
                   
                   {error && <div className="text-red-500 text-sm font-bold text-center">{error}</div>}

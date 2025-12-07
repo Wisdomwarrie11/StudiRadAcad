@@ -36,7 +36,7 @@ const DailyChallengeQuiz: React.FC = () => {
   useEffect(() => {
     const init = async () => {
       try {
-        const email = sessionStorage.getItem('studiRad_challenge_email');
+        const email = sessionStorage.getItem('studiRad_challenge_email') || localStorage.getItem('studiRad_challenge_email');
         if (!email || !dayId) {
           navigate('/challenge');
           return;

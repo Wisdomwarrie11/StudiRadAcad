@@ -102,7 +102,7 @@ const DailyChallengeDashboard: React.FC = () => {
 
   const fetchProfileData = async () => {
     try {
-      let email = sessionStorage.getItem('studiRad_challenge_email');
+      let email = sessionStorage.getItem('studiRad_challenge_email') || localStorage.getItem('studiRad_challenge_email');
       
       if (!email) {
         navigate('/challenge');
@@ -464,7 +464,7 @@ const DailyChallengeDashboard: React.FC = () => {
                         </span>
                         {isPlayed && (
                           <div className="flex items-center text-emerald-600 font-bold bg-emerald-100 px-2 py-1 rounded-lg">
-                            <Star className="w-4 h-4 mr-1 fill-emerald-600" /> {score}/5
+                            <Star className="w-4 h-4 mr-1 fill-emerald-600" /> {score}/30
                           </div>
                         )}
                       </div>
