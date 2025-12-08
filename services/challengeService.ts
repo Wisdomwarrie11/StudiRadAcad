@@ -2,7 +2,7 @@ import { db } from '../firebase';
 import { ChallengeLevel, ChallengePurpose, ChallengeQuestion, ChallengeTopic, UserChallengeProfile } from '../types';
 
 // Import Question Data
-import { BASIC_TECHNIQUE, BASIC_SAFETY, BASIC_MRI, BASIC_CT, BASIC_USS, BASIC_SPECIAL_PROCEDURES } from '../data/basicQuestions';
+import { BASIC_TECHNIQUE, BASIC_SAFETY, BASIC_SPECIAL_PROCEDURES, BASIC_MRI, BASIC_CT, BASIC_USS } from '../data/basicQuestions';
 import { ADVANCED_TECHNIQUE, ADVANCED_SAFETY, ADVANCED_SPECIAL_PROCEDURES, ADVANCED_MRI, ADVANCED_CT, ADVANCED_USS } from '../data/advancedqQuestions';
 import { MASTER_TECHNIQUE, MASTER_SAFETY, MASTER_SPECIAL_PROCEDURES, MASTER_MRI, MASTER_CT, MASTER_USS } from '../data/masterQuestions';
 
@@ -225,7 +225,7 @@ export const updateUserProgress = async (
 };
 
 /**
- * Switch User Level (Cost: 1 Coin if not completed)
+ * Switch User Level (Cost: 3 Coins if not completed)
  */
 export const switchLevel = async (email: string, newLevel: ChallengeLevel): Promise<boolean> => {
   try {
@@ -245,14 +245,14 @@ export const switchLevel = async (email: string, newLevel: ChallengeLevel): Prom
         return true;
     }
 
-    // If not completed, need 1 coin (250 naira)
-    if (userData.coins < 1) {
+    // If not completed, need 3 coins
+    if (userData.coins < 3) {
         return false;
     }
 
     await userRef.update({
         level: newLevel,
-        coins: userData.coins - 1
+        coins: userData.coins - 3
     });
 
     return true;

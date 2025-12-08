@@ -286,10 +286,10 @@ const DailyChallengeDashboard: React.FC = () => {
         return;
     }
 
-    if (profile.coins < 1) {
+    if (profile.coins < 3) {
         showAlert({
             title: 'Insufficient Coins',
-            message: 'You need 1 Grey Coin to switch levels before completing your current one.',
+            message: 'You need 3 Grey Coins to switch levels before completing your current one.',
             type: 'warning',
             confirmText: 'Buy Coins',
             singleButton: false,
@@ -300,7 +300,7 @@ const DailyChallengeDashboard: React.FC = () => {
 
     showAlert({
         title: `Switch to ${targetLevel}?`,
-        message: `Since you haven't completed your current level, this will cost 1 Grey Coin (₦100).`,
+        message: `Since you haven't completed your current level, this will cost 3 Grey Coins (₦300).`,
         type: 'warning',
         confirmText: 'Pay & Switch',
         singleButton: false,
