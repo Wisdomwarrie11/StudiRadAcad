@@ -76,7 +76,7 @@ const LocumRegistration = () => {
         const profileData: Partial<LocumProfile> = {
             ...personalInfo,
             minCharge: Number(personalInfo.minCharge),
-            minHours: Number(personalInfo.minHours),
+            maxHours: Number(personalInfo.maxHours),
             locations,
             isAvailable: true,
             subscription: {
@@ -278,13 +278,13 @@ const LocumRegistration = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Min Hours</label>
+                            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Max Hours</label>
                             <input 
                                 type="number"
                                 placeholder="e.g 8" 
                                 className="w-full p-3 rounded-lg border border-slate-200 focus:border-amber-500 outline-none"
                                 value={personalInfo.minHours}
-                                onChange={(e) => setPersonalInfo({...personalInfo, minHours: e.target.value})}
+                                onChange={(e) => setPersonalInfo({...personalInfo, maxHours: e.target.value})}
                             />
                         </div>
                     </div>

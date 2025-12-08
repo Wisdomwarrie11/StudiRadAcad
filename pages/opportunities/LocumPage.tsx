@@ -158,7 +158,7 @@ const LocumPage = () => {
                                     </div>
                                     <div className="flex items-center text-slate-600 text-sm">
                                         <Briefcase className="w-4 h-4 mr-2 text-slate-400" />
-                                        <span>Min Hours: <strong>{locum.minHours} hrs</strong></span>
+                                        <span>Min Hours: <strong>{locum.maxHours} hrs</strong></span>
                                     </div>
                                 </div>
 

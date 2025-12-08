@@ -18,7 +18,7 @@ const LocumEditProfile = () => {
     specialties: [] as string[],
     gender: 'Male' as 'Male' | 'Female',
     minCharge: '' as any,
-    minHours: '' as any,
+    maxHours: '' as any,
   });
 
   const availableSpecialties = [
@@ -54,7 +54,7 @@ const LocumEditProfile = () => {
                   specialties: profile.specialties || [],
                   gender: profile.gender,
                   minCharge: profile.minCharge,
-                  minHours: profile.minHours
+                  maxHours: profile.maxHours
               });
               setLocations(profile.locations || []);
           }
@@ -93,7 +93,7 @@ const LocumEditProfile = () => {
         const profileData: Partial<LocumProfile> = {
             ...personalInfo,
             minCharge: Number(personalInfo.minCharge),
-            minHours: Number(personalInfo.minHours),
+            maxHours: Number(personalInfo.maxHours),
             locations,
         };
 
@@ -208,12 +208,12 @@ const LocumEditProfile = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Min Hours</label>
+                        <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Max Hours</label>
                         <input 
                             type="number"
                             className="w-full p-3 rounded-lg border border-slate-200 focus:border-amber-500 outline-none"
-                            value={personalInfo.minHours}
-                            onChange={(e) => setPersonalInfo({...personalInfo, minHours: e.target.value})}
+                            value={personalInfo.maxHours}
+                            onChange={(e) => setPersonalInfo({...personalInfo, maxHours: e.target.value})}
                         />
                     </div>
                 </div>

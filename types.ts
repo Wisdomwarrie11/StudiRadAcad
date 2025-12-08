@@ -131,7 +131,7 @@ export interface LocumProfile {
     locations: LocumLocation[];
     searchKeys: string[]; // Helper for searching "State" or "State_LGA"
     minCharge: number;
-    minHours: number;
+    maxHours: number;
     phone: string;
     email: string;
     isAvailable: boolean; // Main toggle
