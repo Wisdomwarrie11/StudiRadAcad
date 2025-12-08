@@ -44,6 +44,8 @@ const DailyChallengeLanding: React.FC = () => {
         // User exists, log them in directly
         sessionStorage.setItem('studiRad_challenge_email', formData.email);
         localStorage.setItem('studiRad_challenge_email', formData.email);
+        // Ensure flag is set for existing users too
+        localStorage.setItem('studiRad_has_registered', 'true');
         navigate('/challenge/dashboard');
       } else {
         // New user, proceed to level selection
@@ -65,6 +67,17 @@ const DailyChallengeLanding: React.FC = () => {
     setLoading(true);
     setError('');
 
+    // Check if this browser has already created an account to prevent referral abuse
+    const deviceHasRegistered = localStorage.getItem('studiRad_has_registered');
+    
+    // Only pass referral code if device hasn't registered before (or if it's the first time on this browser)
+    // Note: If users clear cache, they can bypass this, but it adds a layer of friction.
+    const referralCodeToUse = deviceHasRegistered ? undefined : formData.referralCode;
+
+    if (deviceHasRegistered && formData.referralCode) {
+        console.warn("Referral code ignored: Device already registered an account.");
+    }
+
     try {
       console.log("Attempting to register user:", formData.email);
       await registerUserForChallenge(
@@ -72,12 +85,15 @@ const DailyChallengeLanding: React.FC = () => {
         formData.name,
         formData.level,
         formData.purpose,
-        formData.referralCode // Pass the optional referral code
+        referralCodeToUse
       );
       
       // Store email in session storage and local storage to maintain "login" state
       sessionStorage.setItem('studiRad_challenge_email', formData.email);
       localStorage.setItem('studiRad_challenge_email', formData.email);
+      
+      // Mark device as having registered an account
+      localStorage.setItem('studiRad_has_registered', 'true');
       
       navigate('/challenge/dashboard');
     } catch (err: any) {

@@ -142,6 +142,27 @@ const DailyChallengeDashboard: React.FC = () => {
     });
   };
 
+  const processShareReward = async () => {
+    if (!profile) return;
+    try {
+        const result = await rewardShare(profile.email);
+        if (result.success) {
+            await fetchProfileData();
+            showAlert({ 
+                title: 'Reward Earned!', 
+                message: result.message, 
+                type: 'success' 
+            });
+        } else {
+             // Optional: Don't show alert if already earned to avoid spamming user, 
+             // or show a subtle toast. For now, we only alert on success or manual copy fallback.
+             console.log("Share reward skipped:", result.message);
+        }
+    } catch (e) {
+        console.error("Error rewarding share:", e);
+    }
+  };
+
   const handleShare = async () => {
     if (!profile) return;
 
@@ -158,18 +179,32 @@ const DailyChallengeDashboard: React.FC = () => {
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
       try {
         await navigator.share(shareData);
+        // Reward user if the share promise resolves (meaning they didn't cancel)
+        await processShareReward();
       } catch (err) {
         console.debug('Share cancelled');
       }
     } else {
       try {
         await navigator.clipboard.writeText(fullShareText);
-        showAlert({
-            title: 'Copied!',
-            message: 'Referral link and code copied to clipboard.',
-            type: 'success',
-            singleButton: true
-        });
+        const result = await rewardShare(profile.email);
+        
+        if (result.success) {
+             await fetchProfileData();
+             showAlert({
+                title: 'Copied & Rewarded!',
+                message: 'Referral link copied. ' + result.message,
+                type: 'success',
+                singleButton: true
+            });
+        } else {
+             showAlert({
+                title: 'Copied!',
+                message: 'Referral link copied to clipboard.',
+                type: 'success',
+                singleButton: true
+            });
+        }
       } catch (e) {
         showAlert({ title: 'Error', message: 'Could not share automatically.', type: 'error' });
       }
