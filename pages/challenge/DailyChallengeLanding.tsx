@@ -175,7 +175,7 @@ const DailyChallengeLanding: React.FC = () => {
                     <label className="block text-sm font-bold text-slate-700 mb-2">Display Name</label>
                     <input
                       type="text"
-                      placeholder="e.g. RadTech Sarah"
+                      placeholder="e.g. Rad Warrie"
                       className="w-full px-6 py-4 rounded-xl border-2 border-slate-200 focus:border-amber-500 focus:outline-none text-lg"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
