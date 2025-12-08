@@ -32,6 +32,13 @@ import AdminBlogPage from './pages/admin/AdminBlogPage';
 import AdminPostOpportunity from './pages/admin/AdminPostOpportunity';
 import AdminProtectedRoute from './components/auth/AdminProtectedRoute';
 
+import LocumPage from "./pages/opportunities/LocumPage";
+import LocumRegistration from "./pages/opportunities/LocumRegistration";
+import LocumDashboard from "./pages/opportunities/LocumDashboard";
+import LocumPayment from "./pages/opportunities/LocumPayment";
+import LocumEditProfile from "./pages/opportunities/LocumEditProfile";
+
+
 // Layout wrapper for consistent Header/Footer
 const Layout: React.FC = () => {
   return (
@@ -89,10 +96,19 @@ const App: React.FC = () => {
           <Route path="jobs" element={<JobsPage />} />
           <Route path="internship" element={<InternshipsPage />} />
           <Route path="scholarship" element={<ScholarshipsPage />} />
+
+          <Route path="locum" element={<LocumPage />} />
+          <Route path="locum/register" element={<LocumRegistration />} />
+          <Route path="locum/dashboard" element={<LocumDashboard />} />
+          <Route path="locum/payment" element={<LocumPayment />} />
+          <Route path="locum/edit" element={<LocumEditProfile />} />
         </Route>
 
         {/* Daily Challenge Quiz (Standalone - No Header/Footer) */}
         <Route path="challenge/quiz/:dayId" element={<DailyChallengeQuiz />} />
+
+      
+
 
         {/* Admin Login (Public) */}
         <Route path="admin/login" element={<AdminLoginPage />} />

@@ -1,3 +1,4 @@
+
 import { LucideIcon } from 'lucide-react';
 import React from 'react';
 
@@ -103,6 +104,39 @@ export interface ScholarshipListing {
   description?: string;
   requirements?: string[];
   applyLink?: string;
+}
+
+// --- Locum Types ---
+
+export type LocumPlanType = 'Free' | '1 Month' | '3 Months' | '6 Months' | '1 Year';
+
+export interface LocumLocation {
+    state: string;
+    lgas: string[];
+}
+
+export interface LocumSubscription {
+    plan: LocumPlanType;
+    amountPaid: number;
+    startDate: string;
+    expiryDate: string;
+    isActive: boolean;
+}
+
+export interface LocumProfile {
+    id: string; // Email as ID
+    fullName: string;
+    specialties: string[]; // Changed from qualification to array of specialties
+    gender: 'Male' | 'Female';
+    locations: LocumLocation[];
+    searchKeys: string[]; // Helper for searching "State" or "State_LGA"
+    minCharge: number;
+    minHours: number;
+    phone: string;
+    email: string;
+    isAvailable: boolean; // Main toggle
+    subscription: LocumSubscription;
+    createdAt: string;
 }
 
 // --- Daily Challenge Types ---

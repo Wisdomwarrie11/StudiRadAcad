@@ -366,16 +366,23 @@ export const unlockDay = async (email: string, day: number): Promise<boolean> =>
 };
 
 /**
- * Fetch Leaderboard (Top 20 by Total Score)
+ * Fetch Leaderboard (Filtered by Level, All Users)
  */
-export const getLeaderboard = async (): Promise<UserChallengeProfile[]> => {
+export const getLeaderboard = async (level?: ChallengeLevel): Promise<UserChallengeProfile[]> => {
   try {
-    const snapshot = await db.collection(COLLECTION_NAME)
-      .orderBy('totalScore', 'desc')
-      .limit(20)
-      .get();
+    let query = db.collection(COLLECTION_NAME);
     
-    return snapshot.docs.map((doc: any) => doc.data() as UserChallengeProfile);
+    if (level) {
+        query = query.where('level', '==', level);
+    }
+    
+    // Fetch all docs for this level (removed limit)
+    const snapshot = await query.get();
+    
+    const users = snapshot.docs.map((doc: any) => doc.data() as UserChallengeProfile);
+    
+    // Sort in memory (descending totalScore) to avoid requiring composite index immediately
+    return users.sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0));
   } catch (error) {
     console.error("SERVICE ERROR: getLeaderboard", error);
     return [];

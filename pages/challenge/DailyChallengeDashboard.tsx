@@ -109,11 +109,7 @@ const DailyChallengeDashboard: React.FC = () => {
         return;
       }
       
-      const [userProfile, leaderboardData] = await Promise.all([
-        getUserProfile(email),
-        getLeaderboard()
-      ]);
-
+      const userProfile = await getUserProfile(email);
       if (!userProfile) {
         setError("User profile not found. Please register again.");
         navigate('/challenge');
@@ -121,6 +117,9 @@ const DailyChallengeDashboard: React.FC = () => {
       }
 
       setProfile(userProfile);
+
+      // Fetch leaderboard filtered by user level
+      const leaderboardData = await getLeaderboard(userProfile.level);
       setLeaderboard(leaderboardData);
     } catch (e) {
       console.error("Failed to load dashboard data", e);
@@ -153,11 +152,8 @@ const DailyChallengeDashboard: React.FC = () => {
                 message: result.message, 
                 type: 'success' 
             });
-        } else {
-             // Optional: Don't show alert if already earned to avoid spamming user, 
-             // or show a subtle toast. For now, we only alert on success or manual copy fallback.
-             console.log("Share reward skipped:", result.message);
         }
+        // Silent else: user already rewarded today
     } catch (e) {
         console.error("Error rewarding share:", e);
     }
@@ -166,9 +162,13 @@ const DailyChallengeDashboard: React.FC = () => {
   const handleShare = async () => {
     if (!profile) return;
 
-    const shareUrl = "https://studirad.vercel.app/#/activities";
-    const shareMessage = `Try out this quiz challenge on StudiRad. It is really educating. Use my referral code ${profile.referralCode || 'N/A'}`;
-    const fullShareText = `${shareMessage} ${shareUrl}`;
+    // Construct a direct link to the challenge
+    const baseUrl = window.location.origin;
+    const shareUrl = `${baseUrl}/#/challenge`;
+    
+    // Updated share message with "Nice!"
+    const shareMessage = `StudiRad is Nice! 🚀\n\nI'm playing the Daily Radiography Challenge. Test your knowledge in Physics, MRI, CT, and more.\n\nUse my code *${profile.referralCode || 'RAD'}* to join!`;
+    const fullShareText = `${shareMessage}\n${shareUrl}`;
 
     const shareData = {
       title: 'StudiRad Daily Challenge',
@@ -179,12 +179,13 @@ const DailyChallengeDashboard: React.FC = () => {
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
       try {
         await navigator.share(shareData);
-        // Reward user if the share promise resolves (meaning they didn't cancel)
+        // Reward user after successful share interaction
         await processShareReward();
       } catch (err) {
-        console.debug('Share cancelled');
+        console.debug('Share cancelled or failed', err);
       }
     } else {
+      // Fallback to clipboard
       try {
         await navigator.clipboard.writeText(fullShareText);
         const result = await rewardShare(profile.email);
@@ -192,21 +193,21 @@ const DailyChallengeDashboard: React.FC = () => {
         if (result.success) {
              await fetchProfileData();
              showAlert({
-                title: 'Copied & Rewarded!',
-                message: 'Referral link copied. ' + result.message,
+                title: 'Link Copied & Rewarded!',
+                message: 'Share link copied to clipboard. ' + result.message,
                 type: 'success',
                 singleButton: true
             });
         } else {
              showAlert({
-                title: 'Copied!',
-                message: 'Referral link copied to clipboard.',
+                title: 'Link Copied!',
+                message: 'Share link copied to clipboard. Share it with friends to earn referral bonuses later!',
                 type: 'success',
                 singleButton: true
             });
         }
       } catch (e) {
-        showAlert({ title: 'Error', message: 'Could not share automatically.', type: 'error' });
+        showAlert({ title: 'Error', message: 'Could not copy link automatically.', type: 'error' });
       }
     }
   };
@@ -383,11 +384,11 @@ const DailyChallengeDashboard: React.FC = () => {
 
                   <button 
                     onClick={handleShare}
-                    className="flex-1 md:flex-none bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-3 rounded-xl font-bold flex items-center justify-center hover:bg-emerald-100 transition-colors shadow-sm"
+                    className="flex-1 md:flex-none bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-3 rounded-xl font-bold flex items-center justify-center hover:bg-emerald-100 transition-colors shadow-sm active:scale-95"
                   >
                     <Share2 className="w-5 h-5 mr-2" />
                     <div>
-                        <span className="block text-xs uppercase opacity-75 leading-none mb-1">Refer a Friend</span>
+                        <span className="block text-xs uppercase opacity-75 leading-none mb-1">Share & Earn</span>
                         <span className="block leading-none">+0.5 Coin</span>
                     </div>
                   </button>
@@ -570,12 +571,15 @@ const DailyChallengeDashboard: React.FC = () => {
                 bg-white rounded-2xl border border-slate-100 p-6 
                 w-full max-w-md lg:max-w-none lg:w-full lg:sticky lg:top-8
                 shadow-2xl lg:shadow-sm
-                max-h-[85vh] lg:max-h-none overflow-y-auto lg:overflow-visible
+                max-h-[85vh] lg:max-h-[80vh] overflow-y-auto custom-scrollbar
             `}>
               <div className="flex items-center justify-between mb-6 sticky top-0 bg-white z-10 pb-2 border-b border-slate-100 lg:border-none lg:pb-0 lg:static">
                 <div className="flex items-center">
                     <Trophy className="text-amber-500 w-6 h-6 mr-3" />
-                    <h2 className="text-xl font-bold text-slate-900">Leaderboard</h2>
+                    <div>
+                        <h2 className="text-xl font-bold text-slate-900">Leaderboard</h2>
+                        {profile && <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">{profile.level} Division</span>}
+                    </div>
                 </div>
                 <button 
                     onClick={() => setShowLeaderboard(false)} 
@@ -589,7 +593,7 @@ const DailyChallengeDashboard: React.FC = () => {
                 {leaderboard.length === 0 ? (
                   <p className="text-sm text-slate-500 text-center py-4">Be the first to join!</p>
                 ) : (
-                  leaderboard.slice(0, 10).map((user, idx) => (
+                  leaderboard.map((user, idx) => (
                     <div key={idx} className="flex items-center p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-amber-200 transition-colors">
                       <div className={`w-8 h-8 flex items-center justify-center rounded-full font-bold mr-3 
                         ${idx === 0 ? 'bg-yellow-400 text-yellow-900 shadow-md shadow-yellow-200' : ''}
@@ -601,7 +605,7 @@ const DailyChallengeDashboard: React.FC = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-slate-900 truncate">
-                          {user.email === profile.email ? `${user.displayName} (You)` : user.displayName}
+                          {user.email === profile?.email ? `${user.displayName} (You)` : user.displayName}
                         </p>
                         <p className="text-xs text-slate-500">{user.level ? user.level.split(' ')[0] : 'User'}</p>
                       </div>
