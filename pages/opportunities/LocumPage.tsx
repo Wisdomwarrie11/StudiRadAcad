@@ -37,6 +37,15 @@ const LocumPage = () => {
     }
   };
 
+  const handleLoginNav = () => {
+      const savedEmail = localStorage.getItem('studiRad_locum_email');
+      if (savedEmail) {
+          navigate('/locum/dashboard');
+      } else {
+          navigate('/locum/login');
+      }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 pt-24 pb-12 px-4">
       <div className="container mx-auto max-w-6xl">
@@ -223,7 +232,7 @@ const LocumPage = () => {
                                 Register Now (Free)
                             </button>
                             <button 
-                                onClick={() => navigate('/locum/dashboard')}
+                                onClick={handleLoginNav}
                                 className="w-full bg-white text-slate-600 border border-slate-200 py-3 rounded-xl font-bold hover:bg-slate-50 transition-colors"
                             >
                                 Already registered? Login to Dashboard

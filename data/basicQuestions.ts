@@ -198,69 +198,366 @@ export const BASIC_USS: ChallengeQuestion[] = [
     { text: "Which probe is used for cardiac imaging?", options: ["Linear", "Curved", "Phased array", "Endocavitary"], correctIndex: 2, explanation: "Phased array probes provide deep penetration and small footprint for echocardiography.", referenceLink: "https://radiopaedia.org/articles/echocardiography" },
 ];
 
-export const BASIC_SPECIAL_PROCEDURES: ChallengeQuestion[] = [
-    { text: "What is the main purpose of a barium swallow examination?", options: ["To assess kidney function", "To visualize the gastrointestinal tract’s lumen and motility", "To examine bones for fractures", "To detect air in the thoracic cavity"], correctIndex: 1, explanation: "Barium swallow uses radiopaque contrast to outline the esophagus, stomach or intestines so that their lumen, shape and motility can be evaluated under fluoroscopy.", referenceLink: "https://radiopaedia.org/articles/barium-swallow" },
+export const BASIC_SPECIAL_PROCEDURES = [
+    {
+      text: "What is the primary purpose of a barium swallow examination?",
+      options: [
+        "Assessment of esophageal structure and swallowing function",
+        "Evaluation of gastric emptying time",
+        "Screening for small-bowel malabsorption",
+        "Diagnosis of colonic motility disorders"
+      ],
+      correctIndex: 0,
+      explanation: "Option A is correct because a barium swallow is mainly used to assess the esophagus and swallowing mechanism. Option B is incorrect because gastric emptying studies use scintigraphy. Option C is incorrect because small-bowel malabsorption is assessed with small-bowel follow-through or other functional tests. Option D is incorrect because colonic motility disorders require barium enema or manometry."
+    },
   
-    { text: "Which type of contrast agent is typically used for an intravenous urogram (IVU)?", options: ["Barium sulfate", "Air insufflation", "Iodinated water-soluble contrast", "Gadolinium"], correctIndex: 2, explanation: "Iodinated water-soluble contrast agents are used intravenously to opacify the urinary tract (kidneys, ureters, bladder) for IVU.", referenceLink: "https://radiopaedia.org/articles/intravenous-urogram-ivu" },
+    {
+      text: "Which contrast agent is routinely used for intravenous urography (IVU)?",
+      options: [
+        "Low-osmolar iodinated contrast",
+        "High-density barium suspension",
+        "Carbon dioxide gas",
+        "Gadolinium-based contrast agent"
+      ],
+      correctIndex: 0,
+      explanation: "Option A is correct because IVU requires iodinated contrast injected intravenously. Option B is incorrect because barium is not used intravenously. Option C is incorrect because CO₂ is used mainly for angiography. Option D is incorrect because gadolinium is used primarily for MRI."
+    },
   
-    { text: "What advantage does fluoroscopy offer over conventional static radiography?", options: ["Higher spatial resolution only", "Real-time dynamic imaging to observe motion or flow", "Less radiation dose always", "No need for contrast agents"], correctIndex: 1, explanation: "Fluoroscopy provides continuous x-ray imaging in real time, allowing evaluation of motion (e.g. swallowing, GI motility) or flow (contrast passage).", referenceLink: "https://radiopaedia.org/articles/fluoroscopy" },
+    {
+      text: "What is the key advantage of fluoroscopy compared with static radiography?",
+      options: [
+        "Real-time imaging of motion",
+        "Higher spatial resolution",
+        "Greater soft-tissue contrast",
+        "Significantly lower dose"
+      ],
+      correctIndex: 0,
+      explanation: "Option A is correct because fluoroscopy provides dynamic, real-time imaging. Option B is incorrect because standard radiography has higher spatial resolution. Option C is incorrect because fluoroscopy does not inherently improve soft-tissue contrast. Option D is incorrect because fluoroscopy typically involves higher cumulative dose."
+    },
   
-    { text: "In a contrast-enhanced computed tomography (CT) scan, why is a ‘bolus’ of contrast often injected rapidly?", options: ["To minimize contrast toxicity", "To produce high contrast density within vessels or tissues at optimal imaging time", "To reduce scan time only", "To avoid need for sedation"], correctIndex: 1, explanation: "Rapid bolus injection results in high concentration of contrast in the vessels or tissues at a precise time, improving visibility of vascular structures or lesions.", referenceLink: "https://radiopaedia.org/articles/contrast-ct" },
+    {
+      text: "What primary structure is evaluated in a hysterosalpingography (HSG) exam?",
+      options: [
+        "Uterine cavity and fallopian tube patency",
+        "Ovarian follicular activity",
+        "Placental vascularity",
+        "Pelvic lymph nodes"
+      ],
+      correctIndex: 0,
+      explanation: "Option A is correct because HSG evaluates the uterus and fallopian tubes. Options B–D are not assessed with HSG."
+    },
   
-    { text: "What is the purpose of a hysterosalpingogram (HSG)?", options: ["To assess liver function", "To check patency of fallopian tubes and uterine cavity shape", "To measure bone density", "To evaluate kidney stones"], correctIndex: 1, explanation: "HSG uses contrast media injected through the cervix to outline the uterine cavity and fallopian tubes, assessing their shape and openness, often in infertility work-up.", referenceLink: "https://radiopaedia.org/articles/hysterosalpingography-hsg" },
+    {
+      text: "Which patient preparation is commonly required before a barium enema?",
+      options: [
+        "Bowel cleansing with laxatives",
+        "Fasting for 24 hours",
+        "High-protein meal before exam",
+        "Hydration restriction"
+      ],
+      correctIndex: 0,
+      explanation: "Option A is correct because colon cleansing ensures proper visualization. Options B–D are not standard requirements for a barium enema."
+    },
   
-    { text: "Which projection is most useful in a standard contrast enema to demonstrate the sigmoid colon clearly?", options: ["Anteroposterior supine only", "Left-posterior oblique (LPO)", "Lateral lumbar spine", "Oblique knee-chest"], correctIndex: 1, explanation: "Oblique projections (e.g. LPO) help fill and outline the sigmoid colon without superimposition, enhancing visualization during contrast enema.", referenceLink: "https://radiopaedia.org/articles/contrast-enema" },
+    {
+      text: "What is the primary purpose of a myelogram?",
+      options: [
+        "Visualization of the spinal canal and nerve roots",
+        "Assessment of vertebral bone density",
+        "Evaluation of paraspinal muscles",
+        "Measurement of spinal cord perfusion"
+      ],
+      correctIndex: 0,
+      explanation: "Option A is correct because a myelogram outlines the spinal canal using contrast. Options B–D are unrelated to myelography."
+    },
   
-    { text: "What does the term “double contrast” refer to in gastrointestinal radiology?", options: ["Use of two radiographic projections", "Use of both barium (or positive contrast) and air (negative contrast)", "Use of two different contrast agents simultaneously", "Use of CT plus MRI for same exam"], correctIndex: 1, explanation: "Double-contrast studies combine a radiopaque medium (like barium) and gas/air to better outline mucosal surfaces and improve contrast resolution in GI examinations.", referenceLink: "https://radiopaedia.org/articles/double-contrast-barium-enema" },
+    {
+      text: "What contrast medium is preferred for suspected gastrointestinal perforation?",
+      options: [
+        "Water-soluble iodinated contrast",
+        "High-density barium sulfate",
+        "Gadolinium solution",
+        "Room air"
+      ],
+      correctIndex: 0,
+      explanation: "Option A is correct because water-soluble contrast avoids barium peritonitis. Options B–D are not appropriate in suspected perforation."
+    },
   
-    { text: "Why is a water-soluble contrast preferred over barium when there is suspected bowel perforation?", options: ["It gives better mucosal detail", "It is less irritating to the peritoneum if leakage occurs", "It is cheaper", "It produces less radiation dose"], correctIndex: 1, explanation: "If there is perforation and contrast leaks into the peritoneal cavity, water-soluble (iodinated) contrast is less inflammatory than barium and therefore safer.", referenceLink: "https://radiopaedia.org/articles/gastrointestinal-perforation" },
+    {
+      text: "Which view is routinely taken during a barium swallow study?",
+      options: [
+        "Lateral projection of the neck",
+        "AP projection of the skull",
+        "PA chest view only",
+        "Oblique lumbar view"
+      ],
+      correctIndex: 0,
+      explanation: "Option A is correct because lateral neck views show pharyngeal swallowing. Options B–D are unrelated to this exam."
+    },
   
-    { text: "What is the main clinical use of a “voiding cystourethrogram (VCUG)”?", options: ["To assess spinal cord lesions", "To evaluate bladder and urethra during urination for reflux or obstruction", "To examine coronary arteries", "To visualize the biliary tree"], correctIndex: 1, explanation: "VCUG involves filling the bladder with contrast and obtaining images during voiding to assess for vesicoureteral reflux or urethral abnormalities.", referenceLink: "https://radiopaedia.org/articles/voiding-cysto-urethrogram-vcug" },
+    {
+      text: "During an IVU, which structure opacifies last?",
+      options: [
+        "Urinary bladder",
+        "Renal cortex",
+        "Renal pelvis",
+        "Proximal ureter"
+      ],
+      correctIndex: 0,
+      explanation: "Option A is correct because contrast drains into the bladder last. Options B–D opacify earlier in the sequence."
+    },
   
-    { text: "Which imaging modality is standard for screening and early detection of breast cancer in women over 40?", options: ["Fluoroscopy", "Ultrasound only", "Mammography", "CT scan"], correctIndex: 2, explanation: "Mammography is the standard screening tool for breast cancer in asymptomatic women, giving high-resolution images of breast tissue.", referenceLink: "https://radiopaedia.org/articles/mammography" },
+    {
+      text: "What is the main indication for a voiding cystourethrogram (VCUG)?",
+      options: [
+        "Assessment of vesicoureteral reflux",
+        "Evaluation of renal parenchymal scarring",
+        "Detection of renal masses",
+        "Visualization of gastric mucosa"
+      ],
+      correctIndex: 0,
+      explanation: "A VCUG assesses reflux during voiding. Other options are not part of VCUG evaluation."
+    },
   
-    { text: "What does the term “digital subtraction angiography (DSA)” mean?", options: ["Angiogram images captured on film", "A method that subtracts pre-contrast images from post-contrast images to highlight vessels", "Ultrasound-guided vascular study", "MRI angiography only"], correctIndex: 1, explanation: "DSA acquires a “mask” image before contrast injection, then subtracts it from contrast-enhanced images to emphasize vascular structures and remove background anatomy.", referenceLink: "https://radiopaedia.org/articles/digital-subtraction-angiography-dsa" },
+    {
+      text: "Which projection best demonstrates the colon during a double-contrast barium enema?",
+      options: [
+        "Air-contrast distension with multiple oblique views",
+        "Only supine AP",
+        "Only erect PA",
+        "Dedicated lateral decubitus without contrast"
+      ],
+      correctIndex: 0,
+      explanation: "Double-contrast exams use air and barium with multiple projections. Other options lack adequate visualization."
+    },
   
-    { text: "Why must a patient often fast before a barium swallow or upper GI series?", options: ["To avoid contrast toxicity", "To reduce residual food that can obscure mucosa and interfere with imaging", "To ensure rapid bowel movement", "To reduce radiation dose"], correctIndex: 1, explanation: "Fasting ensures the GI tract is empty so barium can coat the mucosa uniformly and images aren’t obscured by food residue.", referenceLink: "https://radiopaedia.org/articles/upper-gastrointestinal-series" },
+    {
+      text: "Which route is used to introduce contrast in an HSG?",
+      options: [
+        "Cannulation through the cervix",
+        "Intravenous injection",
+        "Oral administration",
+        "Intramuscular injection"
+      ],
+      correctIndex: 0,
+      explanation: "HSG requires transcervical injection. The other routes are not used."
+    },
   
-    { text: "What is the purpose of a contrast enema in radiology?", options: ["To inspect heart chambers", "To evaluate the large intestine for pathology like polyps, tumors or diverticula", "To measure bone density", "To assess the urinary tract"], correctIndex: 1, explanation: "Contrast enema fills the colon with contrast and air (if double contrast) to outline colonic walls and reveal abnormalities like polyps, strictures, or diverticula under x-ray or fluoroscopy.", referenceLink: "https://radiopaedia.org/articles/contrast-enema" },
+    {
+      text: "What is the primary purpose of ERCP?",
+      options: [
+        "Visualization of biliary and pancreatic ducts",
+        "Assessment of esophageal motility",
+        "Imaging of renal collecting systems",
+        "Evaluation of large-bowel obstruction"
+      ],
+      correctIndex: 0,
+      explanation: "ERCP evaluates pancreatic and biliary ducts. Other options are unrelated."
+    },
   
-    { text: "Which cardiac imaging procedure provides high temporal resolution of heart wall and valve motion?", options: ["Standard chest CT", "Fluoroscopy only", "Echocardiography", "Contrast-enhanced barium swallow"], correctIndex: 2, explanation: "Echocardiography (ultrasound of the heart) gives excellent temporal resolution, allowing dynamic evaluation of cardiac wall motion and valve function.", referenceLink: "https://radiopaedia.org/articles/echocardiography" },
+    {
+      text: "What is typically used to visualize joint spaces in arthrography?",
+      options: [
+        "Iodinated contrast injected intra-articularly",
+        "Barium suspension",
+        "Ultrasound gel",
+        "Carbon dioxide gas"
+      ],
+      correctIndex: 0,
+      explanation: "Arthrography requires intra-articular iodinated contrast. Other options are not appropriate."
+    },
   
-    { text: "In musculoskeletal radiology, what is the main purpose of an arthrogram?", options: ["To measure bone mineral density", "To outline a joint space using contrast to detect labral tears or cartilage defects", "To evaluate soft tissue in abdomen", "To visualize coronary arteries"], correctIndex: 1, explanation: "Arthrography injects contrast into a joint space so radiographs or MRI can better depict internal joint structures (cartilage, labrum, ligaments).", referenceLink: "https://radiopaedia.org/articles/arthrography" },
+    {
+      text: "Which imaging modality commonly complements myelography?",
+      options: [
+        "CT scan",
+        "Ultrasound",
+        "Mammography",
+        "DEXA"
+      ],
+      correctIndex: 0,
+      explanation: "CT provides detailed post-myelogram evaluation. Other modalities do not."
+    },
   
-    { text: "Why might a water enema be used before a contrast enema study of the colon?", options: ["To hydrate the patient", "To cleanse residual stool and reduce gas, improving contrast contact and clarity", "To provide analgesia", "To increase peristalsis"], correctIndex: 1, explanation: "Cleansing enemas evacuate stool and gas so contrast can coat the colonic mucosa thoroughly, enhancing diagnostic accuracy.", referenceLink: "https://radiopaedia.org/articles/contrast-enema" },
+    {
+      text: "What patient position is often used during a barium enema to fill the splenic flexure?",
+      options: [
+        "Right lateral decubitus",
+        "Left lateral decubitus",
+        "Prone only",
+        "Erect AP only"
+      ],
+      correctIndex: 0,
+      explanation: "Right lateral decubitus helps barium reach the splenic flexure. Other positions do not specifically achieve this."
+    },
   
-    { text: "Which procedure is used to detect vesicoureteral reflux in children?", options: ["Barium swallow", "Mammography", "Voiding cystourethrogram (VCUG)", "Arthrogram"], correctIndex: 2, explanation: "VCUG visualizes the bladder and urethra during filling and voiding phases, allowing detection of backward flow (reflux) into ureters or kidneys.", referenceLink: "https://radiopaedia.org/articles/voiding-cysto-urethrogram-vcug" },
+    {
+      text: "Which exam is best for evaluating swallowing aspiration risk?",
+      options: [
+        "Modified barium swallow",
+        "IVU",
+        "HSG",
+        "Barium meal"
+      ],
+      correctIndex: 0,
+      explanation: "Modified barium swallow assesses aspiration risk. Others do not evaluate swallowing mechanics."
+    },
   
-    { text: "What is the role of contrast in a CT pulmonary angiogram (CTPA)?", options: ["To suppress bone images", "To opacify pulmonary arteries so that emboli can be detected", "To enhance bone mineralization", "To visualize airways only"], correctIndex: 1, explanation: "CTPA uses iodinated contrast to fill pulmonary arteries, allowing detection of filling defects caused by pulmonary emboli.", referenceLink: "https://radiopaedia.org/articles/ct-pulmonary-angiogram" },
+    {
+      text: "What does the term 'double contrast' refer to in GI imaging?",
+      options: [
+        "Use of barium and air together",
+        "Use of IV and oral contrast",
+        "Use of barium and ultrasound",
+        "Use of two types of barium"
+      ],
+      correctIndex: 0,
+      explanation: "Double contrast involves barium plus air. The other options are incorrect."
+    },
   
-    { text: "Why is radiation dose often higher in fluoroscopy-guided procedures compared to standard x-rays?", options: ["Because exposures are continuous and longer", "Because fluoroscopy uses higher voltage always", "Because no lead shielding is used", "Because contrast increases dose"], correctIndex: 0, explanation: "Fluoroscopy involves continuous or repeated x-ray exposure over a duration to observe motion, which accumulates higher radiation dose compared to a single static radiograph.", referenceLink: "https://radiopaedia.org/articles/fluoroscopy" },
+    {
+      text: "What is the main purpose of a fistulogram?",
+      options: [
+        "Assessment of abnormal tract pathways",
+        "Evaluation of bowel motility",
+        "Detection of urinary stones",
+        "Assessment of joint effusion"
+      ],
+      correctIndex: 0,
+      explanation: "Fistulograms map fistulous tracts. Other options evaluate different systems."
+    },
   
-    { text: "Which exam would best evaluate a suspected peptic ulcer using radiology?", options: ["Ultrasound", "Double contrast barium meal (upper GI series)", "Mammography", "IVU"], correctIndex: 1, explanation: "A double contrast upper GI series outlines the stomach and duodenum mucosa and can show ulcer craters or mucosal irregularities characteristic of peptic ulcer.", referenceLink: "https://radiopaedia.org/articles/upper-gastrointestinal-series" },
+    {
+      text: "In an IVU, what physiological process allows contrast to reach the renal tubules?",
+      options: [
+        "Glomerular filtration",
+        "Active secretion in the colon",
+        "Pulmonary diffusion",
+        "Lymphatic drainage"
+      ],
+      correctIndex: 0,
+      explanation: "IVU contrast is filtered by the kidneys via glomerular filtration. Other processes are not involved."
+    },
   
-    { text: "In pediatric imaging, why is a small-field-of-view fluoroscopy often preferred?", options: ["To reduce scan time", "To decrease radiation dose and limit exposure while focusing on area of interest", "To improve contrast resolution only", "To avoid need for sedation"], correctIndex: 1, explanation: "Limiting the field of view reduces exposed tissue area and helps minimize radiation dose in children while still visualizing the target region.", referenceLink: "https://radiopaedia.org/articles/fluoroscopy" },
+    {
+      text: "What is the correct route of contrast administration for a retrograde pyelogram?",
+      options: [
+        "Via ureteric catheterization",
+        "Intravenous injection",
+        "Oral ingestion",
+        "Rectal instillation"
+      ],
+      correctIndex: 0,
+      explanation: "Retrograde pyelogram introduces contrast through the ureters. Other routes are incorrect."
+    },
   
-    { text: "What is the main reason for using compression techniques during a barium enema?", options: ["To increase radiation dose", "To improve contrast coating of colonic mucosa and distend the colon for better visualization", "To remove bowel contents", "To administer sedation"], correctIndex: 1, explanation: "Compression helps distribute contrast evenly and distend the colon, unfolding haustra and mucosal folds to improve detection of lesions.", referenceLink: "https://radiopaedia.org/articles/contrast-enema" },
+    {
+      text: "Which exam evaluates structural abnormalities of the large intestine?",
+      options: [
+        "Barium enema",
+        "HSG",
+        "VCUG",
+        "Myelogram"
+      ],
+      correctIndex: 0,
+      explanation: "A barium enema is designed to evaluate the large intestine."
+    },
   
-    { text: "Which contrast medium is typically used in a myelogram (spinal canal imaging)?", options: ["Air only", "Gadolinium", "Iodinated water-soluble contrast injected into subarachnoid space", "Barium sulfate"], correctIndex: 2, explanation: "Myelography uses water-soluble iodinated contrast injected intrathecally to opacify the subarachnoid space and spinal canal structures under x-ray or CT.", referenceLink: "https://radiopaedia.org/articles/myelography" },
+    {
+      text: "What is the major advantage of CT myelography over plain myelography?",
+      options: [
+        "Improved visualization of bone and soft tissues",
+        "Lower radiation dose",
+        "No need for contrast",
+        "Better evaluation of abdominal organs"
+      ],
+      correctIndex: 0,
+      explanation: "CT myelography provides superior anatomical detail. Other statements are incorrect."
+    },
   
-    { text: "When is a “single contrast” barium enema indicated over a “double contrast” enema?", options: ["When the colon must be visualized with minimal preparation or in presence of suspected strictures", "When patient has no bowel gas", "When performing in children only", "When radiation dose must be maximum"], correctIndex: 0, explanation: "Single contrast is simpler and may be chosen when the colon cannot tolerate air insufflation or when full distension is risky, e.g. suspected strictures or poor patient tolerance.", referenceLink: "https://radiopaedia.org/articles/contrast-enema" },
+    {
+      text: "What contrast medium is used for a barium swallow?",
+      options: [
+        "Barium sulfate suspension",
+        "Gadolinium solution",
+        "Iodinated oil",
+        "Carbon dioxide"
+      ],
+      correctIndex: 0,
+      explanation: "A barium swallow uses barium sulfate. Other agents are not appropriate."
+    },
   
-    { text: "What is the clinical use of a contrast-enhanced angiographic study?", options: ["To examine the lungs only", "To visualize blood vessels for stenosis, aneurysm or vascular malformation", "To assess bone fractures", "To study digestive enzymes"], correctIndex: 1, explanation: "Angiography outlines blood vessels with contrast so that vascular occlusion, aneurysm, stenosis, or malformations can be identified.", referenceLink: "https://radiopaedia.org/articles/angiography" },
+    {
+      text: "Which special procedure assesses fallopian tube blockage?",
+      options: [
+        "Hysterosalpingography",
+        "IVU",
+        "Barium meal",
+        "Myelogram"
+      ],
+      correctIndex: 0,
+      explanation: "HSG specifically evaluates tubal patency."
+    },
   
-    { text: "Why is patient positioning and preparation critical before an upper GI barium study?", options: ["For comfort only", "To ensure adequate coating of mucosa and complete visualization of GI tract without overlapping loops", "To reduce contrast dose", "To shorten exposure time only"], correctIndex: 1, explanation: "Proper positioning helps distribute contrast evenly and bring different parts of GI tract into view, avoiding overlap and improving diagnostic accuracy.", referenceLink: "https://radiopaedia.org/articles/upper-gastrointestinal-series" },
+    {
+      text: "Which structure is typically visualized first after contrast injection during IVU?",
+      options: [
+        "Renal cortex",
+        "Urinary bladder",
+        "Urethra",
+        "Sigmoid colon"
+      ],
+      correctIndex: 0,
+      explanation: "The renal cortex enhances first due to blood supply. The others do not show initial opacification."
+    },
   
-    { text: "Which special radiologic exam is most appropriate to assess suspected gallbladder stones causing intermittent obstruction?", options: ["Standard abdominal x-ray", "Hepatobiliary iminodiacetic acid (HIDA) scan or ultrasound (not barium study)", "Barium swallow", "Myelogram"], correctIndex: 1, explanation: "Functional imaging (like HIDA) or ultrasound, not barium-based GI studies, is used for biliary system and gallbladder stones causing intermittent obstruction.", referenceLink: "https://radiopaedia.org/articles/hepatobiliary-imaging" },
+    {
+      text: "What is the purpose of using air during double-contrast studies?",
+      options: [
+        "To distend the organ for mucosal detail",
+        "To reduce radiation dose",
+        "To stop peristalsis",
+        "To improve contrast medium viscosity"
+      ],
+      correctIndex: 0,
+      explanation: "Air increases mucosal detail. Other options are incorrect."
+    },
   
-    { text: "What distinguishes a contrast-enhanced CT from a non-contrast (plain) CT scan?", options: ["Only different scanning speed", "Use of iodinated contrast to highlight blood vessels and enhance organs or lesions", "Only different table position", "Use of ultrasound simultaneously"], correctIndex: 1, explanation: "Contrast-enhanced CT introduces iodinated contrast intravenously to increase radiodensity of vessels and enhance visualization of organs, tumors, inflammation or vascular structures compared to plain CT.", referenceLink: "https://radiopaedia.org/articles/contrast-ct" },
+    {
+      text: "What is a key indication for sialography?",
+      options: [
+        "Evaluation of salivary duct obstruction",
+        "Assessment of thyroid nodules",
+        "Imaging of cranial nerves",
+        "Evaluation of lung perfusion"
+      ],
+      correctIndex: 0,
+      explanation: "Sialography examines salivary ducts. Other structures are unrelated."
+    },
   
-    { text: "Which statement describes a “single-photon emission computed tomography (SPECT)” scan’s general purpose (in nuclear medicine)?", options: ["It uses barium to visualize GI tract", "It provides functional imaging of organs or bones, showing metabolic or perfusion abnormalities", "It is identical to standard CT", "It uses high-frequency ultrasound"], correctIndex: 1, explanation: "SPECT is a nuclear medicine technique that images the distribution of radiotracers to assess organ function, perfusion, or metabolism, rather than anatomy only.", referenceLink: "https://radiopaedia.org/articles/spect" },
+    {
+      text: "Which procedure evaluates the urethra during urination?",
+      options: [
+        "VCUG",
+        "HSG",
+        "Myelography",
+        "Sialography"
+      ],
+      correctIndex: 0,
+      explanation: "VCUG visualizes urethral function during voiding."
+    },
   
-    { text: "Why must strict aseptic technique be used when doing a myelogram?", options: ["To reduce radiation dose", "To avoid introducing infection into the spinal canal", "To improve image contrast", "To shorten scan time"], correctIndex: 1, explanation: "Myelography involves puncturing the dura and injecting contrast into the subarachnoid space — asepsis is vital to prevent meningitis or other CNS infection.", referenceLink: "https://radiopaedia.org/articles/myelography" },
-  
-    { text: "What is the main risk when administering iodinated contrast agents intravenously for special procedures?", options: ["No risk at all", "Possible allergic reactions or contrast-induced nephropathy", "Excessive bone growth", "Excessive gas production"], correctIndex: 1, explanation: "Iodinated contrast can cause allergic reactions (mild to severe) and may impair renal function, so renal status and allergy history must be assessed before administration.", referenceLink: "https://radiopaedia.org/articles/contrast-media" },
-    { text: "In which situation is a double-contrast barium enema contraindicated?", options: ["Suspected colon perforation or severe inflammation (e.g. toxic megacolon)", "Routine colon screening", "Adult patient with abdominal pain", "Need to evaluate small bowel"], correctIndex: 0, explanation: "If perforation or severe colonic inflammation is suspected, the risk of barium leakage makes double-contrast enema contraindicated; safer alternatives should be used.", referenceLink: "https://radiopaedia.org/articles/contrast-enema" },
-    { text: "Which imaging exam is commonly used to guide catheter placement during an interventional vascular procedure?", options: ["Standard chest x-ray", "Fluoroscopy", "Mammography", "Single radiograph of abdomen"], correctIndex: 1, explanation: "Fluoroscopy offers real-time imaging which is essential to guide catheters, wires or contrast injection during interventional vascular procedures.", referenceLink: "https://radiopaedia.org/articles/fluoroscopy" }
+    {
+      text: "Which factor determines barium flow during enema exams?",
+      options: [
+        "Height of the enema bag",
+        "Tube color",
+        "Patient clothing",
+        "Room temperature"
+      ],
+      correctIndex: 0,
+      explanation: "Increasing bag height increases flow. The other options have no effect."
+    }
   ];
+  
   

@@ -218,275 +218,423 @@ export const ADVANCED_USS: ChallengeQuestion[] = [
 ];
 
 export const ADVANCED_SPECIAL_PROCEDURES: ChallengeQuestion[] = [
-
   // 1
   {
-    text: "During an HSG (Hysterosalpingography), free intraperitoneal spillage of contrast primarily indicates:",
-    options: ["Uterine perforation", "Patent fallopian tubes", "Tubal blockage", "Early pregnancy"],
+    text: "During an HSG, free intraperitoneal spillage of contrast primarily indicates:",
+    options: [
+      "Partial obstruction of the fallopian tubes",
+      "Patent fallopian tubes allowing contrast passage",
+      "Contrast extravasation from uterine perforation",
+      "Presence of early intrauterine pregnancy"
+    ],
     correctIndex: 1,
-    explanation: "Contrast spilling into the peritoneal cavity demonstrates tubal patency.",
+    explanation: "Spillage of contrast into the peritoneal cavity confirms that the fallopian tubes are open.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 2
   {
-    text: "Which contrast agent is MOST appropriate for a suspected perforated bowel during a special GI study?",
-    options: ["Barium sulfate", "Air only", "Water-soluble iodinated contrast (Gastrografin)", "Any of the above"],
+    text: "Which contrast agent is preferred for suspected bowel perforation during gastrointestinal imaging?",
+    options: [
+      "High-density barium sulfate suspension",
+      "Carbon dioxide insufflation only",
+      "Water-soluble iodinated contrast (e.g., Gastrografin)",
+      "Any contrast medium available"
+    ],
     correctIndex: 2,
-    explanation: "Water-soluble contrast is used when perforation is suspected to avoid barium peritonitis.",
+    explanation: "Water-soluble iodinated contrast is safer than barium if perforation is suspected because it reduces peritoneal irritation.",
     referenceLink: "https://pubmed.ncbi.nlm.nih.gov"
   },
 
   // 3
   {
-    text: "Which special procedure is most appropriate for evaluating the spinal canal for disc herniation or nerve root compression?",
-    options: ["Retrograde urethrogram", "Myelography", "Arthrography", "HSG"],
+    text: "Which special procedure is ideal for evaluating the spinal canal for disc herniation or nerve root compression?",
+    options: [
+      "Retrograde urethrogram with fluoroscopy",
+      "Myelography with intrathecal contrast",
+      "Shoulder arthrography using iodinated contrast",
+      "Hysterosalpingography of the pelvic cavity"
+    ],
     correctIndex: 1,
-    explanation: "Myelography visualizes the subarachnoid space for spinal pathology.",
+    explanation: "Myelography involves intrathecal contrast to outline the spinal canal and detect disc or nerve abnormalities.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 4
   {
     text: "During ERCP, contrast is injected into which anatomical structure?",
-    options: ["Portal vein", "Common bile duct and pancreatic duct", "Duodenum only", "Gallbladder only"],
+    options: [
+      "Portal vein under fluoroscopic guidance",
+      "Common bile duct and pancreatic duct via the ampulla",
+      "Duodenal lumen only without duct cannulation",
+      "Gallbladder lumen directly through percutaneous access"
+    ],
     correctIndex: 1,
-    explanation: "ERCP cannulates the ampulla to opacify the biliary and pancreatic ducts.",
+    explanation: "ERCP cannulates the ampulla to opacify the biliary and pancreatic ducts for diagnostic or therapeutic purposes.",
     referenceLink: "https://www.gastrojournal.org"
   },
 
   // 5
   {
     text: "A patient undergoing arthrography most commonly receives contrast into:",
-    options: ["The peritoneal cavity", "A joint space such as the knee or shoulder", "The bladder", "The subarachnoid space"],
+    options: [
+      "Peritoneal cavity for abdominal visualization",
+      "Joint space such as shoulder, knee, or hip",
+      "Urinary bladder for cystography",
+      "Subarachnoid space for spinal imaging"
+    ],
     correctIndex: 1,
-    explanation: "Arthrography evaluates joint structures using intra-articular contrast.",
+    explanation: "Arthrography involves injection of contrast directly into a joint to assess cartilage, ligaments, and labrum.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 6
   {
-    text: "Which projection is commonly obtained during a hysterosalpingogram (HSG)?",
-    options: ["PA chest", "AP pelvis", "Lateral skull", "Oblique lumbar spine"],
+    text: "Which projection is routinely obtained during a hysterosalpingogram?",
+    options: [
+      "Posteroanterior chest projection for reference",
+      "Anteroposterior pelvis projection for optimal uterine visualization",
+      "Lateral skull projection for cranial anatomy",
+      "Oblique lumbar spine projection for vertebral assessment"
+    ],
     correctIndex: 1,
-    explanation: "An AP pelvis projection shows the uterus and tubes well during HSG.",
+    explanation: "AP pelvis projection best visualizes the uterus and fallopian tubes during contrast administration.",
     referenceLink: "https://pubmed.ncbi.nlm.nih.gov"
   },
 
   // 7
   {
     text: "A sialogram is performed to evaluate:",
-    options: ["Thyroid gland", "Salivary gland ducts for stones or strictures", "Pituitary gland", "Paranasal sinuses"],
+    options: [
+      "Thyroid gland morphology and nodules",
+      "Salivary gland ducts for stones, strictures, or obstruction",
+      "Pituitary gland for adenomas",
+      "Paranasal sinuses for mucosal pathology"
+    ],
     correctIndex: 1,
-    explanation: "Sialography assesses salivary duct pathology such as sialolithiasis.",
+    explanation: "Sialography specifically evaluates the ductal anatomy of salivary glands for obstruction or calculi.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 8
   {
     text: "In a retrograde urethrogram (RUG), contrast is introduced through:",
-    options: ["A Foley catheter inflated in the bladder", "The penile urethral meatus", "An intravenous injection", "A nephrostomy tube"],
+    options: [
+      "A Foley catheter inflated in the urinary bladder",
+      "The penile urethral meatus under fluoroscopic guidance",
+      "An intravenous line into a peripheral vein",
+      "A nephrostomy tube accessing the renal pelvis"
+    ],
     correctIndex: 1,
-    explanation: "RUG uses contrast introduced at the distal urethral meatus.",
+    explanation: "RUG introduces contrast at the distal urethral meatus to visualize urethral anatomy and detect strictures or trauma.",
     referenceLink: "https://pubmed.ncbi.nlm.nih.gov"
   },
 
   // 9
   {
-    text: "Which imaging modality immediately follows a myelogram for detailed spinal evaluation?",
-    options: ["Ultrasound", "MRI only", "CT scan", "Plain abdominal radiography"],
+    text: "Which imaging modality is typically performed immediately after a myelogram for detailed spinal evaluation?",
+    options: [
+      "Ultrasound of the paraspinal muscles",
+      "Magnetic resonance imaging of the spinal cord",
+      "Computed tomography scan with intrathecal contrast",
+      "Plain abdominal radiography for alignment"
+    ],
     correctIndex: 2,
-    explanation: "CT after myelography provides high-resolution images of the spinal canal.",
+    explanation: "CT post-myelography provides high-resolution images of the spinal canal, nerve roots, and surrounding structures.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 10
   {
-    text: "Which contrast medium is mandatory for intrathecal (myelography) procedures?",
-    options: ["Barium", "High-osmolar iodinated contrast", "Nonionic water-soluble iodinated contrast", "Gadolinium"],
+    text: "Which contrast medium is mandatory for intrathecal myelography?",
+    options: [
+      "Barium sulfate suspension",
+      "High-osmolar iodinated contrast",
+      "Nonionic water-soluble iodinated contrast",
+      "Gadolinium-based contrast solution"
+    ],
     correctIndex: 2,
-    explanation: "Nonionic, low-osmolar iodinated contrast is required for intrathecal safety.",
+    explanation: "Nonionic, low-osmolar iodinated contrast is required intrathecally for safety and optimal imaging.",
     referenceLink: "https://pubmed.ncbi.nlm.nih.gov"
   },
 
   // 11
   {
-    text: "Which special procedure evaluates vesicoureteral reflux?",
-    options: ["HSG", "VCUG", "ERCP", "Myelogram"],
+    text: "Which special procedure evaluates vesicoureteral reflux in children or adults?",
+    options: [
+      "Hysterosalpingography to outline uterine cavity",
+      "Voiding cystourethrogram during bladder filling and voiding",
+      "ERCP for biliary duct visualization",
+      "Lumbar myelography for spinal assessment"
+    ],
     correctIndex: 1,
-    explanation: "VCUG assesses reflux during voiding using fluoroscopy.",
+    explanation: "VCUG evaluates the bladder and urethra during voiding to detect reflux into the ureters.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 12
   {
     text: "A T-tube cholangiogram is typically performed to evaluate:",
-    options: ["The spleen", "Residual stones or strictures in the biliary ducts", "Renal perfusion", "Thoracic venous return"],
+    options: [
+      "Splenic morphology post-surgery",
+      "Residual stones or strictures in the biliary ducts after cholecystectomy",
+      "Renal perfusion and cortical function",
+      "Venous return from the thoracic cavity"
+    ],
     correctIndex: 1,
-    explanation: "T-tube cholangiography checks for retained stones after cholecystectomy.",
+    explanation: "T-tube cholangiography is performed post-cholecystectomy to check for retained stones or ductal abnormalities.",
     referenceLink: "https://pubmed.ncbi.nlm.nih.gov"
   },
 
   // 13
   {
     text: "Which condition is best assessed with a fistulogram?",
-    options: ["Gallbladder stones", "Abnormal connections between hollow organs or skin", "Brain aneurysms", "Joint tears"],
+    options: [
+      "Gallbladder calculi and sludge",
+      "Abnormal fistulous tracts connecting hollow organs or skin",
+      "Cerebral aneurysms in the circle of Willis",
+      "Articular cartilage or ligament tears"
+    ],
     correctIndex: 1,
-    explanation: "Fistulography outlines abnormal fistulous tracts.",
+    explanation: "Fistulography outlines abnormal tracts to assist in diagnosis and surgical planning.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 14
   {
     text: "In an antegrade nephrostogram, contrast is injected through:",
-    options: ["A peripheral vein", "A nephrostomy tube placed into the renal pelvis", "A Foley catheter", "A central line"],
+    options: [
+      "A peripheral intravenous line",
+      "A nephrostomy tube accessing the renal pelvis",
+      "A Foley catheter into the bladder",
+      "A central venous catheter"
+    ],
     correctIndex: 1,
-    explanation: "Antegrade studies assess the renal pelvis and ureter via nephrostomy access.",
+    explanation: "Antegrade nephrostography evaluates the renal pelvis and ureter via nephrostomy access.",
     referenceLink: "https://pubmed.ncbi.nlm.nih.gov"
   },
 
   // 15
   {
     text: "Which special procedure best evaluates fallopian tube blockage in infertility workups?",
-    options: ["Myelography", "HSG", "VCUG", "Arthrography"],
+    options: [
+      "Lumbar myelography for nerve root evaluation",
+      "Hysterosalpingography with contrast injection",
+      "Voiding cystourethrogram for reflux assessment",
+      "Arthrography for joint pathology"
+    ],
     correctIndex: 1,
-    explanation: "HSG is routinely used to assess tubal patency.",
+    explanation: "HSG is routinely used to assess tubal patency in infertility evaluations.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 16
   {
-    text: "During ERCP, patient positioning is usually:",
-    options: ["Supine", "Left lateral or prone", "Erect", "Trendelenburg"],
+    text: "During ERCP, the patient is usually positioned in:",
+    options: [
+      "Supine on the table for endoscopy",
+      "Left lateral decubitus or prone for duct cannulation",
+      "Erect upright for gravity drainage",
+      "Trendelenburg to improve visualization"
+    ],
     correctIndex: 1,
-    explanation: "ERCP requires prone or left lateral decubitus for endoscopic cannulation.",
+    explanation: "Prone or left lateral positioning allows optimal endoscopic access to the ampulla for cannulation.",
     referenceLink: "https://www.giejournal.org"
   },
 
   // 17
   {
-    text: "Which special procedure uses both fluoroscopy and endoscopy simultaneously?",
-    options: ["Cystoscopy", "ERCP", "HSG", "VCUG"],
+    text: "Which special procedure combines both endoscopy and fluoroscopy simultaneously?",
+    options: [
+      "Cystoscopy to evaluate bladder",
+      "Endoscopic retrograde cholangiopancreatography (ERCP)",
+      "Hysterosalpingography of the uterine cavity",
+      "Voiding cystourethrogram of the urethra"
+    ],
     correctIndex: 1,
-    explanation: "ERCP combines endoscopic access with fluoroscopic imaging.",
+    explanation: "ERCP combines endoscopic cannulation with fluoroscopic imaging to assess biliary and pancreatic ducts.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 18
   {
     text: "A successful shoulder arthrogram should demonstrate contrast outlining:",
-    options: ["Only muscle tissue", "Joint capsule, labrum, and articular surfaces", "Pleural cavity", "Subarachnoid space"],
+    options: [
+      "Only surrounding muscle tissue",
+      "Joint capsule, labrum, and articular surfaces",
+      "Pleural cavity without spillage",
+      "Subarachnoid space in the cervical spine"
+    ],
     correctIndex: 1,
-    explanation: "Contrast must fill the joint capsule to evaluate intra-articular structures.",
+    explanation: "Contrast should fill the joint capsule and articular structures for proper assessment.",
     referenceLink: "https://pubmed.ncbi.nlm.nih.gov"
   },
 
   // 19
   {
     text: "Which projection is essential for visualizing the urethra during VCUG?",
-    options: ["Lateral or oblique pelvis", "PA chest", "Lateral skull", "Right lateral abdomen"],
+    options: [
+      "Oblique or lateral pelvis projection to outline urethra",
+      "Posteroanterior chest projection for reference",
+      "Lateral skull projection for cranial assessment",
+      "Right lateral abdomen for bowel visualization"
+    ],
     correctIndex: 0,
-    explanation: "Oblique or lateral projections display the urethra clearly during voiding.",
+    explanation: "Oblique or lateral pelvis projections provide clear visualization of the urethra during voiding.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 20
   {
-    text: "Which contrast medium is used for sialography?",
-    options: ["Oil-based iodinated contrast", "Air only", "Barium", "Gadolinium"],
+    text: "Which contrast medium is typically used for sialography?",
+    options: [
+      "Oil-based iodinated contrast for ductal evaluation",
+      "Air only insufflation",
+      "Barium sulfate suspension",
+      "Gadolinium solution for MRI"
+    ],
     correctIndex: 0,
-    explanation: "Oil-based iodinated agents coat ductal structures well for sialography.",
+    explanation: "Oil-based iodinated contrast allows detailed visualization of salivary ducts.",
     referenceLink: "https://pubmed.ncbi.nlm.nih.gov"
   },
 
   // 21
   {
     text: "What is the primary purpose of a defecography study?",
-    options: ["Evaluate biliary tract disease", "Assess anorectal function during evacuation", "Localize urinary strictures", "Evaluate GI bleeding"],
+    options: [
+      "Evaluate biliary tract disease",
+      "Assess anorectal function during defecation",
+      "Localize urinary tract strictures",
+      "Evaluate gastrointestinal bleeding sources"
+    ],
     correctIndex: 1,
-    explanation: "Defecography evaluates pelvic floor dysfunction and rectal mechanics.",
+    explanation: "Defecography evaluates pelvic floor and rectal function during evacuation.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 22
   {
     text: "Which procedure assesses the patency of a dialysis graft or fistula?",
-    options: ["RUG", "Fistulogram", "HSG", "Myelogram"],
+    options: [
+      "Retrograde urethrogram",
+      "Fistulogram using iodinated contrast",
+      "Hysterosalpingography",
+      "Lumbar myelography"
+    ],
     correctIndex: 1,
-    explanation: "Fistulography evaluates vascular access patency.",
+    explanation: "Fistulography is used to evaluate vascular access patency and identify stenosis or thrombosis.",
     referenceLink: "https://pubmed.ncbi.nlm.nih.gov"
   },
 
   // 23
   {
     text: "A patient with recurrent parotid gland swelling should undergo:",
-    options: ["Sialography", "HSG", "Myelography", "RUG"],
+    options: [
+      "Sialography to detect ductal obstruction or stones",
+      "Hysterosalpingography",
+      "Lumbar myelography",
+      "Retrograde urethrogram"
+    ],
     correctIndex: 0,
-    explanation: "Sialography demonstrates ductal obstruction and stones.",
+    explanation: "Sialography demonstrates obstruction in salivary ducts as a cause of swelling.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 24
   {
-    text: "Which special procedure is contraindicated during acute pancreatitis?",
-    options: ["CT abdomen", "ERCP (unless emergent cholangitis)", "HSG", "VCUG"],
+    text: "Which special procedure is contraindicated in acute pancreatitis unless emergent?",
+    options: [
+      "CT abdomen for general evaluation",
+      "ERCP unless indicated for cholangitis or obstruction",
+      "Hysterosalpingography",
+      "Voiding cystourethrogram"
+    ],
     correctIndex: 1,
-    explanation: "ERCP may worsen pancreatitis unless urgently required.",
+    explanation: "ERCP may worsen pancreatitis and is reserved for urgent biliary decompression.",
     referenceLink: "https://pubmed.ncbi.nlm.nih.gov"
   },
 
   // 25
   {
-    text: "For myelography, the needle is usually inserted at:",
-    options: ["C2–C3", "L3–L4 or L4–L5", "T1–T2", "S1–S2"],
+    text: "For lumbar myelography, the needle is usually inserted at:",
+    options: [
+      "C2–C3 for cervical evaluation",
+      "L3–L4 or L4–L5 below spinal cord termination",
+      "T1–T2 for thoracic access",
+      "S1–S2 for sacral imaging"
+    ],
     correctIndex: 1,
-    explanation: "Lumbar puncture is safely performed below the spinal cord termination.",
+    explanation: "Lumbar puncture below the spinal cord avoids cord injury during intrathecal contrast injection.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 26
   {
     text: "Which procedure examines mucosal patterns of the small bowel using contrast?",
-    options: ["Enteroclysis", "ERCP", "Cystography", "Arthrography"],
+    options: [
+      "Enteroclysis with direct small bowel contrast infusion",
+      "ERCP for pancreatic and biliary ducts",
+      "Cystography of the bladder",
+      "Arthrography for joint evaluation"
+    ],
     correctIndex: 0,
-    explanation: "Enteroclysis delivers contrast directly into the small intestine.",
+    explanation: "Enteroclysis delivers contrast directly into the small intestine for detailed mucosal assessment.",
     referenceLink: "https://pubmed.ncbi.nlm.nih.gov"
   },
 
   // 27
   {
-    text: "Which imaging method is used to evaluate patency of the biliary ducts after cholecystectomy?",
-    options: ["Enteroclysis", "T-tube cholangiography", "HSG", "Arthrography"],
+    text: "Which imaging method is used to evaluate patency of biliary ducts after cholecystectomy?",
+    options: [
+      "Enteroclysis for small bowel assessment",
+      "T-tube cholangiography for post-surgical biliary evaluation",
+      "Hysterosalpingography for uterine tubes",
+      "Arthrography for joint evaluation"
+    ],
     correctIndex: 1,
-    explanation: "T-tube cholangiograms are common postoperative biliary studies.",
+    explanation: "T-tube cholangiograms are performed to assess biliary duct patency after gallbladder surgery.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 28
   {
     text: "Which structure must be visualized in a normal retrograde urethrogram?",
-    options: ["Renal pelvis", "Urethral lumen and strictures", "Gallbladder", "Uterine cavity"],
+    options: [
+      "Renal pelvis for drainage assessment",
+      "Urethral lumen to evaluate for strictures or trauma",
+      "Gallbladder for stones",
+      "Uterine cavity for fertility evaluation"
+    ],
     correctIndex: 1,
-    explanation: "RUG outlines the urethra to detect strictures and trauma.",
+    explanation: "RUG outlines the urethra to detect obstruction, trauma, or strictures.",
     referenceLink: "https://pubmed.ncbi.nlm.nih.gov"
   },
 
   // 29
   {
     text: "What is the purpose of fluoroscopic spot images during HSG?",
-    options: ["Detect gallstones", "Capture uterine filling and tubal spill", "Examine renal perfusion", "Diagnose spinal stenosis"],
+    options: [
+      "Detect gallstones in the biliary system",
+      "Capture uterine filling and tubal contrast passage",
+      "Assess renal perfusion dynamically",
+      "Evaluate spinal canal stenosis"
+    ],
     correctIndex: 1,
-    explanation: "Spot images document uterine filling and tubal passage of contrast.",
+    explanation: "Spot images document uterine and tubal filling during hysterosalpingography.",
     referenceLink: "https://radiopaedia.org"
   },
 
   // 30
   {
-    text: "During an ERCP, failure of contrast to enter the common bile duct likely suggests:",
-    options: ["Normal anatomy", "Ampullary obstruction or stone", "Patent ducts", "Air embolism"],
+    text: "During ERCP, failure of contrast to enter the common bile duct suggests:",
+    options: [
+      "Normal biliary anatomy with free flow",
+      "Ampullary obstruction, stone, or stricture preventing passage",
+      "Patent ducts with unobstructed contrast flow",
+      "Air embolism within portal circulation"
+    ],
     correctIndex: 1,
-    explanation: "Obstruction prevents contrast passage into the duct system.",
+    explanation: "Obstruction prevents contrast from entering the bile duct, indicating pathology at the ampulla or distal duct.",
     referenceLink: "https://pubmed.ncbi.nlm.nih.gov"
   }
-
 ];
