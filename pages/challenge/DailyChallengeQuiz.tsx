@@ -148,26 +148,34 @@ const DailyChallengeQuiz: React.FC = () => {
     setQuizFinished(true);
     setIsSaving(true);
     
-    const email = sessionStorage.getItem('studiRad_challenge_email');
-    if (email && dayId) {
-      try {
-        const dayNum = parseInt(dayId, 10);
-        
-        const profile = await getUserProfile(email);
-        if (profile) {
-          // Advance the day if it was the current progression day, regardless of whether 
-          // the user finished all questions ('completed' param). 
-          // An attempt counts as playing the day, starting the timer for the next day.
-          const shouldAdvance = (profile.currentDay === dayNum);
-          await updateUserProgress(email, dayNum, score, shouldAdvance);
-        }
-      } catch (e) {
-        console.error("Error saving progress", e);
-      } finally {
-        setIsSaving(false);
-        if (!completed) {
-            navigate('/challenge/dashboard');
-        }
+    // Fallback to local storage if session storage is missing
+    const email = sessionStorage.getItem('studiRad_challenge_email') || localStorage.getItem('studiRad_challenge_email');
+    
+    if (!email || !dayId) {
+      // Safety check: if data is missing, stop loading and redirect
+      setIsSaving(false);
+      navigate('/challenge');
+      return;
+    }
+
+    try {
+      const dayNum = parseInt(dayId, 10);
+      
+      const profile = await getUserProfile(email);
+      if (profile) {
+        // Advance the day if it was the current progression day, regardless of whether 
+        // the user finished all questions ('completed' param). 
+        // An attempt counts as playing the day, starting the timer for the next day.
+        const shouldAdvance = (profile.currentDay === dayNum);
+        await updateUserProgress(email, dayNum, score, shouldAdvance);
+      }
+    } catch (e) {
+      console.error("Error saving progress", e);
+      // Optional: Show error alert here if needed
+    } finally {
+      setIsSaving(false);
+      if (!completed) {
+          navigate('/challenge/dashboard');
       }
     }
   };
@@ -191,7 +199,7 @@ const DailyChallengeQuiz: React.FC = () => {
           
           <div className="text-6xl font-black text-slate-900 mb-2">{score} <span className="text-2xl text-slate-400 font-medium">/ {questions.length}</span></div>
           <p className="text-emerald-600 font-bold mb-8">
-            {score > 4 ? 'Outstanding Performance!' : score > 2 ? 'Good Job!' : 'Keep Practicing!'}
+            {score > 25 ? 'Outstanding Performance!' : score > 15 ? 'Good Job!' : 'Keep Practicing!'}
           </p>
 
           <button 
