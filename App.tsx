@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { HashRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
-import { Download } from 'lucide-react';
+import SEO from './components/SEO';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Home from './pages/Home';
@@ -44,67 +44,29 @@ import LocumEditProfile from "./pages/opportunities/LocumEditProfile";
 
 // Layout wrapper for consistent Header/Footer
 const Layout: React.FC = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [showInstall, setShowInstall] = useState(false);
-
-  useEffect(() => {
-    const handler = (e: any) => {
-      // Prevent the mini-infobar from appearing on mobile
-      e.preventDefault();
-      // Stash the event so it can be triggered later.
-      setDeferredPrompt(e);
-      // Update UI notify the user they can install the PWA
-      setShowInstall(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handler);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handler);
-    };
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    // Show the install prompt
-    deferredPrompt.prompt();
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      console.log('User accepted the install prompt');
-      setShowInstall(false);
-    } else {
-      console.log('User dismissed the install prompt');
-    }
-    setDeferredPrompt(null);
-  };
-
   return (
     <div className="font-sans text-gray-900 antialiased selection:bg-brand-accent selection:text-brand-dark flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
         <Outlet />
       </main>
-      <Footer />
-      
-      {/* PWA Install Floating Button */}
-      {showInstall && (
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <button 
-            onClick={handleInstallClick}
-            className="bg-brand-dark text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 font-bold hover:bg-brand-primary transition-colors border-2 border-white/10"
-          >
-            <Download size={20} />
-            Install App
-          </button>
-        </div>
-      )}
+      <Footer />      
     </div>
   );
 };
 
 // Admin Layout
 const AdminLayout: React.FC = () => {
+
+  return (
+    <div className="font-sans text-gray-900 antialiased selection:bg-brand-accent selection:text-brand-dark flex flex-col min-h-screen">
+      {/* Default Global SEO - Pages can override this */}
+      <SEO 
+        title="Home"
+        description="StudiRad is the premier platform for Radiography professionals and students. Daily challenges, study materials, job opportunities, and a community that supports growth."
+      />
+    </div>
+  );
   return (
     <div className="font-sans text-gray-900 antialiased selection:bg-brand-accent selection:text-brand-dark flex flex-col min-h-screen">
       <Header />

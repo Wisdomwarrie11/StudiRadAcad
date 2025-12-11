@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../../firebase";
 import MaterialReaderModal from "../../components/resources/MaterialReaderModal";
+import SEO from "../../components/SEO";
 
 import {
   collection,
@@ -92,6 +93,10 @@ const MaterialsPage = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen pt-24 pb-20">
+      <SEO 
+        title="Reading Library"
+        description="Access anatomy, physiology, and pathology study materials for radiographers. Download PDF resources and prepare for exams."
+      />
       <div className="container mx-auto px-4 md:px-6">
         
         {/* Header Actions */}

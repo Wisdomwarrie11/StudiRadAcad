@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { GraduationCap, ClipboardCheck, Activity, BookOpen, Loader2, Info, X } from 'lucide-react';
 import { ChallengeLevel, ChallengePurpose } from '../../types';
 import { registerUserForChallenge, checkUserExists } from '../../services/challengeService';
+import SEO from '../../components/SEO';
 
 const DailyChallengeLanding: React.FC = () => {
   const navigate = useNavigate();
@@ -141,6 +142,10 @@ const DailyChallengeLanding: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 py-24 px-4 relative">
+      <SEO 
+        title="Daily Radiography Challenge"
+        description="Join the 6-Day StudiRad Challenge. Test your knowledge on Technique, MRI, CT, Ultrasound, and Safety. Compete on the leaderboard!"
+      />
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">Daily Radiography Challenge</h1>

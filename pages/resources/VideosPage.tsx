@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { db } from "../../firebase";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { Play, Search, Filter, BookOpen, Plus, ExternalLink, Youtube } from "lucide-react";
+import SEO from "../../components/SEO";
 
 const VideosPage = () => {
   const [videos, setVideos] = useState<any[]>([]);
@@ -49,6 +50,10 @@ const VideosPage = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen pt-24 pb-20">
+      <SEO 
+        title="Video Library"
+        description="Watch educational videos on radiographic techniques, equipment handling, CT, MRI, and anatomy demonstrations."
+      />
       <div className="container mx-auto px-4 md:px-6">
         
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, ExternalLink, Flame } from "lucide-react";
+import SEO from "../components/SEO";
 
 const ActivitiesPage = () => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -62,6 +63,10 @@ const ActivitiesPage = () => {
 
   return (
     <div className="bg-slate-50 min-h-screen py-20 mt-16">
+      <SEO 
+        title="Events & Activities"
+        description="Join StudiRad's radiography challenges, webinars, and events. Participate in the Daily 6-Day Challenge to master Physics, MRI, and CT concepts."
+      />
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <h2 className="text-4xl font-extrabold text-slate-900 mb-4">
