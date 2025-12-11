@@ -26,9 +26,6 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center text-white">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 cursor-pointer group">
-            <div className="bg-brand-accent p-2 rounded-lg group-hover:rotate-180 transition-transform duration-500">
-              <Radiation size={24} className="text-brand-dark" />
-            </div>
             <span className="text-2xl font-bold tracking-tight">Studi<span className="text-brand-accent">Rad</span></span>
           </Link>
 
