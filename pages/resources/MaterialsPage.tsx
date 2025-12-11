@@ -9,7 +9,7 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
-import { Book, Share2, Search, Plus, Filter } from "lucide-react";
+import { Book, Share2, Search, Plus, Filter, Link as LinkIcon, ExternalLink, Video } from "lucide-react";
 
 const MaterialsPage = () => {
   const [materials, setMaterials] = useState<any[]>([]);
@@ -93,17 +93,27 @@ const MaterialsPage = () => {
   return (
     <div className="bg-gray-50 min-h-screen pt-24 pb-20">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        
+        {/* Header Actions */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h2 className="text-3xl font-bold text-brand-dark">Reading Library</h2>
             <p className="text-gray-500 mt-1">Access verified study materials from peers and experts.</p>
           </div>
-          <button 
-            onClick={() => navigate("/resources/submit-material")}
-            className="flex items-center gap-2 bg-brand-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-brand-dark transition-colors shadow-lg shadow-brand-primary/20"
-          >
-            <Plus size={20} /> Contribute Material
-          </button>
+          <div className="flex gap-3">
+             <button 
+                onClick={() => navigate("/resources/videos")}
+                className="flex items-center gap-2 bg-white text-gray-700 border border-gray-200 px-6 py-3 rounded-xl font-bold hover:bg-gray-50 transition-colors shadow-sm"
+             >
+                <Video size={20} className="text-red-500" /> Video Library
+             </button>
+             <button 
+                onClick={() => navigate("/resources/submit-material")}
+                className="flex items-center gap-2 bg-brand-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-dark transition-colors shadow-lg shadow-brand-primary/20"
+            >
+                <Plus size={20} /> Contribute
+            </button>
+          </div>
         </div>
 
         {/* Search */}
@@ -153,14 +163,15 @@ const MaterialsPage = () => {
               const colors = courseColors[m.course] || courseColors.All;
               // Extract parts from the color string defined above
               const [borderColor, textColor, bgColor] = colors.split(' ');
-              
+              const isLink = m.type === 'link';
+
               return (
                 <div 
                   key={m.id}
                   className={`bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 p-6 flex flex-col items-center text-center border-t-4 ${borderColor}`}
                 >
                   <div className={`p-4 rounded-full mb-4 ${bgColor} ${textColor}`}>
-                    <Book size={28} />
+                    {isLink ? <LinkIcon size={28} /> : <Book size={28} />}
                   </div>
                   
                   <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 min-h-[3rem] leading-tight">{m.title}</h3>
@@ -177,15 +188,26 @@ const MaterialsPage = () => {
                       </button>
                     </div>
                     
-                    <button
-                      onClick={() => {
-                        setSelectedMaterial(m);
-                        setShowReader(true);
-                      }}
-                      className={`w-full py-2.5 rounded-lg border font-medium text-sm transition-colors hover:bg-gray-50 ${borderColor.replace('border-', 'text-')}`}
-                    >
-                      Read Material
-                    </button>
+                    {isLink ? (
+                        <a
+                            href={m.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-lg border font-medium text-sm transition-colors hover:bg-gray-50 ${borderColor.replace('border-', 'text-')}`}
+                        >
+                            Open Link <ExternalLink size={14} />
+                        </a>
+                    ) : (
+                        <button
+                        onClick={() => {
+                            setSelectedMaterial(m);
+                            setShowReader(true);
+                        }}
+                        className={`w-full py-2.5 rounded-lg border font-medium text-sm transition-colors hover:bg-gray-50 ${borderColor.replace('border-', 'text-')}`}
+                        >
+                        Read Material
+                        </button>
+                    )}
                   </div>
                 </div>
               );

@@ -44,8 +44,9 @@ const Header: React.FC = () => {
               <div className="absolute top-full left-0 w-48 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
                 <div className="bg-white rounded-xl shadow-xl overflow-hidden py-2 text-gray-800">
                   <Link to="/resources/blog" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Blog</Link>
+                  <Link to="/resources/materials" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Learning Materials</Link>
                   <Link to="/resources/news" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Radiography News</Link>
-                  <Link to="/resources/materials" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Reading Materials</Link>
+
                 </div>
               </div>
             </div>
