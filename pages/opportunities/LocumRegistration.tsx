@@ -22,7 +22,7 @@ const LocumRegistration = () => {
     specialties: [] as string[],
     gender: 'Male' as 'Male' | 'Female',
     minCharge: '' as any,
-    minHours: '' as any,
+    maxHours: '' as any,
   });
 
   const availableSpecialties = [
@@ -283,7 +283,7 @@ const LocumRegistration = () => {
                                 type="number"
                                 placeholder="e.g 8" 
                                 className="w-full p-3 rounded-lg border border-slate-200 focus:border-amber-500 outline-none"
-                                value={personalInfo.minHours}
+                                value={personalInfo.maxHours}
                                 onChange={(e) => setPersonalInfo({...personalInfo, maxHours: e.target.value})}
                             />
                         </div>
