@@ -46,29 +46,26 @@ import LocumEditProfile from "./pages/opportunities/LocumEditProfile";
 const Layout: React.FC = () => {
   return (
     <div className="font-sans text-gray-900 antialiased selection:bg-brand-accent selection:text-brand-dark flex flex-col min-h-screen">
+      {/* Default Global SEO - Pages can override this */}
+      <SEO 
+        title="Home"
+        description="StudiRad is the premier platform for Radiography professionals. Daily challenges, study materials, job opportunities, and community."
+      />
+      
       <Header />
       <main className="flex-grow">
         <Outlet />
       </main>
-      <Footer />      
+      <Footer />
     </div>
   );
 };
 
 // Admin Layout
 const AdminLayout: React.FC = () => {
-
   return (
     <div className="font-sans text-gray-900 antialiased selection:bg-brand-accent selection:text-brand-dark flex flex-col min-h-screen">
-      {/* Default Global SEO - Pages can override this */}
-      <SEO 
-        title="Home"
-        description="StudiRad is the premier platform for Radiography professionals and students. Daily challenges, study materials, job opportunities, and a community that supports growth."
-      />
-    </div>
-  );
-  return (
-    <div className="font-sans text-gray-900 antialiased selection:bg-brand-accent selection:text-brand-dark flex flex-col min-h-screen">
+      <SEO title="Admin Portal" description="StudiRad Administration" />
       <Header />
       <main className="flex-grow">
         <AdminProtectedRoute>
