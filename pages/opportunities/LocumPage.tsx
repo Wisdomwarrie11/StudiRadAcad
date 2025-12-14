@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Search, UserPlus, Stethoscope, Briefcase, Filter, Loader2, AlertCircle } from 'lucide-react';
+import { MapPin, Search, UserPlus, Stethoscope, Briefcase, Filter, Loader2, AlertCircle, Calendar } from 'lucide-react';
 import { NIGERIA_STATES_LGAS } from '../../data/nigerianData';
 import { searchLocums } from '../../services/locumService';
 import { LocumProfile } from '../../types';
@@ -13,6 +13,11 @@ const LocumPage = () => {
   const [results, setResults] = useState<LocumProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  
+  // State for storing the criteria used for the currently displayed results
+  // This prevents the UI from updating the "Available in:" text as the user changes inputs
+  const [executedSearchState, setExecutedSearchState] = useState('');
+  const [executedSearchLga, setExecutedSearchLga] = useState('');
 
   // States list
   const states = Object.keys(NIGERIA_STATES_LGAS).sort();
@@ -26,6 +31,10 @@ const LocumPage = () => {
     setLoading(true);
     setResults([]);
     
+    // Snapshot the search terms
+    setExecutedSearchState(searchState);
+    setExecutedSearchLga(searchLga);
+
     try {
         const data = await searchLocums(searchState, searchLga);
         setResults(data);
@@ -44,6 +53,14 @@ const LocumPage = () => {
       } else {
           navigate('/locum/login');
       }
+  };
+
+  const formatAvailability = (days?: string[]) => {
+      if (!days || days.length === 0) return 'Contact for schedule';
+      if (days.length === 7) return 'Everyday';
+      if (days.length === 5 && days.includes('Monday') && days.includes('Friday')) return 'Weekdays';
+      if (days.length === 2 && days.includes('Saturday') && days.includes('Sunday')) return 'Weekends';
+      return days.map(d => d.slice(0, 3)).join(', ');
   };
 
   return (
@@ -159,7 +176,7 @@ const LocumPage = () => {
                                 <div className="space-y-2 mb-6 flex-grow">
                                     <div className="flex items-center text-slate-600 text-sm">
                                         <MapPin className="w-4 h-4 mr-2 text-slate-400" />
-                                        <span>Available in: <strong>{searchState}</strong> ({searchLga || 'Various Areas'})</span>
+                                        <span>Available in: <strong>{executedSearchState}</strong> ({executedSearchLga || 'Various Areas'})</span>
                                     </div>
                                     <div className="flex items-center text-slate-600 text-sm">
                                         <Filter className="w-4 h-4 mr-2 text-slate-400" />
@@ -167,7 +184,11 @@ const LocumPage = () => {
                                     </div>
                                     <div className="flex items-center text-slate-600 text-sm">
                                         <Briefcase className="w-4 h-4 mr-2 text-slate-400" />
-                                        <span>Min Hours: <strong>{locum.maxHours} hrs</strong></span>
+                                        <span>Max Hours: <strong>{locum.maxHours} hrs</strong></span>
+                                    </div>
+                                    <div className="flex items-center text-slate-600 text-sm">
+                                        <Calendar className="w-4 h-4 mr-2 text-slate-400" />
+                                        <span>Days: <strong>{formatAvailability(locum.availability)}</strong></span>
                                     </div>
                                 </div>
 

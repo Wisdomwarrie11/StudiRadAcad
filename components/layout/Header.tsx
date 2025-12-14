@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Radiation, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Header: React.FC = () => {
@@ -16,11 +16,15 @@ const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Ensure header is always visible with a background color to prevent text blending with white pages
+  // We use a slightly transparent dark background at the top for hero images, but solid enough to read text
+  const headerBgClass = isScrolled || location.pathname !== '/' 
+    ? 'bg-brand-dark/95 backdrop-blur-md shadow-lg py-3' 
+    : 'bg-brand-dark/80 backdrop-blur-sm py-5';
+
   return (
     <header 
-      className={`fixed w-full top-0 z-50 transition-all duration-300 ${
-        isScrolled || location.pathname !== '/' ? 'bg-brand-dark/95 backdrop-blur-md shadow-lg py-3' : 'bg-transparent py-5'
-      }`}
+      className={`fixed w-full top-0 z-50 transition-all duration-300 ${headerBgClass}`}
     >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex justify-between items-center text-white">
@@ -43,7 +47,6 @@ const Header: React.FC = () => {
                   <Link to="/resources/blog" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Blog</Link>
                   <Link to="/resources/materials" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Learning Materials</Link>
                   <Link to="/resources/news" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Radiography News</Link>
-
                 </div>
               </div>
             </div>
@@ -84,8 +87,8 @@ const Header: React.FC = () => {
               {resourcesOpen && (
                 <div className="pl-4 space-y-2 border-l border-gray-700 ml-2">
                   <Link to="/resources/blog" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Blog</Link>
+                  <Link to="/resources/materials" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Learning Materials</Link>
                   <Link to="/resources/news" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Radiography News</Link>
-                  <Link to="/resources/materials" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Reading Materials</Link>
                 </div>
               )}
             </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2, Save, Activity, Loader2, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2, Save, Activity, Loader2, ArrowLeft, Calendar } from 'lucide-react';
 import { NIGERIA_STATES_LGAS } from '../../data/nigerianData';
 import { LocumLocation, LocumProfile } from '../../types';
 import { getLocumProfile, updateLocum } from '../../services/locumService';
@@ -19,6 +19,7 @@ const LocumEditProfile = () => {
     gender: 'Male' as 'Male' | 'Female',
     minCharge: '' as any,
     maxHours: '' as any,
+    availability: [] as string[],
   });
 
   const availableSpecialties = [
@@ -28,6 +29,9 @@ const LocumEditProfile = () => {
       "MRI",
       "CT"
   ];
+
+  const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const [availabilityMode, setAvailabilityMode] = useState<'Everyday' | 'Weekdays' | 'Weekends' | 'Custom'>('Everyday');
 
   const [locations, setLocations] = useState<LocumLocation[]>([]);
   // Temp state for adding a location
@@ -54,9 +58,17 @@ const LocumEditProfile = () => {
                   specialties: profile.specialties || [],
                   gender: profile.gender,
                   minCharge: profile.minCharge,
-                  maxHours: profile.maxHours
+                  maxHours: profile.maxHours,
+                  availability: profile.availability || []
               });
               setLocations(profile.locations || []);
+
+              // Determine initial availability mode
+              const days = profile.availability || [];
+              if (days.length === 7) setAvailabilityMode('Everyday');
+              else if (days.length === 5 && days.every(d => ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].includes(d))) setAvailabilityMode('Weekdays');
+              else if (days.length === 2 && days.every(d => ["Saturday", "Sunday"].includes(d))) setAvailabilityMode('Weekends');
+              else setAvailabilityMode('Custom');
           }
           setLoading(false);
       };
@@ -72,6 +84,27 @@ const LocumEditProfile = () => {
             return { ...prev, specialties: [...prev.specialties, spec] };
         }
     });
+  };
+
+  const handleAvailabilityChange = (mode: 'Everyday' | 'Weekdays' | 'Weekends' | 'Custom') => {
+      setAvailabilityMode(mode);
+      let days: string[] = [];
+      if (mode === 'Everyday') days = DAYS_OF_WEEK;
+      else if (mode === 'Weekdays') days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+      else if (mode === 'Weekends') days = ["Saturday", "Sunday"];
+      else if (mode === 'Custom') days = []; 
+      
+      setPersonalInfo(prev => ({ ...prev, availability: days }));
+  };
+
+  const toggleDay = (day: string) => {
+      setPersonalInfo(prev => {
+          const exists = prev.availability.includes(day);
+          const newDays = exists 
+            ? prev.availability.filter(d => d !== day)
+            : [...prev.availability, day];
+          return { ...prev, availability: newDays };
+      });
   };
 
   const addLocation = () => {
@@ -195,6 +228,53 @@ const LocumEditProfile = () => {
                             );
                         })}
                     </div>
+                </div>
+
+                {/* Availability Section */}
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center">
+                        <Calendar className="w-4 h-4 mr-1 text-amber-500" />
+                        Availability
+                    </label>
+                    
+                    <div className="flex flex-wrap gap-2 mb-4">
+                            {['Everyday', 'Weekdays', 'Weekends', 'Custom'].map(mode => (
+                                <button
+                                key={mode}
+                                onClick={() => handleAvailabilityChange(mode as any)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                                    availabilityMode === mode
+                                    ? 'bg-slate-800 border-slate-800 text-white'
+                                    : 'bg-white border-slate-200 text-slate-600 hover:border-slate-400'
+                                }`}
+                                >
+                                    {mode}
+                                </button>
+                            ))}
+                    </div>
+
+                    {availabilityMode === 'Custom' && (
+                            <div className="grid grid-cols-4 gap-2">
+                            {DAYS_OF_WEEK.map(day => (
+                                <button
+                                    key={day}
+                                    onClick={() => toggleDay(day)}
+                                    className={`px-2 py-2 rounded-lg text-xs font-bold border transition-all ${
+                                        personalInfo.availability.includes(day)
+                                        ? 'bg-amber-500 border-amber-500 text-white'
+                                        : 'bg-white border-slate-200 text-slate-500'
+                                    }`}
+                                >
+                                    {day.slice(0,3)}
+                                </button>
+                            ))}
+                            </div>
+                    )}
+                    <p className="text-xs text-slate-500 mt-2">
+                        Selected: {personalInfo.availability.length > 0 
+                            ? personalInfo.availability.join(', ') 
+                            : 'None'}
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl">

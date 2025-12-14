@@ -40,6 +40,7 @@ import LocumRegistration from "./pages/opportunities/LocumRegistration";
 import LocumDashboard from "./pages/opportunities/LocumDashboard";
 import LocumPayment from "./pages/opportunities/LocumPayment";
 import LocumEditProfile from "./pages/opportunities/LocumEditProfile";
+import LocumLogin from './pages/opportunities/LocumLogin';
 
 
 // Layout wrapper for consistent Header/Footer
@@ -113,6 +114,8 @@ const App: React.FC = () => {
           <Route path="locum/dashboard" element={<LocumDashboard />} />
           <Route path="locum/payment" element={<LocumPayment />} />
           <Route path="locum/edit" element={<LocumEditProfile />} />
+          <Route path="locum/login" element={<LocumLogin/>} />
+
         </Route>
 
         {/* Daily Challenge Quiz (Standalone - No Header/Footer) */}

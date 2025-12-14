@@ -1,4 +1,3 @@
-
 import { LucideIcon } from 'lucide-react';
 import React from 'react';
 
@@ -134,6 +133,7 @@ export interface LocumProfile {
     maxHours: number;
     phone: string;
     email: string;
+    availability?: string[]; // New: Days available (e.g. ['Mon', 'Tue'])
     isAvailable: boolean; // Main toggle
     subscription: LocumSubscription;
     createdAt: string;

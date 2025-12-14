@@ -134,17 +134,36 @@ const LocumDashboard = () => {
         </div>
 
         {/* Locations List */}
-        <div className="mt-6 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-            <h3 className="font-bold text-slate-900 mb-4 flex items-center">
-                <MapPin className="w-4 h-4 mr-2 text-slate-400" /> Coverage Areas
-            </h3>
-            <div className="space-y-3">
-                {profile.locations.map((loc, idx) => (
-                    <div key={idx} className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                        <span className="block font-bold text-slate-800 text-sm">{loc.state}</span>
-                        <span className="block text-xs text-slate-500 mt-1">{loc.lgas.join(', ')}</span>
-                    </div>
-                ))}
+        <div className="mt-6 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <div>
+                <h3 className="font-bold text-slate-900 mb-4 flex items-center">
+                    <MapPin className="w-4 h-4 mr-2 text-slate-400" /> Coverage Areas
+                </h3>
+                <div className="space-y-3">
+                    {profile.locations.map((loc, idx) => (
+                        <div key={idx} className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <span className="block font-bold text-slate-800 text-sm">{loc.state}</span>
+                            <span className="block text-xs text-slate-500 mt-1">{loc.lgas.join(', ')}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100">
+                <h3 className="font-bold text-slate-900 mb-2 flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 text-slate-400" /> Available Days
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                    {profile.availability && profile.availability.length > 0 ? (
+                        profile.availability.map(day => (
+                            <span key={day} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-xs font-bold border border-blue-100">
+                                {day}
+                            </span>
+                        ))
+                    ) : (
+                        <span className="text-sm text-slate-500 italic">No specific days selected</span>
+                    )}
+                </div>
             </div>
         </div>
 
