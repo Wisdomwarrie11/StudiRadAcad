@@ -1,5 +1,6 @@
 import { LucideIcon } from 'lucide-react';
 import React from 'react';
+import ClassesPreview from './components/home/ClassesPreview';
 
 export interface Opportunity {
   id: string;
@@ -172,6 +173,10 @@ export interface ChallengeQuestion {
   referenceLink?: string;
   level?: ChallengeLevel;
   topic?: ChallengeTopic;
+}
+
+export interface ClassesPreview{
+  id: number;
 }
 
 export interface UserChallengeProfile {

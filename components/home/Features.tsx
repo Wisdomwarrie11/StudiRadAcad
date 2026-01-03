@@ -33,8 +33,7 @@ const Features: React.FC = () => {
           <h2 className="text-base font-bold text-brand-primary uppercase tracking-wider mb-2">Why StudiRad?</h2>
           <h3 className="text-3xl md:text-4xl font-bold text-brand-dark mb-4">Elevating Radiography Standards</h3>
           <p className="text-gray-600 text-lg">
-            We provide a holistic ecosystem for your professional growth, bridging the gap between academic theory and clinical excellence.
-          </p>
+          We stand for building a supportive radiography community where students and professionals learn from one another, share opportunities, and grow together.          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

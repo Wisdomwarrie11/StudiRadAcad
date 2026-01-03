@@ -36,18 +36,10 @@ const Hero: React.FC = () => {
             Join the premier community for radiographers. Access expert-led classes, exclusive job listings, and mentorship—anytime, anywhere.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4">
-            <button className="px-8 py-4 bg-brand-accent text-brand-dark font-bold text-lg rounded-xl hover:bg-white hover:scale-105 transition-all shadow-lg shadow-brand-accent/20 flex items-center justify-center gap-2">
-              Explore Courses <ArrowRight size={20} />
-            </button>
-            <button className="px-8 py-4 bg-white/10 text-white font-semibold text-lg rounded-xl hover:bg-white/20 backdrop-blur-sm border border-white/10 transition-all flex items-center justify-center gap-2">
-              <PlayCircle size={20} />
-              How It Works
-            </button>
-          </div>
+      
 
           <div style={{marginBottom: "20px"}} className="mt-12 flex items-center gap-4 text-gray-400 text-sm">
-            <p>Trusted by over <span className="text-white font-bold">1000+</span> Radiographers and Students</p>
+            <p>Trusted by over <span className="text-white font-bold">100+</span> Radiographers and Students</p>
           </div>
         </div>
       </div>

@@ -18,7 +18,6 @@ const Home: React.FC = () => {
       <Stats />
       <Features />
       <ClassesPreview />
-      <HowItWorks />
       <TargetAudience />
       <Testimonials />
       <OpportunitiesPreview />

@@ -29,7 +29,7 @@ const AboutPage = () => {
             transition={{ duration: 0.8 }}
             className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6"
           >
-            Meet <span className="text-amber-400">StudiRad</span>
+            Meet<span className="text-amber-400">StudiRad</span>
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -47,8 +47,7 @@ const AboutPage = () => {
         <div className="text-center mb-20">
           <h2 className="text-3xl font-bold text-slate-900 mb-6">What We Stand For</h2>
           <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
-            StudiRad Academy is here to bridge the gap—by providing affordable courses, real-time classes, and one-on-one support to Radiography students. It’s where learners grow and tutors shine.
-          </p>
+          StudiRad stands for academic excellence, continuous professional growth, accessible learning, ethical practice, and strong mentorship.          </p>
         </div>
 
         {/* Mission Section */}
@@ -76,8 +75,7 @@ const AboutPage = () => {
               <h3 className="text-3xl font-bold text-slate-900">Our Mission</h3>
             </div>
             <p className="text-lg text-slate-600 leading-relaxed">
-              To revolutionize radiography learning and self-development in Nigeria by offering accessible, practical, and interactive learning experiences that prepare students for real-world challenges.
-            </p>
+            StudiRad is committed to supporting radiography students and professionals by providing accessible, high-quality digital education, structured mentorship, and timely information on career opportunities—including jobs, internships, and scholarships—thereby bridging the gap between academic training and professional success            </p>
           </div>
         </div>
 
@@ -106,8 +104,7 @@ const AboutPage = () => {
               <h3 className="text-3xl font-bold text-slate-900">Our Vision</h3>
             </div>
             <p className="text-lg text-slate-600 leading-relaxed">
-              To become the leading digital learning and self-development hub for radiography students and professionals in Africa, empowering every learner with tools, mentorship, and opportunities to succeed.
-            </p>
+            To become the leading digital learning and mentorship hub that empowers radiography students and professionals globally to achieve academic excellence, clinical competence, and sustainable career growth.            </p>
           </div>
         </div>
 

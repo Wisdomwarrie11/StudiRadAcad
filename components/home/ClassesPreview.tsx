@@ -75,7 +75,7 @@ const ClassesPreview: React.FC = () => {
             <h2 className="text-base font-bold text-brand-primary uppercase tracking-wider mb-2">New Arrivals</h2>
             <h3 className="text-3xl font-bold text-brand-dark">Latest Courses</h3>
           </div>
-          <Link to = "/classes" className="hidden md:flex items-center gap-2 text-brand-primary font-bold hover:text-brand-accent transition-colors">
+          <Link to = "/classes/#classes" className="hidden md:flex items-center gap-2 text-brand-primary font-bold hover:text-brand-accent transition-colors">
             View All Courses <ChevronRight size={20} />
           </Link>
         </div>

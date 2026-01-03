@@ -204,7 +204,7 @@ const InternshipsPage = () => {
               <div className="flex flex-col gap-3">
                 
                 {/* Apply via Agent */}
-                <div className="w-full">
+                {/* <div className="w-full">
                   <button 
                     onClick={() => alert("Application request sent to StudiRad Agent. We will review the listing and contact you.")}
                     className="w-full py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 transition-colors mb-2"
@@ -218,7 +218,7 @@ const InternshipsPage = () => {
                       We facilitate the application process.
                     </p>
                   </div>
-                </div>
+                </div> */}
 
                 <div className="flex items-center gap-3 my-1">
                    <div className="h-px bg-slate-300 flex-grow"></div>

@@ -1,9 +1,7 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Briefcase, 
   GraduationCap, 
-  Laptop2, 
   Upload, 
   Clock, 
   Check, 
@@ -11,11 +9,8 @@ import {
   Trash2,
   ArrowLeft,
   Loader2,
-  ClipboardPaste,
-  HelpCircle,
   Pencil,
   List,
-  Calendar,
   Search,
   AlertCircle
 } from 'lucide-react';
@@ -70,6 +65,20 @@ const parseCSV = (csvText: string) => {
     }
   }
   return result;
+};
+
+// Helper to calculate deadline status
+const getDeadlineStatus = (deadline: string | null | undefined) => {
+  if (!deadline) return { label: 'Not specified', color: 'text-slate-500 bg-slate-100' };
+  
+  const deadlineDate = new Date(deadline);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Compare dates only
+  
+  if (isNaN(deadlineDate.getTime())) return { label: 'Invalid Date', color: 'text-slate-400 bg-slate-50' };
+  
+  if (deadlineDate < today) return { label: 'Expired', color: 'text-red-600 bg-red-50 border border-red-100' };
+  return { label: 'Active', color: 'text-emerald-600 bg-emerald-50 border border-emerald-100' };
 };
 
 export default function AdminPostOpportunity() {
@@ -215,11 +224,6 @@ export default function AdminPostOpportunity() {
     try {
       const collectionName = activeType === 'job' ? 'jobs' : activeType === 'internship' ? 'internships' : 'scholarships';
       await adminDb.collection(collectionName).doc(id).delete();
-      // Snapshot listener will auto-update the list UI
-      
-      // If editing this specific post, cancel edit
-      if (editingId === id) resetForm('manage');
-      
     } catch (error) {
       console.error("Error deleting post:", error);
       alert("Failed to delete post.");
@@ -267,7 +271,7 @@ export default function AdminPostOpportunity() {
     }
   };
 
-  // --- Batch Upload Logic (Same as before) ---
+  // --- Batch Upload Logic ---
   const uploadBatchData = async (data: any[]) => {
     if (!Array.isArray(data) || data.length === 0) {
       alert('Data is empty or incorrect format.');
@@ -458,53 +462,59 @@ export default function AdminPostOpportunity() {
                    </div>
                  ) : (
                    <div className="divide-y divide-slate-100">
-                     {filteredPosts.map(post => (
-                       <div key={post.id} className="p-6 hover:bg-slate-50 transition-colors group flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                          <div className="flex-grow">
-                             <div className="flex items-center gap-2 mb-1">
-                               <h4 className="font-bold text-slate-800 text-lg group-hover:text-brand-primary transition-colors">
-                                 {post.title}
-                               </h4>
-                               {post.scheduledFor && (
-                                 <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
-                                   <Clock className="w-3 h-3" /> Scheduled
-                                 </span>
-                               )}
-                             </div>
-                             
-                             <div className="text-sm text-slate-500 flex flex-wrap items-center gap-x-4 gap-y-1">
-                                <span className="flex items-center gap-1">
-                                  {activeType === 'scholarship' ? <GraduationCap className="w-3 h-3"/> : <Briefcase className="w-3 h-3"/>}
-                                  {post.organization}
+                     {filteredPosts.map(post => {
+                       const status = getDeadlineStatus(post.deadline);
+                       return (
+                        <div key={post.id} className="p-6 hover:bg-slate-50 transition-colors group flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                           <div className="flex-grow">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-bold text-slate-800 text-lg group-hover:text-brand-primary transition-colors">
+                                  {post.title}
+                                </h4>
+                                <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded-full ${status.color}`}>
+                                  {status.label}
                                 </span>
-                                <span className="flex items-center gap-1">
-                                  <Clock className="w-3 h-3"/> Posted: {new Date(post.postedAt).toLocaleDateString()}
-                                </span>
-                                {post.salaryOrAmount && (
-                                  <span className="bg-slate-100 px-2 py-0.5 rounded text-xs text-slate-700 font-medium">
-                                    {post.salaryOrAmount}
+                                {post.scheduledFor && (
+                                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                                    <Clock className="w-3 h-3" /> Scheduled
                                   </span>
                                 )}
-                             </div>
-                          </div>
+                              </div>
+                              
+                              <div className="text-sm text-slate-500 flex flex-wrap items-center gap-x-4 gap-y-1">
+                                 <span className="flex items-center gap-1">
+                                   {activeType === 'scholarship' ? <GraduationCap className="w-3 h-3"/> : <Briefcase className="w-3 h-3"/>}
+                                   {post.organization}
+                                 </span>
+                                 <span className="flex items-center gap-1">
+                                   <Clock className="w-3 h-3"/> Posted: {new Date(post.postedAt).toLocaleDateString()}
+                                 </span>
+                                 {post.salaryOrAmount && (
+                                   <span className="bg-slate-100 px-2 py-0.5 rounded text-xs text-slate-700 font-medium">
+                                     {post.salaryOrAmount}
+                                   </span>
+                                 )}
+                              </div>
+                           </div>
 
-                          <div className="flex items-center gap-2 shrink-0">
-                             <button 
-                               onClick={() => handleEdit(post)}
-                               className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-brand-primary hover:text-white hover:border-brand-primary transition-colors flex items-center gap-2 shadow-sm"
-                             >
-                                <Pencil className="w-3.5 h-3.5" /> Edit
-                             </button>
-                             <button 
-                               onClick={() => handleDelete(post.id)}
-                               className="px-3 py-2 bg-white border border-slate-200 text-red-500 rounded-lg hover:bg-red-50 hover:border-red-200 transition-colors shadow-sm"
-                               title="Delete"
-                             >
-                                <Trash2 className="w-4 h-4" />
-                             </button>
-                          </div>
-                       </div>
-                     ))}
+                           <div className="flex items-center gap-2 shrink-0">
+                              <button 
+                                onClick={() => handleEdit(post)}
+                                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-brand-primary hover:text-white hover:border-brand-primary transition-colors flex items-center gap-2 shadow-sm"
+                              >
+                                 <Pencil className="w-3.5 h-3.5" /> Edit
+                              </button>
+                              <button 
+                                onClick={() => handleDelete(post.id)}
+                                className="px-3 py-2 bg-white border border-slate-200 text-red-500 rounded-lg hover:bg-red-50 hover:border-red-200 transition-colors shadow-sm"
+                                title="Delete"
+                              >
+                                 <Trash2 className="w-4 h-4" />
+                              </button>
+                           </div>
+                        </div>
+                       );
+                     })}
                    </div>
                  )}
               </div>
@@ -646,13 +656,12 @@ export default function AdminPostOpportunity() {
 
                       <div className="grid md:grid-cols-2 gap-6">
                          <div>
-                           <label className="block text-sm font-bold text-slate-700 mb-2">Deadline</label>
+                           <label className="block text-sm font-bold text-slate-700 mb-2">Deadline (Optional)</label>
                            <input 
                               type="date" 
                               className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
                               value={formData.deadline}
                               onChange={e => setFormData({...formData, deadline: e.target.value})}
-                              required
                            />
                          </div>
                          {/* Dynamic Field based on Type */}
@@ -685,18 +694,17 @@ export default function AdminPostOpportunity() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Description</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Description (Optional)</label>
                         <textarea 
                           className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg h-32 outline-none focus:border-brand-primary"
                           value={formData.description}
                           onChange={e => setFormData({...formData, description: e.target.value})}
-                          required
                         ></textarea>
                       </div>
 
                       {/* Requirements Builder */}
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Requirements</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Requirements (Optional)</label>
                         <div className="flex gap-2 mb-3">
                            <select 
                              className="flex-grow p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
