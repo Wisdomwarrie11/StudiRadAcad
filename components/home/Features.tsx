@@ -55,7 +55,7 @@ const Features: React.FC = () => {
         </div>
 
         {/* Search Bar / Browse Teaser */}
-        <div className="mt-16 bg-brand-dark rounded-3xl p-8 md:p-12 relative overflow-hidden shadow-2xl">
+        {/* <div className="mt-16 bg-brand-dark rounded-3xl p-8 md:p-12 relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-brand-primary rounded-full opacity-20 blur-3xl"></div>
           <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-brand-accent rounded-full opacity-20 blur-3xl"></div>
           
@@ -82,7 +82,7 @@ const Features: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
   );
