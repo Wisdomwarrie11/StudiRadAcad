@@ -17,6 +17,8 @@ import VideosPage from './pages/resources/VideosPage';
 // Classes
 import ClassesPage from './pages/classes/ClassesPage';
 import LockedInChallenge from './pages/LockedInChallenge';
+import TutoringBookingPage from './pages/classes/tutorialBookingPage';
+
 // Daily Challenge
 import DailyChallengeLanding from './pages/challenge/DailyChallengeLanding';
 import DailyChallengeDashboard from './pages/challenge/DailyChallengeDashboard';
@@ -98,6 +100,9 @@ const App: React.FC = () => {
           {/* Classes Route */}
           <Route path="classes" element={<ClassesPage />} />
           <Route path="locked-in" element={<LockedInChallenge />} />
+          <Route path="tutoring-booking" element={<TutoringBookingPage />} />
+
+          
           
           {/* Daily Challenge Routes */}
           <Route path="challenge" element={<DailyChallengeLanding />} />
