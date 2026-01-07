@@ -1,272 +1,328 @@
-import React, { useState, useEffect } from "react";
-import { db, storage } from "../../firebase";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  deleteDoc,
-  doc,
-  updateDoc,
-  serverTimestamp,
-} from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import imageCompression from "browser-image-compression";
-import { Edit2, Trash2, Image as ImageIcon, Plus, Save, X, Loader2 } from "lucide-react";
-import Modal from "../../components/ui/Modal";
 
-const AdminBlogPage = () => {
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  collection, addDoc, onSnapshot, query, orderBy, 
+  deleteDoc, doc, updateDoc, serverTimestamp 
+} from "firebase/firestore";
+import { 
+  Edit2, Trash2, Image as ImageIcon, Plus, 
+  Save, Loader2, CheckCircle, AlertCircle, 
+  X, ChevronRight, LayoutList, UploadCloud
+} from 'lucide-react';
+import { db } from '../../firebase';
+import Modal from '../../components/ui/Modal';
+import { processAndCompressImage, uploadImageToStorage } from '../../services/imageService';
+import { BlogPost, BlogCategory } from '../../types';
+
+const AdminBlogPage: React.FC = () => {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'compressing' | 'uploading' | 'saving'>('idle');
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  // Form States
   const [title, setTitle] = useState("");
   const [writerName, setWriterName] = useState("");
   const [writerRole, setWriterRole] = useState("");
   const [content, setContent] = useState("");
+  const [category, setCategory] = useState<BlogCategory>(BlogCategory.General);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [category, setCategory] = useState("General");
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [posts, setPosts] = useState<any[]>([]);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
-  // Edit State
-  const [editModalShow, setEditModalShow] = useState(false);
-  const [editPostId, setEditPostId] = useState<string | null>(null);
+  // Edit Modal States
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
-  const [editCategory, setEditCategory] = useState("General");
-  const [editLoading, setEditLoading] = useState(false);
+  const [editCategory, setEditCategory] = useState<BlogCategory>(BlogCategory.General);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetchPosts();
+    const q = query(collection(db, "blogs"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as BlogPost[];
+      setPosts(data);
+    }, (err) => {
+      console.error("Firestore sync error:", err);
+      setError("Failed to sync posts with database.");
+    });
+    return () => unsubscribe();
   }, []);
 
-  const fetchPosts = async () => {
-    try {
-      const snapshot = await getDocs(collection(db, "blogs"));
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setPosts(data);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
     }
+  };
+
+  const clearForm = () => {
+    setTitle("");
+    setWriterName("");
+    setWriterRole("");
+    setContent("");
+    setImageFile(null);
+    setImagePreview(null);
+    setCategory(BlogCategory.General);
+    setUploadProgress(0);
+    setUploadStatus('idle');
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage("");
+    setError(null);
+    setSuccess(null);
     setLoading(true);
 
     try {
-      let imageUrl = "";
+      let finalImageUrl = "";
 
       if (imageFile) {
-        const options = { maxSizeMB: 1, maxWidthOrHeight: 1024, useWebWorker: true };
-        const compressedFile = await imageCompression(imageFile, options);
-
-        const imageRef = ref(storage, `blogImages/${Date.now()}_${compressedFile.name}`);
-        await uploadBytes(imageRef, compressedFile);
-        imageUrl = await getDownloadURL(imageRef);
+        setUploadStatus('compressing');
+        const compressed = await processAndCompressImage(imageFile);
+        
+        setUploadStatus('uploading');
+        finalImageUrl = await uploadImageToStorage(compressed, (progress) => {
+          setUploadProgress(progress);
+        });
       }
 
+      setUploadStatus('saving');
       await addDoc(collection(db, "blogs"), {
         title,
         content,
         writerName,
         writerRole,
         category,
-        imageUrl,
+        imageUrl: finalImageUrl,
         createdAt: serverTimestamp(),
+        likeCount: 0,
+        likedBy: []
       });
 
-      setMessage("✅ Blog post successfully added!");
-      setTitle("");
-      setContent("");
-      setWriterName("");
-      setWriterRole("");
-      setImageFile(null);
-      setCategory("General");
-      fetchPosts();
-    } catch (error) {
-      console.error("Error adding blog post:", error);
-      setMessage("❌ Failed to add post. Please check connection.");
+      setSuccess("Article published successfully!");
+      clearForm();
+    } catch (err: any) {
+      console.error("Publishing error:", err);
+      setError(err.message || "Failed to publish article. Please check your connection.");
     } finally {
       setLoading(false);
+      setUploadStatus('idle');
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this post?")) {
+    if (window.confirm("Permanent delete? This cannot be undone.")) {
       try {
         await deleteDoc(doc(db, "blogs", id));
-        fetchPosts();
-      } catch (error) {
-        console.error("Error deleting:", error);
+      } catch (err) {
+        setError("Could not delete post.");
       }
     }
   };
 
-  const openEditModal = (post: any) => {
-    setEditPostId(post.id);
+  const openEditModal = (post: BlogPost) => {
+    setEditingPost(post);
     setEditTitle(post.title);
     setEditContent(post.content);
-    setEditCategory(post.category || "General");
-    setEditModalShow(true);
+    setEditCategory(post.category as BlogCategory);
+    setIsEditModalOpen(true);
   };
 
-  const handleEditSave = async () => {
-    if (!editTitle.trim() || !editContent.trim() || !editPostId) return;
-
-    setEditLoading(true);
+  const saveEdit = async () => {
+    if (!editingPost) return;
     try {
-      await updateDoc(doc(db, "blogs", editPostId), {
+      await updateDoc(doc(db, "blogs", editingPost.id), {
         title: editTitle,
         content: editContent,
         category: editCategory,
-        updatedAt: new Date(),
+        updatedAt: serverTimestamp()
       });
-      setEditModalShow(false);
-      fetchPosts();
-    } catch (error) {
-      console.error("Error updating blog:", error);
-    } finally {
-      setEditLoading(false);
+      setIsEditModalOpen(false);
+      setSuccess("Post updated.");
+    } catch (err) {
+      setError("Update failed.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-20">
-      <div className="container mx-auto px-4 max-w-5xl">
-        <h2 className="text-3xl font-bold text-center text-brand-dark mb-8">Blog Management</h2>
+    <div className="min-h-screen bg-slate-50 pb-20 px-4 md:px-6">
+      <div className="max-w-6xl mx-auto py-8">
+        <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Blog Admin</h1>
+            <p className="text-slate-500 mt-1">Manage radiologic publications and insights</p>
+          </div>
+        </header>
 
-        {message && (
-          <div className={`p-4 rounded-xl mb-8 text-center font-medium ${message.includes("✅") ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-            {message}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 text-red-700 animate-in fade-in slide-in-from-top-2">
+            <AlertCircle size={20} />
+            <p className="font-medium text-sm">{error}</p>
+            <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-red-600"><X size={18} /></button>
+          </div>
+        )}
+        {success && (
+          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 text-emerald-700 animate-in fade-in slide-in-from-top-2">
+            <CheckCircle size={20} />
+            <p className="font-medium text-sm">{success}</p>
+            <button onClick={() => setSuccess(null)} className="ml-auto text-emerald-400 hover:text-emerald-600"><X size={18} /></button>
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Create Post Form */}
-          <div className="lg:col-span-1">
-             <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
-                <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
-                  <Plus size={20} className="text-brand-accent" /> Create New Post
-                </h3>
-                
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase">Title</label>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-5 xl:col-span-4">
+            <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden sticky top-28">
+              <div className="p-6 border-b border-slate-50 bg-slate-50/50 flex items-center gap-2">
+                <div className="p-2 bg-indigo-600 rounded-lg text-white">
+                  <Plus size={18} />
+                </div>
+                <h2 className="font-bold text-slate-800">New Publication</h2>
+              </div>
+              
+              <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Title</label>
+                  <input
+                    type="text" required value={title} onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Engaging headline..."
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-medium"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Author</label>
                     <input
-                      type="text"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      required
-                      className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-primary text-sm"
+                      type="text" required value={writerName} onChange={(e) => setWriterName(e.target.value)}
+                      placeholder="Name"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                     />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-bold text-gray-500 uppercase">Writer Name</label>
-                      <input
-                        type="text"
-                        value={writerName}
-                        onChange={(e) => setWriterName(e.target.value)}
-                        required
-                        className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-primary text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-gray-500 uppercase">Role</label>
-                      <input
-                        type="text"
-                        value={writerRole}
-                        onChange={(e) => setWriterRole(e.target.value)}
-                        required
-                        className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-primary text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase">Category</label>
-                    <select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      required
-                      className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-primary text-sm bg-white"
-                    >
-                      <option value="General">General</option>
-                      <option value="Technology">Technology</option>
-                      <option value="Health">Health</option>
-                      <option value="Education">Education</option>
-                      <option value="Safety">Safety</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase">Content</label>
-                    <textarea
-                      rows={6}
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      required
-                      className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-primary text-sm"
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Role</label>
+                    <input
+                      type="text" required value={writerRole} onChange={(e) => setWriterRole(e.target.value)}
+                      placeholder="Role"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                     />
                   </div>
+                </div>
 
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase">Cover Image</label>
-                    <div className="relative border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setImageFile(e.target.files ? e.target.files[0] : null)}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      />
-                      <div className="flex flex-col items-center">
-                         <ImageIcon size={20} className="text-gray-400 mb-1" />
-                         <span className="text-xs text-gray-500">{imageFile ? imageFile.name : "Select Image"}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 bg-brand-dark text-white font-bold rounded-xl hover:bg-brand-primary transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-70"
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value as BlogCategory)}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-white cursor-pointer"
                   >
-                    {loading ? <Loader2 size={16} className="animate-spin" /> : "Publish Post"}
-                  </button>
-                </form>
-             </div>
+                    {Object.values(BlogCategory).map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Content</label>
+                  <textarea
+                    required rows={4} value={content} onChange={(e) => setContent(e.target.value)}
+                    placeholder="Write something amazing..."
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm resize-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Cover Image</label>
+                  <div className="group relative border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-4 transition-all bg-slate-50/50">
+                    <input
+                      type="file" accept="image/*" onChange={handleFileChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      ref={fileInputRef}
+                    />
+                    {imagePreview ? (
+                      <div className="relative aspect-video rounded-xl overflow-hidden shadow-sm">
+                        <img src={imagePreview} className="w-full h-full object-cover" alt="Preview" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ImageIcon className="text-white" size={32} />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center py-4 text-slate-400 group-hover:text-indigo-500 transition-colors">
+                        <UploadCloud size={32} strokeWidth={1.5} className="mb-2" />
+                        <span className="text-xs font-semibold">Click to upload photo</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-4 bg-slate-900 hover:bg-indigo-600 text-white font-bold rounded-2xl transition-all flex flex-col items-center justify-center gap-1 shadow-xl disabled:bg-slate-300 relative overflow-hidden"
+                >
+                  <div className="flex items-center gap-2">
+                    {loading ? <Loader2 size={20} className="animate-spin" /> : <ChevronRight size={20} />}
+                    <span>
+                      {uploadStatus === 'idle' && "Publish Article"}
+                      {uploadStatus === 'compressing' && "Optimizing Image..."}
+                      {uploadStatus === 'uploading' && `Uploading (${uploadProgress}%)`}
+                      {uploadStatus === 'saving' && "Finalizing..."}
+                    </span>
+                  </div>
+                  {loading && uploadProgress > 0 && (
+                    <div className="w-full h-1 bg-white/20 absolute bottom-0 left-0">
+                      <div className="h-full bg-emerald-400 transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                    </div>
+                  )}
+                </button>
+              </form>
+            </div>
           </div>
 
-          {/* Posts List */}
-          <div className="lg:col-span-2">
-            <h3 className="font-bold text-xl mb-4 text-gray-800">Published Posts</h3>
+          <div className="lg:col-span-7 xl:col-span-8">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2 mb-6">
+              <LayoutList size={20} className="text-indigo-600" />
+              Published Posts
+            </h3>
+
             <div className="space-y-4">
               {posts.length === 0 ? (
-                <div className="bg-white p-8 rounded-2xl text-center text-gray-400 border border-gray-100">
-                  No posts published yet.
+                <div className="bg-white border border-slate-100 p-16 rounded-3xl text-center">
+                   <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mx-auto mb-4">
+                    <ImageIcon size={32} />
+                   </div>
+                   <p className="text-slate-400 text-sm">No articles published yet.</p>
                 </div>
               ) : (
                 posts.map((post) => (
-                  <div key={post.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-xs font-bold px-2 py-1 bg-gray-100 rounded text-gray-600">{post.category || "General"}</span>
-                      <div className="flex gap-2">
-                         <button onClick={() => openEditModal(post)} className="p-1.5 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors">
-                           <Edit2 size={16} />
-                         </button>
-                         <button onClick={() => handleDelete(post.id)} className="p-1.5 hover:bg-red-50 text-red-600 rounded-lg transition-colors">
-                           <Trash2 size={16} />
-                         </button>
+                  <div key={post.id} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-md transition-all group flex gap-4 items-center">
+                    {post.imageUrl && (
+                      <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100">
+                        <img src={post.imageUrl} className="w-full h-full object-cover" alt="" />
                       </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-slate-900 truncate">{post.title}</h4>
+                      <p className="text-slate-500 text-xs line-clamp-1 mt-1">{post.content}</p>
                     </div>
-                    
-                    <h4 className="font-bold text-brand-dark text-lg mb-1">{post.title}</h4>
-                    <p className="text-xs text-gray-500 mb-3">
-                      By {post.writerName} • {post.writerRole}
-                    </p>
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {post.content}
-                    </p>
+                    <div className="flex gap-1">
+                      <button onClick={() => openEditModal(post)} className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg">
+                        <Edit2 size={16} />
+                      </button>
+                      <button onClick={() => handleDelete(post.id)} className="p-2 hover:bg-red-50 text-red-600 rounded-lg">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -275,58 +331,19 @@ const AdminBlogPage = () => {
         </div>
       </div>
 
-      <Modal
-        isOpen={editModalShow}
-        onClose={() => setEditModalShow(false)}
-        title="Edit Blog Post"
-      >
+      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Article">
         <div className="space-y-4">
-          <div>
-            <label className="text-xs font-bold text-gray-500 uppercase">Title</label>
-            <input
-              type="text"
-              value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-primary text-sm"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-bold text-gray-500 uppercase">Category</label>
-            <select
-              value={editCategory}
-              onChange={(e) => setEditCategory(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-primary text-sm bg-white"
-            >
-              <option value="General">General</option>
-              <option value="Technology">Technology</option>
-              <option value="Health">Health</option>
-              <option value="Education">Education</option>
-              <option value="Safety">Safety</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-bold text-gray-500 uppercase">Content</label>
-            <textarea
-              rows={8}
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-primary text-sm"
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <button 
-              onClick={() => setEditModalShow(false)}
-              className="px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-            <button 
-              onClick={handleEditSave}
-              disabled={editLoading}
-              className="px-4 py-2 text-sm font-bold bg-brand-primary text-white rounded-lg hover:bg-brand-dark transition-colors flex items-center gap-2"
-            >
-              {editLoading ? <Loader2 size={16} className="animate-spin" /> : <><Save size={16} /> Save Changes</>}
-            </button>
+          <input
+            type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm"
+          />
+          <textarea
+            rows={6} value={editContent} onChange={(e) => setEditContent(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm resize-none"
+          />
+          <div className="flex justify-end gap-2 pt-2">
+            <button onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-500">Cancel</button>
+            <button onClick={saveEdit} className="px-6 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl">Save Changes</button>
           </div>
         </div>
       </Modal>

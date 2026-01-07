@@ -234,3 +234,25 @@ export interface AlertConfig {
   onConfirm?: () => void;
   onCancel?: () => void;
 }
+
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  content: string;
+  writerName: string;
+  writerRole: string;
+  category: string;
+  imageUrl?: string;
+  createdAt: any;
+  likeCount?: number;
+  likedBy?: string[];
+}
+
+export enum BlogCategory {
+  General = 'General',
+  Technology = 'Technology',
+  Health = 'Health',
+  Education = 'Education',
+  Safety = 'Safety'
+}
