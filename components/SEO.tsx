@@ -14,14 +14,11 @@ const SEO: React.FC<SEOProps> = ({
   description, 
   name = 'StudiRad', 
   type = 'website',
-  image = './logo.svg',
+  image = 'icon-512.png',
   url
 }) => {
   useEffect(() => {
-    // Update Title
     document.title = `${title} | ${name}`;
-
-    // Helper to set meta tags
     const setMetaTag = (selector: string, content: string, attribute = 'name') => {
       let element = document.querySelector(`meta[${attribute}="${selector}"]`);
       if (!element) {
@@ -31,27 +28,19 @@ const SEO: React.FC<SEOProps> = ({
       }
       element.setAttribute('content', content);
     };
-
-    // Standard metadata
     setMetaTag('description', description);
-
-    // Open Graph
     setMetaTag('og:type', type, 'property');
     setMetaTag('og:title', `${title} | ${name}`, 'property');
     setMetaTag('og:description', description, 'property');
     setMetaTag('og:image', image, 'property');
     setMetaTag('og:url', url || window.location.href, 'property');
     setMetaTag('og:site_name', name, 'property');
-
-    // Twitter
     setMetaTag('twitter:creator', name);
     setMetaTag('twitter:card', 'summary_large_image');
     setMetaTag('twitter:title', `${title} | ${name}`);
     setMetaTag('twitter:description', description);
     if (image) setMetaTag('twitter:image', image);
-
   }, [title, description, name, type, image, url]);
-
   return null;
 };
 

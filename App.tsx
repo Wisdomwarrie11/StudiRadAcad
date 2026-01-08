@@ -101,8 +101,6 @@ const App: React.FC = () => {
           <Route path="classes" element={<ClassesPage />} />
           <Route path="locked-in" element={<LockedInChallenge />} />
           <Route path="tutoring-booking" element={<TutoringBookingPage />} />
-
-          
           
           {/* Daily Challenge Routes */}
           <Route path="challenge" element={<DailyChallengeLanding />} />

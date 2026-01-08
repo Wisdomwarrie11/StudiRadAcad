@@ -1,25 +1,32 @@
-
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-export interface TutoringLead {
+export interface TutoringEnrollment {
   name: string;
-  role: string;
+  email: string;
+  whatsapp: string;
   level: string;
-  initialCourse: string;
-  initialTopic: string;
-  timestamp: any;
+  bookingType: 'instant' | 'subscription';
+  planId?: string;
+  courses: string[];
+  totalAmount: number;
+  startDate: string;
+  targetAdminEmail: string;
+  timestamp?: any;
 }
 
-export const saveTutoringLead = async (lead: Omit<TutoringLead, 'timestamp'>) => {
+/**
+ * Saves tutoring enrollment data to Firestore.
+ */
+export const saveTutoringEnrollment = async (data: Omit<TutoringEnrollment, 'timestamp'>) => {
   try {
-    const docRef = await addDoc(collection(db, 'tutoring_leads'), {
-      ...lead,
+    const docRef = await addDoc(collection(db, 'tutoring_enrollments'), {
+      ...data,
       timestamp: serverTimestamp()
     });
     return docRef.id;
   } catch (error) {
-    console.error("Error saving lead:", error);
+    console.error("Error saving tutoring enrollment:", error);
     return null;
   }
 };
