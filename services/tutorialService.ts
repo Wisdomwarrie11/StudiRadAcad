@@ -11,8 +11,8 @@ export interface TutoringEnrollment {
   courses: string[];
   totalAmount: number;
   startDate: string;
-  targetAdminEmail: string;
   timestamp?: any;
+  targetAdminEmail: string;
 }
 
 /**

@@ -18,6 +18,7 @@ import {
   FaUserGraduate,
   FaWhatsapp,
   FaPlus,
+  FaMinus,
   FaGem,
   FaChevronRight
 } from 'react-icons/fa';
@@ -54,7 +55,7 @@ const SUBSCRIPTION_PACKAGES: SubscriptionPackage[] = [
     duration: '1 Month',
     price: 24100,
     originalPrice: 28350,
-    features: ['1 Target Course', '2 Sessions / Week', 'Daily Assignments'],
+    features: ['1 Target Course', '2 Sessions / Week', 'Daily Assignments', 'Evening Classes (6pm-10pm)'],
     maxCourses: 1
   },
   {
@@ -63,7 +64,7 @@ const SUBSCRIPTION_PACKAGES: SubscriptionPackage[] = [
     duration: '2 Months',
     price: 72100,
     originalPrice: 84800,
-    features: ['Max 3 Courses', '2 Sessions / Week', '1hr Per Course Limit', 'Monthly Tests'],
+    features: ['Max 3 Courses', '2 Sessions / Week', '1hr Per Course Limit', 'Monthly Tests', 'Evening Classes'],
     maxCourses: 3
   },
   {
@@ -72,16 +73,16 @@ const SUBSCRIPTION_PACKAGES: SubscriptionPackage[] = [
     duration: '3 Months',
     price: 124700,
     originalPrice: 146700,
-    features: ['Max 5 Courses', '3 Sessions / Week', '1hr Per Course Limit', 'Weekly Tests', 'Prof. Exam Revision'],
+    features: ['Max 5 Courses', '3 Sessions / Week', '1hr Per Course Limit', 'Weekly Tests', 'Prof. Exam Revision', 'Evening Classes'],
     maxCourses: 5
   }
 ];
 
 const PRESET_COURSES = [
-  "Radiation Physics", "Radiographic Anatomy", "Radiographic Technique", 
-  "Care of Patients", "MRI Fundamentals", "Radiographic equipment", "Radiation Safety",
-  "Gross Anatomy", "Human Physiology", "Basic Ultrasound", "Pathology"
-];
+    "Radiation Physics", "Radiographic Anatomy", "Radiographic Technique", 
+    "Care of Patients", "MRI Fundamentals", "Radiographic equipment", "Radiation Safety",
+    "Gross Anatomy", "Human Physiology", "Basic Ultrasound", "Pathology"
+  ];
 
 const INSTANT_RATE = 3000;
 const ADMIN_EMAIL = "wisdomwarrie11@gmail.com";
@@ -150,6 +151,16 @@ const TutoringBookingPage: React.FC = () => {
     return d.toISOString().split('T')[0];
   }, [bookingMode]);
 
+  const handleUpdateItem = (id: string, field: 'hours' | 'days', delta: number) => {
+    setCart(prev => prev.map(item => {
+      if (item.id === id) {
+        const newVal = Math.max(1, (item[field] || 1) + delta);
+        return { ...item, [field]: newVal };
+      }
+      return item;
+    }));
+  };
+
   const handlePaymentSuccess = async (response: any) => {
     setIsProcessing(true);
     const chosenCourses = bookingMode === 'subscription' ? subCourses : cart.map(c => c.name);
@@ -212,9 +223,8 @@ const TutoringBookingPage: React.FC = () => {
       return;
     }
 
-    // Paystack setup with standard function for callback to avoid validation errors
     const handler = window.PaystackPop.setup({
-      key: 'pk_live_a35b5eef4a79e10f6f06b9f1a7a56a7424ccfbc6', 
+      key: 'pk_live_xxxxxxxxxxxxxxxxxxxxxxxx', 
       email: profile.email,
       amount: Math.round(totalPrice * 100),
       currency: 'NGN',
@@ -266,7 +276,6 @@ const TutoringBookingPage: React.FC = () => {
                     <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3 mb-2">
                        <FaUserGraduate className="text-indigo-600" /> Student Profile
                     </h3>
-                    <p className="text-slate-500 text-sm">Enrollment data is forwarded to <strong>{ADMIN_EMAIL}</strong> for review.</p>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -367,7 +376,7 @@ const TutoringBookingPage: React.FC = () => {
                                     </li>
                                     ))}
                                 </ul>
-                                <div className={`w-full py-3 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest transition-all ${selectedSub?.id === pkg.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'}`}>Select</div>
+                                <div className={`w-full py-3 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest transition-all ${selectedSub?.id === pkg.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-50'}`}>Select</div>
                                 </button>
                             ))}
                             </div>
@@ -445,21 +454,31 @@ const TutoringBookingPage: React.FC = () => {
 
                         <div className="space-y-4">
                             {cart.map(item => (
-                            <motion.div key={item.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-[2.5rem] p-8 border border-slate-100 flex flex-col md:flex-row md:items-center gap-10 border-l-8 border-l-amber-400">
+                            <motion.div key={item.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-100 flex flex-col md:flex-row md:items-center gap-6 md:gap-10 border-l-8 border-l-amber-400">
                                 <div className="flex-grow">
                                 <h4 className="font-black text-xl text-slate-900 mb-1">{item.name}</h4>
                                 <p className="text-amber-600 font-black text-lg">₦3,000 / hr</p>
                                 </div>
-                                <div className="flex items-center gap-8">
-                                <div className="flex flex-col gap-2 text-center">
-                                    <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Hrs / session</span>
-                                    <input type="number" min="1" value={item.hours} onChange={(e) => setCart(cart.map(i => i.id === item.id ? { ...i, hours: parseInt(e.target.value) || 1 } : i))} className="w-20 rounded-2xl border-slate-200 font-black p-4 bg-slate-50 text-center" />
-                                </div>
-                                <div className="flex flex-col gap-2 text-center">
-                                    <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Total days</span>
-                                    <input type="number" min="1" value={item.days} onChange={(e) => setCart(cart.map(i => i.id === item.id ? { ...i, days: parseInt(e.target.value) || 1 } : i))} className="w-20 rounded-2xl border-slate-200 font-black p-4 bg-slate-50 text-center" />
-                                </div>
-                                <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="p-5 text-rose-400 hover:bg-rose-50 rounded-2xl transition-all"><FaTrash /></button>
+                                <div className="flex flex-wrap items-center gap-6 md:gap-8">
+                                    {/* Hours Counter */}
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest text-center">Hrs / session</span>
+                                        <div className="flex items-center bg-slate-50 rounded-xl border border-slate-200 p-1">
+                                            <button onClick={() => handleUpdateItem(item.id, 'hours', -1)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-600 hover:text-amber-600 shadow-sm"><FaMinus size={10} /></button>
+                                            <span className="w-10 text-center font-black text-slate-900">{item.hours}</span>
+                                            <button onClick={() => handleUpdateItem(item.id, 'hours', 1)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-600 hover:text-amber-600 shadow-sm"><FaPlus size={10} /></button>
+                                        </div>
+                                    </div>
+                                    {/* Days Counter */}
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest text-center">Total days</span>
+                                        <div className="flex items-center bg-slate-50 rounded-xl border border-slate-200 p-1">
+                                            <button onClick={() => handleUpdateItem(item.id, 'days', -1)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-600 hover:text-amber-600 shadow-sm"><FaMinus size={10} /></button>
+                                            <span className="w-10 text-center font-black text-slate-900">{item.days}</span>
+                                            <button onClick={() => handleUpdateItem(item.id, 'days', 1)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-600 hover:text-amber-600 shadow-sm"><FaPlus size={10} /></button>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="p-3 md:p-5 text-rose-400 hover:bg-rose-50 rounded-2xl transition-all self-end md:self-center"><FaTrash /></button>
                                 </div>
                             </motion.div>
                             ))}
@@ -471,20 +490,24 @@ const TutoringBookingPage: React.FC = () => {
                     <div className="bg-white rounded-[3rem] p-10 shadow-sm border border-slate-100">
                     <div className="flex items-center justify-between mb-10">
                         <h3 className="text-2xl font-black text-slate-900 flex items-center gap-4">
-                            <FaCalendarAlt className="text-indigo-600" /> Start Date
+                            <FaCalendarAlt className="text-indigo-600 shrink-0" size={24} /> <span>Start Date</span>
                         </h3>
-                        <div className="bg-indigo-50 text-indigo-700 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-wider">
+                        <div className="bg-indigo-50 text-indigo-700 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-wider hidden sm:block">
                             {bookingMode === 'instant' ? '48hr Prep' : '120hr Prep'}
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        <input 
-                            type="date" 
-                            min={minBookingDate}
-                            className="w-full p-6 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-600 focus:ring-0 font-black text-xl transition-all outline-none bg-slate-50 shadow-inner"
-                            value={selectedDate}
-                            onChange={e => setSelectedDate(e.target.value)}
-                        />
+                        <div className="relative group">
+                            <input 
+                                type="date" 
+                                min={minBookingDate}
+                                className="w-full p-6 rounded-[2rem] border-2 border-slate-100 focus:border-indigo-600 focus:ring-0 font-black text-xl transition-all outline-none bg-slate-50 shadow-inner appearance-none"
+                                value={selectedDate}
+                                onChange={e => setSelectedDate(e.target.value)}
+                            />
+                            {/* Visual Hint for Mobile since appearance-none might hide native icon on some OS */}
+                            {!selectedDate && <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300"><FaCalendarAlt /></div>}
+                        </div>
                         <div className="bg-slate-50 rounded-[2.5rem] p-8 flex items-start gap-5 border border-slate-100">
                             <FaInfoCircle className="text-indigo-600 mt-1 shrink-0" size={20} />
                             <div>
