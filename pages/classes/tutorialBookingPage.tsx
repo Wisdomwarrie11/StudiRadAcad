@@ -224,7 +224,7 @@ const TutoringBookingPage: React.FC = () => {
     }
 
     const handler = window.PaystackPop.setup({
-      key: 'pk_live_xxxxxxxxxxxxxxxxxxxxxxxx', 
+      key: 'pk_live_a35b5eef4a79e10f6f06b9f1a7a56a7424ccfbc6', 
       email: profile.email,
       amount: Math.round(totalPrice * 100),
       currency: 'NGN',
