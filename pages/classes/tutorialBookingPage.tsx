@@ -20,10 +20,12 @@ import {
   FaPlus,
   FaMinus,
   FaGem,
-  FaChevronRight
+  FaChevronRight,
+  FaSearchPlus,
+  FaEdit
 } from 'react-icons/fa';
 import SEO from '../../components/SEO';
-import { saveTutoringEnrollment } from '../../services/tutorialService';
+import { saveTutoringEnrollment } from '../../services/tutoringService';
 
 declare global {
   interface Window {
@@ -79,13 +81,14 @@ const SUBSCRIPTION_PACKAGES: SubscriptionPackage[] = [
 ];
 
 const PRESET_COURSES = [
-    "Radiation Physics", "Radiographic Anatomy", "Radiographic Technique", 
-    "Care of Patients", "MRI Fundamentals", "Radiographic equipment", "Radiation Safety",
-    "Gross Anatomy", "Human Physiology", "Basic Ultrasound", "Pathology"
-  ];
+  "Radiation Physics", "Radiographic Anatomy", "Radiographic Positioning", 
+  "CT Imaging", "MRI Fundamentals", "Obstetrics Ultrasound", "Radiation Safety",
+  "Darkroom Chemistry", "Image Interpretation", "Pathology"
+];
 
 const INSTANT_RATE = 3000;
 const ADMIN_EMAIL = "wisdomwarrie11@gmail.com";
+const PAYSTACK_PUBLIC_KEY = "pk_live_a35b5eef4a79e10f6f06b9f1a7a56a7424ccfbc6";
 
 const TutoringBookingPage: React.FC = () => {
   const location = useLocation();
@@ -115,6 +118,7 @@ const TutoringBookingPage: React.FC = () => {
   const [subCourses, setSubCourses] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [customCourse, setCustomCourse] = useState("");
+  const [customInstantTopic, setCustomInstantTopic] = useState("");
   const [countdown, setCountdown] = useState({ hours: 14, mins: 22, secs: 10 });
 
   useEffect(() => {
@@ -137,6 +141,16 @@ const TutoringBookingPage: React.FC = () => {
     }
     if (subCourses.includes(name)) return;
     setSubCourses([...subCourses, name]);
+  };
+
+  const handleAddCustomInstant = () => {
+    if (!customInstantTopic.trim()) return;
+    if (cart.some(i => i.name.toLowerCase() === customInstantTopic.toLowerCase())) {
+        alert("This topic is already in your cart.");
+        return;
+    }
+    setCart([...cart, { id: Math.random().toString(36), name: customInstantTopic.trim(), hours: 1, days: 1 }]);
+    setCustomInstantTopic("");
   };
 
   const totalPrice = useMemo(() => {
@@ -166,6 +180,7 @@ const TutoringBookingPage: React.FC = () => {
     const chosenCourses = bookingMode === 'subscription' ? subCourses : cart.map(c => c.name);
     
     try {
+      // Save all enrollment details to Firebase collection 'tutoring_enrollments'
       await saveTutoringEnrollment({
         name: profile.name,
         email: profile.email,
@@ -174,9 +189,12 @@ const TutoringBookingPage: React.FC = () => {
         bookingType: bookingMode,
         planId: selectedSub?.id,
         courses: chosenCourses,
+        items: bookingMode === 'instant' ? cart : undefined, // Breakdown of hours/days
         totalAmount: totalPrice,
         startDate: selectedDate,
-        targetAdminEmail: ADMIN_EMAIL
+        targetAdminEmail: ADMIN_EMAIL,
+        paymentRef: response.reference,
+        status: 'paid'
       });
 
       const message = `*NEW TUTORING ENROLLMENT*\n\n` +
@@ -184,16 +202,16 @@ const TutoringBookingPage: React.FC = () => {
         `*Name:* ${profile.name}\n` +
         `*Email:* ${profile.email}\n` +
         `*WhatsApp:* ${profile.whatsapp}\n` +
-        `*Plan:* ${bookingMode === 'subscription' ? selectedSub?.name : 'Instant'}\n` +
+        `*Plan:* ${bookingMode === 'subscription' ? selectedSub?.name : 'Instant Clarity'}\n` +
         `*Courses:* ${chosenCourses.join(', ')}\n` +
         `*Start Date:* ${selectedDate}\n\n` +
-        `Data forwarded to ${ADMIN_EMAIL}. Ready for scheduling.`;
+        `Data pushed to Firebase and forwarded to ${ADMIN_EMAIL}.`;
       
       window.open(`https://wa.me/2347041197027?text=${encodeURIComponent(message)}`, "_blank");
       navigate('/classes');
     } catch (err) {
       console.error(err);
-      alert("Payment successful but there was an error saving your data. Please contact support via WhatsApp with your reference: " + response.reference);
+      alert("Payment was successful but your data couldn't be saved automatically. Please contact us on WhatsApp with reference: " + response.reference);
     } finally {
       setIsProcessing(false);
     }
@@ -210,7 +228,7 @@ const TutoringBookingPage: React.FC = () => {
       return;
     }
     if (bookingMode === 'instant' && cart.length === 0) {
-      alert("Please add at least one course.");
+      alert("Please add at least one course or custom topic.");
       return;
     }
     if (bookingMode === 'subscription' && (!selectedSub || subCourses.length === 0)) {
@@ -219,12 +237,12 @@ const TutoringBookingPage: React.FC = () => {
     }
 
     if (!window.PaystackPop) {
-      alert("Payment gateway not loaded. Check connection.");
+      alert("Payment gateway not loaded. Please check your connection.");
       return;
     }
 
     const handler = window.PaystackPop.setup({
-      key: 'pk_live_a35b5eef4a79e10f6f06b9f1a7a56a7424ccfbc6', 
+      key: PAYSTACK_PUBLIC_KEY, 
       email: profile.email,
       amount: Math.round(totalPrice * 100),
       currency: 'NGN',
@@ -232,7 +250,7 @@ const TutoringBookingPage: React.FC = () => {
         handlePaymentSuccess(response);
       },
       onClose: function() {
-        alert('Payment window closed. Progress saved.');
+        alert('Payment window closed. You can resume checkout when ready.');
       }
     });
     handler.openIframe();
@@ -276,6 +294,7 @@ const TutoringBookingPage: React.FC = () => {
                     <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3 mb-2">
                        <FaUserGraduate className="text-indigo-600" /> Student Profile
                     </h3>
+                    <p className="text-slate-500 text-sm">Enrollment data is pushed to our secure records for scheduling.</p>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -449,6 +468,34 @@ const TutoringBookingPage: React.FC = () => {
                                 {course}
                                 </button>
                             ))}
+                            </div>
+
+                            {/* Custom Topic Selection for Instant Help */}
+                            <div className="bg-slate-50 p-8 rounded-[2rem] border-2 border-dashed border-slate-200 hover:border-amber-400 transition-colors">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                                        <FaEdit />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Can't find what you need?</p>
+                                        <p className="text-sm font-bold text-slate-900">Fill in the topic or course of your choice</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    <input 
+                                        type="text" 
+                                        placeholder="e.g. Specific Anatomy region, MRI sequence physics..."
+                                        value={customInstantTopic}
+                                        onChange={e => setCustomInstantTopic(e.target.value)}
+                                        className="flex-grow p-4 rounded-2xl border-2 border-slate-200 outline-none focus:border-amber-500 font-bold"
+                                    />
+                                    <button 
+                                        onClick={handleAddCustomInstant}
+                                        className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-lg"
+                                    >
+                                        <FaPlus size={12} /> Add Topic
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

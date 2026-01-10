@@ -9,14 +9,17 @@ export interface TutoringEnrollment {
   bookingType: 'instant' | 'subscription';
   planId?: string;
   courses: string[];
+  items?: any[]; // Detailed breakdown (hours, days) for instant help
   totalAmount: number;
   startDate: string;
-  timestamp?: any;
   targetAdminEmail: string;
+  paymentRef: string;
+  status: string;
+  timestamp?: any;
 }
 
 /**
- * Saves tutoring enrollment data to Firestore.
+ * Saves tutoring enrollment data to Firestore using modular syntax.
  */
 export const saveTutoringEnrollment = async (data: Omit<TutoringEnrollment, 'timestamp'>) => {
   try {
@@ -24,9 +27,10 @@ export const saveTutoringEnrollment = async (data: Omit<TutoringEnrollment, 'tim
       ...data,
       timestamp: serverTimestamp()
     });
+    console.log("Tutoring enrollment saved with ID:", docRef.id);
     return docRef.id;
   } catch (error) {
-    console.error("Error saving tutoring enrollment:", error);
-    return null;
+    console.error("Error saving tutoring enrollment to Firestore:", error);
+    throw error;
   }
 };

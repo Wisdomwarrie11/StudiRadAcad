@@ -1,5 +1,5 @@
-import React from 'react';
-import { HashRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { HashRouter as Router, Routes, Route, Outlet, useLocation } from 'react-router-dom';
 import SEO from './components/SEO';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
@@ -44,6 +44,15 @@ import LocumPayment from "./pages/opportunities/LocumPayment";
 import LocumEditProfile from "./pages/opportunities/LocumEditProfile";
 import LocumLogin from './pages/opportunities/LocumLogin';
 
+// Scroll Restoration Component
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
 
 // Layout wrapper for consistent Header/Footer
 const Layout: React.FC = () => {
@@ -83,6 +92,7 @@ const AdminLayout: React.FC = () => {
 const App: React.FC = () => {
   return (
     <Router>
+    <ScrollToTop />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
