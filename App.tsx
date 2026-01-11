@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next"
 import React, { useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Outlet, useLocation } from 'react-router-dom';
 import SEO from './components/SEO';
@@ -6,7 +7,7 @@ import Footer from './components/layout/Footer';
 import Home from './pages/Home';
 import AboutPage from './pages/AboutPage';
 import ActivitiesPage from './pages/ActivitiesPage';
-import FreshersPage from './pages/freshersPage';
+import FreshersPage from './pages/FreshersPage';
 // Resources
 import BlogPage from './pages/resources/BlogPage';
 import MaterialsPage from './pages/resources/MaterialsPage';
@@ -64,7 +65,7 @@ const Layout: React.FC = () => {
         title="Home"
         description="StudiRad is the premier platform for Radiography students and professionals. Access up-to-date information on Job openings, internship and scholarship opportunities. Daily challenges, study materials, and community."
       />
-      
+      <Analytics/>
       <Header />
       <main className="flex-grow">
         <Outlet />
