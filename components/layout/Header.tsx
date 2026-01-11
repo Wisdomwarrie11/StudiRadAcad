@@ -51,7 +51,7 @@ const Header: React.FC = () => {
               </div>
             </div>
             <Link to="/activities" className="text-sm font-medium hover:text-brand-accent transition-colors">Our Activities</Link>
-            {/* <Link to="/classes" className="text-sm font-medium hover:text-brand-accent transition-colors">Our Academy</Link> */}
+            <Link to="/classes" className="text-sm font-medium hover:text-brand-accent transition-colors">Our Academy</Link>
             <Link to="/opportunities" className="text-sm font-medium hover:text-brand-accent transition-colors">Opportunities</Link>
             <Link to="/about" className="text-sm font-medium hover:text-brand-accent transition-colors">About Us</Link>
 

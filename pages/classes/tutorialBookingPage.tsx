@@ -4,7 +4,6 @@ const { useLocation, useNavigate } = ReactRouterDOM;
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaShoppingCart, 
-  FaClock, 
   FaCalendarAlt, 
   FaTrash, 
   FaCreditCard, 
@@ -21,8 +20,7 @@ import {
   FaMinus,
   FaGem,
   FaChevronRight,
-  FaSearchPlus,
-  FaEdit
+  FaSearchPlus
 } from 'react-icons/fa';
 import SEO from '../../components/SEO';
 import { saveTutoringEnrollment } from '../../services/tutoringService';
@@ -90,6 +88,8 @@ const INSTANT_RATE = 3000;
 const ADMIN_EMAIL = "wisdomwarrie11@gmail.com";
 const PAYSTACK_PUBLIC_KEY = "pk_live_a35b5eef4a79e10f6f06b9f1a7a56a7424ccfbc6";
 
+const generateId = () => Math.random().toString(36).substring(2, 11);
+
 const TutoringBookingPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -149,7 +149,7 @@ const TutoringBookingPage: React.FC = () => {
         alert("This topic is already in your cart.");
         return;
     }
-    setCart([...cart, { id: Math.random().toString(36), name: customInstantTopic.trim(), hours: 1, days: 1 }]);
+    setCart([...cart, { id: generateId(), name: customInstantTopic.trim(), hours: 1, days: 1 }]);
     setCustomInstantTopic("");
   };
 
@@ -175,86 +175,74 @@ const TutoringBookingPage: React.FC = () => {
     }));
   };
 
-  const handlePaymentSuccess = async (response: any) => {
-    setIsProcessing(true);
-    const chosenCourses = bookingMode === 'subscription' ? subCourses : cart.map(c => c.name);
-    
-    try {
-      // Save all enrollment details to Firebase collection 'tutoring_enrollments'
-      await saveTutoringEnrollment({
-        name: profile.name,
-        email: profile.email,
-        whatsapp: profile.whatsapp,
-        level: profile.level,
-        bookingType: bookingMode,
-        planId: selectedSub?.id,
-        courses: chosenCourses,
-        items: bookingMode === 'instant' ? cart : undefined, // Breakdown of hours/days
-        totalAmount: totalPrice,
-        startDate: selectedDate,
-        targetAdminEmail: ADMIN_EMAIL,
-        paymentRef: response.reference,
-        status: 'paid'
-      });
-
-      const message = `*NEW TUTORING ENROLLMENT*\n\n` +
-        `*Ref:* ${response.reference}\n` +
-        `*Name:* ${profile.name}\n` +
-        `*Email:* ${profile.email}\n` +
-        `*WhatsApp:* ${profile.whatsapp}\n` +
-        `*Plan:* ${bookingMode === 'subscription' ? selectedSub?.name : 'Instant Clarity'}\n` +
-        `*Courses:* ${chosenCourses.join(', ')}\n` +
-        `*Start Date:* ${selectedDate}\n\n` +
-        `Data pushed to Firebase and forwarded to ${ADMIN_EMAIL}.`;
-      
-      window.open(`https://wa.me/2347041197027?text=${encodeURIComponent(message)}`, "_blank");
-      navigate('/classes');
-    } catch (err) {
-      console.error(err);
-      alert("Payment was successful but your data couldn't be saved automatically. Please contact us on WhatsApp with reference: " + response.reference);
-    } finally {
-      setIsProcessing(false);
+  const handlePaymentSuccess = (response: any) => {
+    const chosenCourses =
+      bookingMode === 'subscription'
+        ? subCourses
+        : cart.map(c => c.name);
+  
+    const courseList = chosenCourses.join(', ');
+  
+    let waMessage = "";
+  
+    if (bookingMode === 'subscription') {
+      waMessage = `My name is ${profile.name}, I just paid for the ${selectedSub?.name} monthly plan for ${selectedSub?.duration} in the ${courseList}. Reference: ${response.reference}`;
+    } else {
+      const totalHours = cart.reduce(
+        (acc, item) => acc + item.hours * item.days,
+        0
+      );
+      waMessage = `My name is ${profile.name}, I just paid for a one-on-one tutorial session for ${totalHours} hr in the ${courseList}. Reference: ${response.reference}`;
     }
+  
+    // 🔥 GUARANTEED REDIRECT
+    const whatsappUrl =
+      `https://wa.me/2347041197027?text=${encodeURIComponent(waMessage)}`;
+  
+    window.location.href = whatsappUrl;
+  
+    // 🔄 Save enrollment in background
+    saveTutoringEnrollment({
+      name: profile.name,
+      email: profile.email,
+      whatsapp: profile.whatsapp,
+      level: profile.level,
+      bookingType: bookingMode,
+      planId: selectedSub?.id,
+      courses: chosenCourses,
+      items: bookingMode === 'instant' ? cart : undefined,
+      totalAmount: totalPrice,
+      startDate: selectedDate,
+      targetAdminEmail: ADMIN_EMAIL,
+      paymentRef: response.reference,
+      status: 'paid'
+    }).catch(err =>
+      console.error("Firestore save failed:", err)
+    );
   };
+  
+  
 
   const handlePayment = () => {
-    if (!selectedDate) {
-      alert("Please select your preferred start date.");
-      return;
-    }
-    if (!profile.email || !profile.whatsapp) {
-      alert("Missing contact information.");
-      setStep(1);
-      return;
-    }
-    if (bookingMode === 'instant' && cart.length === 0) {
-      alert("Please add at least one course or custom topic.");
-      return;
-    }
-    if (bookingMode === 'subscription' && (!selectedSub || subCourses.length === 0)) {
-      alert("Please complete your plan configuration.");
-      return;
-    }
-
     if (!window.PaystackPop) {
-      alert("Payment gateway not loaded. Please check your connection.");
+      alert("Payment service not ready. Please refresh.");
       return;
     }
-
+  
     const handler = window.PaystackPop.setup({
-      key: PAYSTACK_PUBLIC_KEY, 
+      key: PAYSTACK_PUBLIC_KEY,
       email: profile.email,
       amount: Math.round(totalPrice * 100),
       currency: 'NGN',
-      callback: function(response: any) {
-        handlePaymentSuccess(response);
-      },
-      onClose: function() {
-        alert('Payment window closed. You can resume checkout when ready.');
+      callback: handlePaymentSuccess,
+      onClose: () => {
+        alert("Payment was not completed.");
       }
     });
+  
     handler.openIframe();
   };
+  
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-20">
@@ -294,7 +282,7 @@ const TutoringBookingPage: React.FC = () => {
                     <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3 mb-2">
                        <FaUserGraduate className="text-indigo-600" /> Student Profile
                     </h3>
-                    <p className="text-slate-500 text-sm">Enrollment data is pushed to our secure records for scheduling.</p>
+                    <p className="text-slate-500 text-sm">Enrollment data is secured and confirmed via WhatsApp.</p>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -462,7 +450,7 @@ const TutoringBookingPage: React.FC = () => {
                             {PRESET_COURSES.map(course => (
                                 <button
                                 key={course}
-                                onClick={() => { if(!cart.some(i => i.name === course)) setCart([...cart, { id: Math.random().toString(36), name: course, hours: 1, days: 1 }]) }}
+                                onClick={() => { if(!cart.some(i => i.name === course)) setCart([...cart, { id: generateId(), name: course, hours: 1, days: 1 }]) }}
                                 className={`text-left px-5 py-4 rounded-2xl border-2 transition-all font-bold text-xs ${cart.some(i => i.name === course) ? 'bg-slate-50 border-slate-200 text-slate-300' : 'bg-white border-slate-100 text-slate-600 hover:border-amber-400'}`}
                                 >
                                 {course}
@@ -470,28 +458,22 @@ const TutoringBookingPage: React.FC = () => {
                             ))}
                             </div>
 
-                            {/* Custom Topic Selection for Instant Help */}
-                            <div className="bg-slate-50 p-8 rounded-[2rem] border-2 border-dashed border-slate-200 hover:border-amber-400 transition-colors">
+                            <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
                                 <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
-                                        <FaEdit />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Can't find what you need?</p>
-                                        <p className="text-sm font-bold text-slate-900">Fill in the topic or course of your choice</p>
-                                    </div>
+                                    <FaSearchPlus className="text-amber-500" />
+                                    <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Can't find what you need?</span>
                                 </div>
                                 <div className="flex flex-col sm:flex-row gap-3">
                                     <input 
                                         type="text" 
-                                        placeholder="e.g. Specific Anatomy region, MRI sequence physics..."
+                                        placeholder="Enter a specific course or topic..."
                                         value={customInstantTopic}
                                         onChange={e => setCustomInstantTopic(e.target.value)}
-                                        className="flex-grow p-4 rounded-2xl border-2 border-slate-200 outline-none focus:border-amber-500 font-bold"
+                                        className="flex-grow p-4 rounded-2xl border-2 border-slate-200 outline-none focus:border-amber-400 font-bold"
                                     />
                                     <button 
                                         onClick={handleAddCustomInstant}
-                                        className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-lg"
+                                        className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
                                     >
                                         <FaPlus size={12} /> Add Topic
                                     </button>
@@ -507,7 +489,6 @@ const TutoringBookingPage: React.FC = () => {
                                 <p className="text-amber-600 font-black text-lg">₦3,000 / hr</p>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-6 md:gap-8">
-                                    {/* Hours Counter */}
                                     <div className="flex flex-col gap-2">
                                         <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest text-center">Hrs / session</span>
                                         <div className="flex items-center bg-slate-50 rounded-xl border border-slate-200 p-1">
@@ -516,7 +497,6 @@ const TutoringBookingPage: React.FC = () => {
                                             <button onClick={() => handleUpdateItem(item.id, 'hours', 1)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-600 hover:text-amber-600 shadow-sm"><FaPlus size={10} /></button>
                                         </div>
                                     </div>
-                                    {/* Days Counter */}
                                     <div className="flex flex-col gap-2">
                                         <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest text-center">Total days</span>
                                         <div className="flex items-center bg-slate-50 rounded-xl border border-slate-200 p-1">
@@ -552,7 +532,6 @@ const TutoringBookingPage: React.FC = () => {
                                 value={selectedDate}
                                 onChange={e => setSelectedDate(e.target.value)}
                             />
-                            {/* Visual Hint for Mobile since appearance-none might hide native icon on some OS */}
                             {!selectedDate && <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300"><FaCalendarAlt /></div>}
                         </div>
                         <div className="bg-slate-50 rounded-[2.5rem] p-8 flex items-start gap-5 border border-slate-100">
@@ -565,7 +544,6 @@ const TutoringBookingPage: React.FC = () => {
                     </div>
                     </div>
 
-                    {/* Mobile Summary & Action Bar (Inline) */}
                     <div className="lg:hidden mt-8 space-y-6">
                         <div className="bg-slate-900 text-white rounded-[3rem] p-8 shadow-xl border border-white/5 overflow-hidden relative">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
