@@ -1,70 +1,74 @@
 import React from 'react';
-import { CheckCircle2 } from 'lucide-react';
-
-const audiences = [
-  {
-    title: "Students",
-    description: "Access structured radiography courses, opportunities, and mentorship to build a solid career foundation.",
-    image: "students.jpeg",
-    features: ["Exam Prep", "Mentorship", "Basics"]
-  },
-  {
-    title: "Professionals",
-    description: "Stay updated with the latest techniques, collaborate with peers worldwide, and earn certifications that advance your career.",
-    image: "nurse.jpeg",
-    features: ["CPD Points", "Networking", "Advanced"]
-  },
-  {
-    title: "Institutes",
-    description: "Integrate StudiRad into your curriculum to provide standardized radiography training, research support, and student engagement.",
-    image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=800",
-    features: ["Curriculum", "Analytics", "Support"]
-  },
-  {
-    title: "Teachers",
-    description: "Enhance your teaching with digital radiographs, case libraries, and interactive lessons tailored for radiography education.",
-    image: "lecturer.jpg",
-    features: ["Resources", "Tools", "Library"]
-  }
-];
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Sparkles, GraduationCap, Briefcase, ChevronRight } from 'lucide-react';
 
 const TargetAudience: React.FC = () => {
+  const targets = [
+    {
+      id: 'freshers',
+      icon: Sparkles,
+      title: "New & Interested",
+      desc: "Curious about Radiography? Learn what it takes to start this fulfilling career path.",
+      link: "/freshers",
+      btnText: "Explore the Basics",
+      color: "amber"
+    },
+    {
+      id: 'students',
+      icon: GraduationCap,
+      title: "Current Students",
+      desc: "Boost your clinical skills with specialized classes and our daily radiography challenge.",
+      link: "/classes",
+      btnText: "Join the Academy",
+      color: "indigo"
+    },
+    {
+      id: 'professionals',
+      icon: Briefcase,
+      title: "Professionals",
+      desc: "Find your next career move with internships, locum shifts, and latest job postings.",
+      link: "/opportunities",
+      btnText: "View Opportunities",
+      color: "emerald"
+    }
+  ];
+
   return (
-    <section className="py-20 bg-brand-dark text-white">
-      <div className="container mx-auto px-4 md:px-6">
+    <section className="py-24 bg-white">
+      <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center mb-16">
-          <h2 className="text-base font-bold text-brand-accent uppercase tracking-wider mb-2">Community</h2>
-          <h3 className="text-3xl md:text-4xl font-bold mb-4">Who StudiRad Is Meant For</h3>
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            A platform designed to connect learners, educators, and professionals across the entire radiography spectrum.
-          </p>
+          <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">Tailored For Your Journey</h2>
+          <p className="text-slate-500 max-w-2xl mx-auto">Wherever you are in your radiography career, StudiRad has the tools to help you succeed.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {audiences.map((item, index) => (
-            <div key={index} className="group relative overflow-hidden rounded-2xl bg-brand-primary/10 border border-white/5 hover:border-brand-accent/50 transition-all duration-300 flex flex-col h-full">
-              <div className="h-48 overflow-hidden relative">
-                 <div className="absolute inset-0 bg-gradient-to-t from-brand-dark to-transparent opacity-60 z-10"></div>
-                <img 
-                  src={item.image} 
-                  alt={item.title} 
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {targets.map((target, idx) => (
+            <motion.div
+              key={target.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.1 }}
+              className="group relative bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 hover:shadow-2xl hover:bg-white transition-all duration-500 overflow-hidden"
+            >
+              {/* Subtle background icon */}
+              <target.icon className={`absolute -right-8 -bottom-8 w-40 h-40 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity duration-500 text-${target.color}-600`} />
+              
+              <div className={`w-14 h-14 rounded-2xl bg-${target.color}-100 text-${target.color}-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500`}>
+                <target.icon size={28} />
               </div>
-              <div className="p-6 flex-1 flex flex-col">
-                <h3 className="text-xl font-bold text-brand-accent mb-3">{item.title}</h3>
-                <p className="text-gray-300 text-sm mb-4 leading-relaxed flex-1">
-                  {item.description}
-                </p>
-                <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10">
-                  {item.features.map((f, i) => (
-                    <span key={i} className="text-xs bg-white/10 px-2 py-1 rounded-full text-gray-400 flex items-center gap-1">
-                      <CheckCircle2 size={10} className="text-brand-accent" /> {f}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
+
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">{target.title}</h3>
+              <p className="text-slate-600 mb-8 leading-relaxed">{target.desc}</p>
+
+              <Link 
+                to={target.link}
+                className={`inline-flex items-center gap-2 font-black text-sm uppercase tracking-widest text-${target.color}-600 group-hover:gap-3 transition-all`}
+              >
+                {target.btnText} <ChevronRight size={16} />
+              </Link>
+            </motion.div>
           ))}
         </div>
       </div>

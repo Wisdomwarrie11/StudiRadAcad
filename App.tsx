@@ -6,6 +6,7 @@ import Footer from './components/layout/Footer';
 import Home from './pages/Home';
 import AboutPage from './pages/AboutPage';
 import ActivitiesPage from './pages/ActivitiesPage';
+import FreshersPage from './pages/freshersPage';
 // Resources
 import BlogPage from './pages/resources/BlogPage';
 import MaterialsPage from './pages/resources/MaterialsPage';
@@ -98,6 +99,8 @@ const App: React.FC = () => {
           <Route index element={<Home />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="activities" element={<ActivitiesPage />} />
+          <Route path="freshers" element={<FreshersPage />} />
+
 
           {/* Resources */}
           <Route path="resources/blog" element={<BlogPage />} />
