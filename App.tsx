@@ -1,4 +1,3 @@
-import { Analytics } from "@vercel/analytics/next"
 import React, { useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Outlet, useLocation } from 'react-router-dom';
 import SEO from './components/SEO';
@@ -65,7 +64,6 @@ const Layout: React.FC = () => {
         title="Home"
         description="StudiRad is the premier platform for Radiography students and professionals. Access up-to-date information on Job openings, internship and scholarship opportunities. Daily challenges, study materials, and community."
       />
-      <Analytics/>
       <Header />
       <main className="flex-grow">
         <Outlet />
