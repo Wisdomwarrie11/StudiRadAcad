@@ -198,7 +198,7 @@ const JobsPage = () => {
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Salary</span>
-                    <p className="font-bold text-slate-800">{selectedJob.salaryOrAmount || "Not specified"}</p>
+                    <p className="font-bold text-slate-800">{selectedJob.salaryOrAmount || "Salary Not specified"}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
@@ -207,7 +207,7 @@ const JobsPage = () => {
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Deadline</span>
-                    <p className="font-bold text-slate-800">{selectedJob.deadline || "Not specified"}</p>
+                    <p className="font-bold text-slate-800">{selectedJob.deadline || "Deadline Not specified"}</p>
                   </div>
                 </div>
               </div>
