@@ -256,3 +256,18 @@ export enum BlogCategory {
   Education = 'Education',
   Safety = 'Safety'
 }
+
+
+// employer type
+
+export interface EmployerProfile {
+  uid: string;
+  email: string;
+  fullName: string;
+  roleInOrg: string;
+  organizationName: string;
+  phoneNumber: string;
+  website: string;
+  verified: boolean;
+  createdAt: string;
+}

@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { FaGraduationCap, FaGlobe, FaArrowLeft, FaMoneyBillWave, FaCalendarAlt, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { FaUserGraduate, FaArrowLeft, FaCalendarAlt, FaCheckCircle, FaAward, FaGlobe } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
-import { adminDb as db } from '../../firebase';
+import { adminDb } from '../../firebase';
 import { Loader2, AlertCircle } from 'lucide-react';
+import { ScholarshipListing } from '../../types';
+import SEO from '../../components/SEO';
 
-interface ScholarshipListing {
-  id: string;
-  title: string;
-  organization: string; // provider
-  salaryOrAmount?: string; // DB field is salaryOrAmount
-  type: string;
-  deadline: string;
-  description: string;
-  requirements: string[];
-  contactInfo?: string;
-  link?: string;
-}
+const getDeadlineStatus = (deadline: string | null | undefined) => {
+  if (!deadline) return { label: 'Ongoing', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' };
+  const deadlineDate = new Date(deadline);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); 
+  if (isNaN(deadlineDate.getTime())) return { label: 'Ongoing', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' };
+  if (deadlineDate < today) return { label: 'Expired', color: 'text-red-600 bg-red-50 border-red-100' };
+  return { label: 'Active', color: 'text-emerald-600 bg-emerald-50 border border-emerald-100' };
+};
 
 const ScholarshipsPage = () => {
   const [scholarships, setScholarships] = useState<ScholarshipListing[]>([]);
@@ -24,7 +23,7 @@ const ScholarshipsPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = db.collection('scholarships')
+    const unsubscribe = adminDb.collection('scholarships')
       .orderBy('createdAt', 'desc')
       .onSnapshot((snapshot: any) => {
         const data = snapshot.docs.map((doc: any) => ({
@@ -41,43 +40,26 @@ const ScholarshipsPage = () => {
     return () => unsubscribe();
   }, []);
 
-  const handlePostScholarship = () => {
-    navigate('/admin/post-opportunity');
-  };
-
-  const openModal = (item: ScholarshipListing) => {
-    setSelectedScholarship(item);
-  };
-
-  const closeModal = () => {
-    setSelectedScholarship(null);
-  };
+  const openModal = (item: ScholarshipListing) => setSelectedScholarship(item);
+  const closeModal = () => setSelectedScholarship(null);
 
   return (
-    <div className="min-h-screen bg-slate-50 py-20 mt-16">
+    <div className="min-h-screen bg-slate-50 py-20 mt-16 font-sans">
+      <SEO title="Radiography Scholarships" description="Explore scholarship opportunities and academic funding for radiography students globally." />
+      
       <div className="container mx-auto px-4 max-w-5xl">
-        <Link to="/opportunities" className="inline-flex items-center text-slate-500 hover:text-emerald-500 mb-8 font-medium">
+        <Link to="/opportunities" className="inline-flex items-center text-slate-500 hover:text-emerald-500 mb-8 font-bold transition-colors">
           <FaArrowLeft className="mr-2" /> Back to Opportunities
         </Link>
 
-        <div className="bg-emerald-900 rounded-3xl p-8 md:p-12 text-white mb-12 relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-emerald-500 rounded-full opacity-20 blur-3xl"></div>
-          <div className="relative z-10">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end">
-               <div>
-                 <h1 className="text-3xl md:text-4xl font-bold mb-4">Scholarships & Grants</h1>
-                 <p className="text-emerald-100 text-lg max-w-2xl">
-                   Financial support to help you focus on what matters most: your education and research.
-                 </p>
-               </div>
-               <button 
-                onClick={handlePostScholarship}
-                className="mt-6 md:mt-0 px-6 py-2 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 backdrop-blur-sm border border-white/10"
-              >
-                Post Grant <span className="text-xs bg-emerald-600 text-white px-1.5 py-0.5 rounded">Admin</span>
-              </button>
-            </div>
-          </div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+           <div>
+             <h1 className="text-4xl font-black text-slate-900 tracking-tight">Academic Funding</h1>
+             <p className="text-slate-600 mt-2">Scholarships and grants for radiography students.</p>
+           </div>
+           <Link to="/employer/login" className="px-6 py-3 bg-white text-slate-700 font-bold rounded-2xl border border-slate-200 hover:bg-slate-50 shadow-sm">
+             Post Opportunity
+           </Link>
         </div>
 
         {loading ? (
@@ -85,172 +67,149 @@ const ScholarshipsPage = () => {
             <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
           </div>
         ) : scholarships.length === 0 ? (
-           <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-slate-200">
-             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-               <AlertCircle className="w-8 h-8 text-slate-400" />
+           <div className="text-center py-24 bg-white rounded-[3rem] shadow-sm border border-slate-200">
+             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
+               <AlertCircle size={40} />
              </div>
-             <h3 className="text-lg font-bold text-slate-700">No Scholarships Available</h3>
-             <p className="text-slate-500">New grants will be listed here when available.</p>
+             <h3 className="text-2xl font-bold text-slate-800">No Scholarships Found</h3>
+             <p className="text-slate-500 mt-2">Check back soon for new funding opportunities!</p>
            </div>
         ) : (
           <div className="grid gap-6">
-            {scholarships.map((scholarship) => (
-              <div key={scholarship.id} className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6 items-start md:items-center hover:border-emerald-200 transition-colors">
-                <div className="bg-emerald-50 p-4 rounded-2xl text-emerald-600 shrink-0">
-                  <FaGraduationCap size={32} />
-                </div>
-                
-                <div className="flex-grow">
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <h3 className="text-xl font-bold text-slate-900">{scholarship.title}</h3>
-                    <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded uppercase">
-                      {scholarship.type}
-                    </span>
+            {scholarships.map((scholarship) => {
+              const status = getDeadlineStatus(scholarship.deadline);
+              return (
+                <div key={scholarship.id} className="bg-white rounded-[3rem] p-10 shadow-sm border border-slate-100 flex flex-col md:flex-row gap-8 hover:border-emerald-300 transition-all hover:shadow-2xl group relative overflow-hidden">
+                  <div className="bg-emerald-50 text-emerald-600 w-24 h-24 rounded-[2rem] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                    <FaAward size={40} />
                   </div>
-                  <p className="text-slate-500 mb-4">{scholarship.organization}</p>
                   
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    <div className="flex items-center text-slate-700 font-medium">
-                      <FaMoneyBillWave className="mr-2 text-emerald-500" /> {scholarship.salaryOrAmount || "See Details"}
+                  <div className="flex-grow">
+                    <div className="flex flex-wrap items-center gap-3 mb-3">
+                       <h3 className="text-2xl font-black text-slate-900 group-hover:text-emerald-600 transition-colors">{scholarship.title}</h3>
+                       <span className={`text-[9px] uppercase font-black px-3 py-1 rounded-full border ${status.color}`}>
+                        {status.label}
+                       </span>
                     </div>
+                    
+                    {/* Fix: Access organization property using type assertion as it's not explicitly in the ScholarshipListing interface but may exist in legacy documents */}
+                    <p className="text-slate-500 font-bold text-sm mb-6 flex items-center gap-2">
+                       <FaGlobe className="text-emerald-400" /> {scholarship.provider || (scholarship as any).organization || "International Provider"}
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-10 text-sm font-bold text-slate-400 mb-8">
+                       <div>
+                          <p className="text-[9px] uppercase tracking-widest text-slate-400 mb-1">Value</p>
+                          {/* Fix: Access salaryOrAmount property using type assertion as it's not explicitly in the ScholarshipListing interface but may exist in documents */}
+                          <p className="text-emerald-600 font-black text-lg">{scholarship.amount || (scholarship as any).salaryOrAmount || "Full Tuition"}</p>
+                       </div>
+                       <div>
+                          <p className="text-[9px] uppercase tracking-widest text-slate-400 mb-1">Eligibility</p>
+                          <p className="text-slate-700">{scholarship.eligibility || "Rad Students"}</p>
+                       </div>
+                       <div>
+                          <p className="text-[9px] uppercase tracking-widest text-slate-400 mb-1">Deadline</p>
+                          <p className="text-slate-700">{scholarship.deadline || "Ongoing"}</p>
+                       </div>
+                    </div>
+                    
+                    <button 
+                      onClick={() => openModal(scholarship)}
+                      className="px-10 py-4 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 active:scale-95"
+                    >
+                      View Eligibility & Apply
+                    </button>
                   </div>
                 </div>
-                
-                <div className="w-full md:w-auto flex flex-col items-center gap-2 shrink-0">
-                  <button 
-                    onClick={() => openModal(scholarship)}
-                    className="w-full md:w-auto px-6 py-2 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 transition-colors"
-                  >
-                    View Details
-                  </button>
-                  <span className="text-xs text-red-500 font-medium">
-                    Deadline: {new Date(scholarship.deadline).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* --- DETAILS MODAL --- */}
       {selectedScholarship && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closeModal}></div>
-          
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative z-10 flex flex-col">
-            
-            {/* Header */}
-            <div className="p-6 border-b border-slate-100 bg-white sticky top-0 z-20 flex justify-between items-start">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={closeModal}></div>
+          <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden relative z-10 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-10 border-b border-slate-100 bg-white sticky top-0 z-20 flex justify-between items-start">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">{selectedScholarship.title}</h2>
-                <div className="flex items-center gap-2 text-slate-500 mt-1">
-                   <FaGraduationCap /> {selectedScholarship.organization}
+                <h2 className="text-3xl font-black text-slate-900 mb-2 leading-tight">{selectedScholarship.title}</h2>
+                <div className="flex items-center gap-4 text-slate-500 font-bold text-sm">
+                   {/* Fix: Access organization property via type assertion for document compatibility */}
+                   <span className="flex items-center gap-2"><FaAward className="text-emerald-500" /> {selectedScholarship.provider || (selectedScholarship as any).organization}</span>
                 </div>
               </div>
-              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 text-2xl font-light">&times;</button>
+              <button onClick={closeModal} className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-colors">
+                <AlertCircle className="w-6 h-6 text-slate-400 rotate-45" />
+              </button>
             </div>
 
-            {/* Body */}
-            <div className="p-6 space-y-6 overflow-y-auto">
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
-                    <FaMoneyBillWave />
+            <div className="p-10 space-y-10 overflow-y-auto custom-scrollbar">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="flex items-center gap-5 bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+                    <FaAward size={24} />
                   </div>
                   <div>
-                    <span className="text-xs text-slate-500 uppercase font-bold">Value</span>
-                    <p className="font-semibold text-slate-800">{selectedScholarship.salaryOrAmount || "Not specified"}</p>
+                    <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Scholarship Value</span>
+                    {/* Fix: Access salaryOrAmount property via type assertion for document compatibility */}
+                    <p className="font-black text-slate-800 text-lg">{selectedScholarship.amount || (selectedScholarship as any).salaryOrAmount || "Full/Partial"}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
-                    <FaCalendarAlt />
+                <div className="flex items-center gap-5 bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                  <div className="w-14 h-14 rounded-2xl bg-rose-100 flex items-center justify-center text-rose-600">
+                    <FaCalendarAlt size={24} />
                   </div>
                   <div>
-                    <span className="text-xs text-slate-500 uppercase font-bold">Deadline</span>
-                    <p className="font-semibold text-slate-800">{selectedScholarship.deadline}</p>
+                    <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Deadline</span>
+                    <p className="font-black text-slate-800 text-lg">{selectedScholarship.deadline || "Ongoing"}</p>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">Description</h3>
-                <p className="text-slate-600 leading-relaxed whitespace-pre-line">{selectedScholarship.description}</p>
+                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">About This Scholarship</h3>
+                <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 text-slate-600 leading-relaxed whitespace-pre-line text-sm font-medium">
+                  {selectedScholarship.description || "No detailed description provided."}
+                </div>
               </div>
 
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">Eligibility / Requirements</h3>
-                {selectedScholarship.requirements && selectedScholarship.requirements.length > 0 ? (
-                   <ul className="space-y-2">
+              {selectedScholarship.requirements && selectedScholarship.requirements.length > 0 && (
+                <div>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Application Requirements</h3>
+                  <div className="grid gap-3">
                     {selectedScholarship.requirements.map((req, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-slate-600">
-                        <FaCheckCircle className="text-emerald-500 mt-1 flex-shrink-0" />
+                      <div key={idx} className="flex items-start gap-4 bg-emerald-50/30 p-4 rounded-2xl border border-emerald-100/50 text-slate-700 text-sm font-bold">
+                        <FaCheckCircle className="text-emerald-500 mt-0.5 shrink-0" size={16} />
                         <span>{req}</span>
-                      </li>
+                      </div>
                     ))}
-                  </ul>
-                ) : (
-                  <p className="text-slate-500 italic">No specific requirements listed.</p>
-                )}
-              </div>
-
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">Contact Info</h3>
-                <p className="text-slate-600 italic bg-slate-50 p-3 rounded-lg border border-slate-200">
-                  {selectedScholarship.contactInfo || "Refer to application link."}
-                </p>
-              </div>
-
-            </div>
-
-            {/* Footer / Actions */}
-            <div className="p-6 border-t border-slate-100 bg-slate-50 rounded-b-2xl">
-              <div className="flex flex-col gap-3">
-                
-                {/* Apply via Agent */}
-                {/* <div className="w-full">
-                  <button 
-                    onClick={() => alert("Application request sent to StudiRad Agent. We will review the listing and contact you.")}
-                    className="w-full py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 transition-colors mb-2"
-                  >
-                    Apply through StudiRad Agent
-                  </button>
-                  <div className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 p-2 rounded border border-amber-100">
-                    <FaExclamationTriangle className="mt-0.5 flex-shrink-0" />
-                    <p>
-                      <strong>Disclaimer:</strong> StudiRad facilitates the application process but does not guarantee selection.
-                    </p>
                   </div>
-                </div> */}
+                </div>
+              )}
 
-                {/* <div className="flex items-center gap-3 my-1">
-                   <div className="h-px bg-slate-300 flex-grow"></div>
-                   <span className="text-slate-400 text-sm font-semibold">OR</span>
-                   <div className="h-px bg-slate-300 flex-grow"></div>
-                </div> */}
-
-                {/* Apply Directly */}
-                <a 
-                  href={selectedScholarship.link || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`w-full py-3 font-bold rounded-xl transition-colors text-center ${
-                    selectedScholarship.link 
-                      ? "bg-white border-2 border-slate-200 text-emerald-600 hover:border-emerald-400 hover:bg-slate-50" 
-                      : "bg-slate-100 text-slate-400 cursor-not-allowed"
-                  }`}
-                  onClick={(e) => {
-                    if (!selectedScholarship.link) e.preventDefault();
-                  }}
-                >
-                  {selectedScholarship.link ? "Apply Directly to Provider" : "No Direct Contact Available"}
-                </a>
-
-              </div>
+              {(selectedScholarship.contactInfo || selectedScholarship.link) && (
+                <div className="p-8 bg-amber-50 rounded-[2rem] border border-amber-100">
+                  <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-2">Instructions</h3>
+                  <p className="text-amber-900 font-black text-lg">{selectedScholarship.contactInfo || "Follow the application link below."}</p>
+                </div>
+              )}
             </div>
 
+            <div className="p-10 border-t border-slate-100 bg-slate-50">
+              <a 
+                href={selectedScholarship.link || selectedScholarship.applyLink || "#"}
+                target="_blank" rel="noopener noreferrer"
+                className={`w-full py-5 font-black rounded-2xl transition-all text-center text-lg shadow-xl shadow-emerald-100 ${
+                  (selectedScholarship.link || selectedScholarship.applyLink) 
+                    ? "bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95" 
+                    : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                }`}
+                onClick={(e) => !(selectedScholarship.link || selectedScholarship.applyLink) && e.preventDefault()}
+              >
+                {(selectedScholarship.link || selectedScholarship.applyLink) ? "Apply Now" : "Review Instructions Above"}
+              </a>
+            </div>
           </div>
         </div>
       )}
