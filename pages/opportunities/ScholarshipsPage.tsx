@@ -105,7 +105,7 @@ const ScholarshipsPage = () => {
                        </div>
                        <div>
                           <p className="text-[9px] uppercase tracking-widest text-slate-400 mb-1">Eligibility</p>
-                          <p className="text-slate-700">{scholarship.eligibility || "Rad Students"}</p>
+                          <p className="text-slate-700">{scholarship.eligibility || "International Students"}</p>
                        </div>
                        <div>
                           <p className="text-[9px] uppercase tracking-widest text-slate-400 mb-1">Deadline</p>

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Calendar, ExternalLink, Flame, Timer, Building2, ShieldCheck, GraduationCap } from "lucide-react";
+import { Calendar, ExternalLink, Flame, Timer, Building2, ShieldCheck, GraduationCap, CheckCircle2 } from "lucide-react";
 import SEO from "../components/SEO";
 import OrientationRegistrationModal from "../components/orientation/OrientationRegistrationModal";
 
@@ -21,23 +21,36 @@ const ActivitiesPage = () => {
       title: "Welcome to Radiography Orientation",
       date: "Feb 6, 2026 • 7:00 PM",
       description:
-        "An exclusive orientation for new-year radiography students and prospects. Get the roadmap to a successful radiography career.",
-      image: "WelcomeToRad.jpeg", // Users will replace with their flyer
+        "An exclusive orientation for new-year radiography students and prospects. Get the roadmap to a successful radiography career and connect with mentors.",
+      image: "WelcomeToRad.jpeg",
       link: "open-modal",
-      badge: "Incoming",
+      badge: "Registration Open",
       isHot: true,
       disabled: false,
       buttonText: "Register for Orientation"
+    },
+    {
+      id: 5,
+      title: "Organization Portal Live!",
+      date: "New Feature",
+      description:
+        "Hospitals and medical imaging facilities can now register to post jobs, internships, and scholarships directly to our verified student pool.",
+      image: "colab.jpeg",
+      link: "/employer/register",
+      badge: "Employer Portal",
+      isHot: true,
+      disabled: false,
+      buttonText: "Register Facility"
     },
     {
       id: 4,
       title: "Daily Radiography Challenge",
       date: "Starts Daily",
       description:
-        "A 6-day intensive challenge tailored to your level. Physics, Technique, MRI, CT and more. Join the leaderboard!",
+        "A 6-day intensive challenge tailored to your level. Physics, Technique, MRI, CT and more. Compete for the top spot on the leaderboard!",
       image: "Radstudent.jpg",
       link: loggedIn ? "/challenge/dashboard" : "/challenge",
-      badge: loggedIn ? "Active Account" : "New Feature",
+      badge: loggedIn ? "In Progress" : "New Challenge",
       isHot: false,
       disabled: false,
       buttonText: loggedIn ? "Go to Dashboard" : "Start Challenge"
@@ -47,12 +60,12 @@ const ActivitiesPage = () => {
     //   title: "6 Weeks Locked-In Challenge",
     //   date: "Registration Closing Soon",
     //   description:
-    //     "6 weeks of intense studies and assessment designed to push your limits and master core concepts. Final slots available.",
+    //     "6 weeks of intense studies and assessment designed to push your limits and master core concepts. Final slots available for the winter batch.",
     //   image: "LockedIn.jpg",
     //   link: "/locked-in",
     //   badge: "Final Call",
     //   isUrgent: true,
-    //   disabled: true,
+    //   disabled: false,
     //   buttonText: "Register Now"
     // },
     {
@@ -60,7 +73,7 @@ const ActivitiesPage = () => {
       title: "Inside Radiography: The NeuroImaging Experience",
       date: "Past Event",
       description:
-        "An educating session introducing Radiographers to neuroimaging and its role in medical Imaging.",
+        "An educating session introducing Radiographers to neuroimaging and its role in modern medical Imaging and diagnosis.",
       image: "Episode 1.jpg",
       link: "#",
       badge: "Completed",
@@ -69,10 +82,10 @@ const ActivitiesPage = () => {
     },
     {
       id: 1,
-      title: "From Induction to Impact: Navigating the Radiographer’s Journey",
+      title: "From Induction to Impact: Navigating the Journey",
       date: "Past Event",
       description:
-        "Four keynote speakers share insights on thriving during your induction period and navigating your career path.",
+        "Four keynote speakers share insights on thriving during your induction period and navigating your long-term career path.",
       image: "StudiRad.jpg",
       link: "#",
       badge: "Completed",
@@ -95,11 +108,11 @@ const ActivitiesPage = () => {
 
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-4xl font-extrabold text-slate-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">
             Activities & Events
           </h2>
-          <p className="text-lg text-slate-600">
-            Stay ahead with our community challenges, orientation programs, and educational events.
+          <p className="text-lg text-slate-600 font-medium">
+            Stay ahead with our community challenges, orientation programs, and specialized educational events.
           </p>
         </div>
 
@@ -112,104 +125,137 @@ const ActivitiesPage = () => {
             return (
               <div
                 key={activity.id}
-                className={`flex flex-col bg-white rounded-2xl overflow-hidden shadow-lg border hover:shadow-2xl transition-all duration-300 relative ${
+                className={`flex flex-col bg-white rounded-3xl overflow-hidden shadow-lg border hover:shadow-2xl transition-all duration-500 relative group/card ${
                   activity.isHot
-                    ? "border-amber-400 ring-4 ring-amber-100"
+                    ? "border-amber-400 ring-4 ring-amber-100/50"
                     : activity.isUrgent
-                    ? "border-rose-400 ring-4 ring-rose-100"
+                    ? "border-rose-400 ring-4 ring-rose-100/50"
                     : "border-slate-100"
                 }`}
               >
+                {/* Status Ribbons */}
                 {activity.isHot && (
-                  <div className="absolute top-0 left-0 bg-amber-500 text-white text-[10px] font-black px-3 py-1 rounded-br-lg z-10 flex items-center uppercase tracking-widest">
-                    <Flame className="mr-1" size={14} /> {activity.id === 6 ? "ESSENTIAL" : "NEW"}
+                  <div className="absolute top-0 left-0 bg-amber-500 text-white text-[10px] font-black px-4 py-1.5 rounded-br-2xl z-20 flex items-center uppercase tracking-widest shadow-md">
+                    <Flame className="mr-1.5 animate-pulse" size={14} /> {activity.id === 6 ? "Essential" : "New"}
                   </div>
                 )}
                 {activity.isUrgent && (
-                  <div className="absolute top-0 left-0 bg-rose-500 text-white text-[10px] font-black px-3 py-1 rounded-br-lg z-10 flex items-center uppercase tracking-widest">
-                    <Timer className="mr-1" size={14} /> Closing Soon
+                  <div className="absolute top-0 left-0 bg-rose-500 text-white text-[10px] font-black px-4 py-1.5 rounded-br-2xl z-20 flex items-center uppercase tracking-widest shadow-md">
+                    <Timer className="mr-1.5" size={14} /> Closing Soon
                   </div>
                 )}
 
-                <div className="relative h-56 overflow-hidden bg-slate-200 group">
+                {/* Image Container with Responsive Aspect Ratio */}
+                <div className="relative aspect-[16/10] overflow-hidden bg-slate-200">
                   <img
                     src={activity.image}
                     alt={activity.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover object-center transition-transform duration-700 group-hover/card:scale-110"
+                    loading="lazy"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src =
                         "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1170&q=80";
                     }}
                   />
-                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black text-slate-800 shadow-sm uppercase tracking-widest">
+                  {/* Subtle Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent opacity-60"></div>
+                  
+                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black text-slate-800 shadow-sm uppercase tracking-widest z-10">
                     {activity.badge}
                   </div>
                 </div>
 
-                <div className="flex-1 p-6 flex flex-col">
-                  <div className={`flex items-center text-xs font-black mb-3 uppercase tracking-wider ${activity.isUrgent ? 'text-rose-600' : 'text-amber-600'}`}>
+                {/* Content Body */}
+                <div className="flex-1 p-8 flex flex-col">
+                  <div className={`flex items-center text-[10px] font-black mb-4 uppercase tracking-widest ${activity.isUrgent ? 'text-rose-600' : 'text-amber-600'}`}>
                     <Calendar className="mr-2" size={14} />
                     {activity.date}
                   </div>
 
-                  <h3 className="text-xl font-bold text-slate-900 mb-3 leading-snug">
+                  <h3 className="text-xl font-black text-slate-900 mb-3 leading-snug group-hover/card:text-brand-primary transition-colors">
                     {activity.title}
                   </h3>
 
-                  <p className="text-slate-600 text-sm mb-6 flex-grow leading-relaxed">
+                  <p className="text-slate-500 text-sm mb-8 flex-grow leading-relaxed font-medium line-clamp-3">
                     {activity.description}
                   </p>
 
-                  {isModal ? (
-                    <button
+                  <div className="mt-auto">
+                    {isModal ? (
+                      <button
                         onClick={() => setShowOrientationModal(true)}
-                        className={`mt-auto inline-flex items-center justify-center w-full px-6 py-4 font-black text-sm rounded-xl transition-all group bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 active:scale-95`}
-                    >
+                        className="inline-flex items-center justify-center w-full px-6 py-4 font-black text-sm rounded-2xl transition-all group bg-amber-500 hover:bg-amber-600 text-white shadow-xl shadow-amber-500/20 active:scale-95"
+                      >
                         {activity.buttonText}
                         <ExternalLink
-                          className="ml-2 text-xs opacity-70 group-hover:translate-x-1 transition-transform"
+                          className="ml-2 text-xs opacity-70 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform"
                           size={14}
                         />
-                    </button>
-                  ) : isInternal ? (
-                    <Link
-                      to={disabled ? "#" : activity.link}
-                      onClick={(e) => disabled && e.preventDefault()}
-                      className={`mt-auto inline-flex items-center justify-center w-full px-6 py-4 font-black text-sm rounded-xl transition-all group ${
-                        activity.isHot
-                          ? "bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20"
-                          : activity.isUrgent
-                          ? "bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/20"
-                          : "bg-slate-900 hover:bg-slate-800 text-white shadow-lg"
-                      } ${disabled ? "opacity-50 cursor-not-allowed" : "active:scale-95"}`}
-                    >
-                      {disabled ? "Past Event" : activity.buttonText}
-                      {!disabled && (
-                        <ExternalLink
-                          className="ml-2 text-xs opacity-70 group-hover:translate-x-1 transition-transform"
-                          size={14}
-                        />
-                      )}
-                    </Link>
-                  ) : (
-                    <a
-                      href={activity.link}
-                      onClick={(e) => disabled && e.preventDefault()}
-                      className="mt-auto inline-flex items-center justify-center w-full px-6 py-4 font-black text-sm rounded-xl transition-all bg-slate-900 hover:bg-slate-800 text-white shadow-lg active:scale-95"
-                    >
-                      {disabled ? "Archive" : "Learn More"}
-                      {!disabled && (
-                        <ExternalLink
-                          className="ml-2 text-xs opacity-70 group-hover:translate-x-1 transition-transform"
-                          size={14}
-                        />
-                      )}
-                    </a>
-                  )}
+                      </button>
+                    ) : isInternal ? (
+                      <Link
+                        to={disabled ? "#" : activity.link}
+                        onClick={(e) => disabled && e.preventDefault()}
+                        className={`inline-flex items-center justify-center w-full px-6 py-4 font-black text-sm rounded-2xl transition-all group ${
+                          activity.isHot
+                            ? "bg-amber-500 hover:bg-amber-600 text-white shadow-xl shadow-amber-500/20"
+                            : activity.isUrgent
+                            ? "bg-rose-500 hover:bg-rose-600 text-white shadow-xl shadow-rose-500/20"
+                            : "bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-slate-900/10"
+                        } ${disabled ? "opacity-50 cursor-not-allowed grayscale" : "active:scale-95"}`}
+                      >
+                        {disabled ? "Past Event" : activity.buttonText}
+                        {!disabled && (
+                          <ExternalLink
+                            className="ml-2 text-xs opacity-70 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform"
+                            size={14}
+                          />
+                        )}
+                      </Link>
+                    ) : (
+                      <a
+                        href={activity.link}
+                        onClick={(e) => disabled && e.preventDefault()}
+                        className={`inline-flex items-center justify-center w-full px-6 py-4 font-black text-sm rounded-2xl transition-all group ${
+                          disabled 
+                          ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                          : "bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-slate-900/10 active:scale-95"
+                        }`}
+                      >
+                        {disabled ? "Archive Closed" : "Learn More"}
+                        {!disabled && (
+                          <ExternalLink
+                            className="ml-2 text-xs opacity-70 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform"
+                            size={14}
+                          />
+                        )}
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             );
           })}
+        </div>
+
+        {/* Bottom Banner */}
+        <div className="mt-20 p-10 bg-brand-dark rounded-[3rem] text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-accent/10 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
+                <div className="w-16 h-16 bg-white/10 rounded-3xl flex items-center justify-center text-brand-accent">
+                    <CheckCircle2 size={32} />
+                </div>
+                <div className="text-center md:text-left">
+                    <h4 className="text-xl font-black">Registered for a challenge?</h4>
+                    <p className="text-slate-400 font-medium">Log in to track your progress and compete on the leaderboard.</p>
+                </div>
+            </div>
+            <Link 
+              to="/challenge" 
+              className="relative z-10 bg-brand-accent text-brand-dark px-8 py-4 rounded-2xl font-black hover:scale-105 transition-all shadow-xl shadow-brand-accent/20 active:scale-95"
+            >
+                Access Dashboard
+            </Link>
         </div>
       </div>
     </div>
