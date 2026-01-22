@@ -1,10 +1,18 @@
+
 import React, { useState, useEffect } from 'react';
 import { FaUniversity, FaMapMarkerAlt, FaArrowLeft, FaCalendarAlt, FaCheckCircle, FaClock } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { adminDb } from '../../firebase';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, MapPin, Filter, X } from 'lucide-react';
 import { InternshipListing } from '../../types';
 import SEO from '../../components/SEO';
+
+const NIGERIAN_STATES = [
+  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", "Cross River", 
+  "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT - Abuja", "Gombe", "Imo", "Jigawa", "Kaduna", 
+  "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", 
+  "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
+];
 
 const getDeadlineStatus = (deadline: string | null | undefined) => {
   if (!deadline) return { label: 'Active', color: 'text-indigo-600 bg-indigo-50 border-indigo-100' };
@@ -20,6 +28,7 @@ const InternshipsPage = () => {
   const [internships, setInternships] = useState<InternshipListing[]>([]);
   const [selectedInternship, setSelectedInternship] = useState<InternshipListing | null>(null);
   const [loading, setLoading] = useState(true);
+  const [filterState, setFilterState] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,6 +49,11 @@ const InternshipsPage = () => {
     return () => unsubscribe();
   }, []);
 
+  const filteredInternships = internships.filter(item => {
+    if (!filterState) return true;
+    return item.location?.toLowerCase().includes(filterState.toLowerCase());
+  });
+
   const openModal = (item: InternshipListing) => setSelectedInternship(item);
   const closeModal = () => setSelectedInternship(null);
 
@@ -52,34 +66,69 @@ const InternshipsPage = () => {
           <FaArrowLeft className="mr-2" /> Back to Opportunities
         </Link>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-10 gap-6">
            <div>
              <h1 className="text-4xl font-black text-slate-900 tracking-tight">Internship Programs</h1>
              <p className="text-slate-600 mt-2">Kickstart your clinical career with practical experience.</p>
            </div>
-           <Link to="/employer/login" className="px-6 py-3 bg-white text-slate-700 font-bold rounded-2xl border border-slate-200 hover:bg-slate-50 shadow-sm">
-             List Placement
-           </Link>
+           
+           <div className="flex flex-wrap items-center gap-3">
+              {/* State Filter Dropdown */}
+              <div className="relative group min-w-[200px]">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
+                  <MapPin size={18} />
+                </div>
+                <select 
+                  value={filterState}
+                  onChange={(e) => setFilterState(e.target.value)}
+                  className="w-full pl-11 pr-10 py-3.5 bg-white border-2 border-slate-100 rounded-2xl font-bold text-sm text-slate-700 outline-none focus:border-brand-primary appearance-none cursor-pointer shadow-sm transition-all"
+                >
+                  <option value="">All States (Nigeria)</option>
+                  {NIGERIAN_STATES.map(state => (
+                    <option key={state} value={state}>{state}</option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none">
+                  <Filter size={14} />
+                </div>
+              </div>
+
+              <Link to="/employer/login" className="px-6 py-3.5 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/10 active:scale-95">
+                List Placement
+              </Link>
+           </div>
         </div>
 
         {loading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
           </div>
-        ) : internships.length === 0 ? (
-           <div className="text-center py-24 bg-white rounded-[3rem] shadow-sm border border-slate-200">
+        ) : filteredInternships.length === 0 ? (
+           <div className="text-center py-24 bg-white rounded-[3rem] shadow-sm border border-slate-200 animate-in fade-in slide-in-from-bottom-4">
              <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
                <AlertCircle size={40} />
              </div>
-             <h3 className="text-2xl font-bold text-slate-800">No Placements Available</h3>
-             <p className="text-slate-500 mt-2 max-w-sm mx-auto">Check back soon for new internship posts.</p>
+             <h3 className="text-2xl font-bold text-slate-800">No Placements Found</h3>
+             <p className="text-slate-500 mt-2 max-w-sm mx-auto">
+               {filterState 
+                ? `We couldn't find any internships in ${filterState} at the moment.` 
+                : "Check back soon for new internship posts."}
+             </p>
+             {filterState && (
+               <button 
+                onClick={() => setFilterState('')}
+                className="mt-6 px-6 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all"
+               >
+                 Clear Filter
+               </button>
+             )}
            </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-8">
-            {internships.map((internship) => {
+            {filteredInternships.map((internship) => {
               const status = getDeadlineStatus(internship.deadline);
               return (
-                <div key={internship.id} className="bg-white rounded-[3rem] p-10 shadow-sm border border-slate-100 flex flex-col hover:border-indigo-300 transition-all hover:shadow-2xl group relative overflow-hidden">
+                <div key={internship.id} className="bg-white rounded-[3rem] p-10 shadow-sm border border-slate-100 flex flex-col hover:border-indigo-300 transition-all hover:shadow-2xl group relative overflow-hidden animate-in fade-in slide-in-from-bottom-2">
                   <div className="flex justify-between items-start mb-8">
                     <div className="bg-indigo-50 text-indigo-600 p-5 rounded-[2rem] group-hover:scale-110 transition-transform shadow-sm">
                       <FaUniversity size={28} />
@@ -132,7 +181,7 @@ const InternshipsPage = () => {
                 </div>
               </div>
               <button onClick={closeModal} className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-colors">
-                <AlertCircle className="w-6 h-6 text-slate-400 rotate-45" />
+                <X className="w-6 h-6 text-slate-400" />
               </button>
             </div>
 

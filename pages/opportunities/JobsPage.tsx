@@ -1,10 +1,18 @@
+
 import React, { useState, useEffect } from 'react';
 import { FaMapMarkerAlt, FaClock, FaBuilding, FaArrowLeft, FaMoneyBillWave, FaCalendarAlt, FaCheckCircle } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { adminDb } from '../../firebase';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, MapPin, Filter, X } from 'lucide-react';
 import { JobListing } from '../../types';
 import SEO from '../../components/SEO';
+
+const NIGERIAN_STATES = [
+  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", "Cross River", 
+  "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT - Abuja", "Gombe", "Imo", "Jigawa", "Kaduna", 
+  "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", 
+  "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
+];
 
 const getDeadlineStatus = (deadline: string | null | undefined) => {
   if (!deadline) return { label: 'Active', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' };
@@ -20,6 +28,7 @@ const JobsPage = () => {
   const [selectedJob, setSelectedJob] = useState<JobListing | null>(null);
   const [jobs, setJobs] = useState<JobListing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterState, setFilterState] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,6 +49,12 @@ const JobsPage = () => {
     return () => unsubscribe();
   }, []);
 
+  const filteredJobs = jobs.filter(job => {
+    if (!filterState) return true;
+    // Check if the selected state is mentioned in the location string
+    return job.location?.toLowerCase().includes(filterState.toLowerCase());
+  });
+
   const openModal = (job: JobListing) => setSelectedJob(job);
   const closeModal = () => setSelectedJob(null);
   const formatDate = (dateString: string) => dateString ? new Date(dateString).toLocaleDateString() : 'Recently';
@@ -53,13 +68,34 @@ const JobsPage = () => {
           <FaArrowLeft className="mr-2" /> Back to Opportunities
         </Link>
         
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-10 gap-6">
           <div>
              <h1 className="text-4xl font-black text-slate-900 tracking-tight">Job Openings</h1>
              <p className="text-slate-600 mt-2">Latest opportunities in Radiography and Medical Imaging.</p>
           </div>
-          <div className="flex gap-3">
-             <Link to="/employer/login" className="px-6 py-3 bg-white text-slate-700 font-bold rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm">
+          
+          <div className="flex flex-wrap items-center gap-3">
+             {/* State Filter Dropdown */}
+             <div className="relative group min-w-[200px]">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
+                  <MapPin size={18} />
+                </div>
+                <select 
+                  value={filterState}
+                  onChange={(e) => setFilterState(e.target.value)}
+                  className="w-full pl-11 pr-10 py-3.5 bg-white border-2 border-slate-100 rounded-2xl font-bold text-sm text-slate-700 outline-none focus:border-brand-primary appearance-none cursor-pointer shadow-sm transition-all"
+                >
+                  <option value="">All States (Nigeria)</option>
+                  {NIGERIAN_STATES.map(state => (
+                    <option key={state} value={state}>{state}</option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none">
+                  <Filter size={14} />
+                </div>
+             </div>
+
+             <Link to="/employer/login" className="px-6 py-3.5 bg-slate-900 text-white font-black rounded-2xl hover:bg-brand-primary transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10 active:scale-95">
                 Post as Facility
              </Link>
           </div>
@@ -69,20 +105,32 @@ const JobsPage = () => {
           <div className="flex justify-center py-20">
             <Loader2 className="w-10 h-10 text-brand-primary animate-spin" />
           </div>
-        ) : jobs.length === 0 ? (
-           <div className="text-center py-24 bg-white rounded-[3rem] shadow-sm border border-slate-200">
+        ) : filteredJobs.length === 0 ? (
+           <div className="text-center py-24 bg-white rounded-[3rem] shadow-sm border border-slate-200 animate-in fade-in slide-in-from-bottom-4">
              <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
                <AlertCircle size={40} />
              </div>
-             <h3 className="text-2xl font-bold text-slate-800">No Jobs Listed Yet</h3>
-             <p className="text-slate-500 max-w-sm mx-auto mt-2">Check back later for new openings!</p>
+             <h3 className="text-2xl font-bold text-slate-800">No Jobs Found</h3>
+             <p className="text-slate-500 max-w-sm mx-auto mt-2">
+               {filterState 
+                ? `We couldn't find any jobs in ${filterState} at the moment.` 
+                : "Check back later for new openings!"}
+             </p>
+             {filterState && (
+               <button 
+                onClick={() => setFilterState('')}
+                className="mt-6 px-6 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all"
+               >
+                 Clear Filter
+               </button>
+             )}
            </div>
         ) : (
           <div className="grid gap-6">
-            {jobs.map((job) => {
+            {filteredJobs.map((job) => {
               const status = getDeadlineStatus(job.deadline);
               return (
-                <div key={job.id} className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 hover:shadow-xl hover:border-amber-200 transition-all group relative overflow-hidden">
+                <div key={job.id} className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 hover:shadow-xl hover:border-amber-200 transition-all group relative overflow-hidden animate-in fade-in slide-in-from-bottom-2">
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div className="flex-grow">
                       <div className="flex items-center gap-3 flex-wrap mb-2">
@@ -144,7 +192,7 @@ const JobsPage = () => {
                 </div>
               </div>
               <button onClick={closeModal} className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-colors">
-                <AlertCircle className="w-6 h-6 text-slate-400 rotate-45" />
+                <X className="w-6 h-6 text-slate-400" />
               </button>
             </div>
 
