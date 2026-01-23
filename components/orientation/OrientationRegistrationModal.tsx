@@ -98,9 +98,10 @@ const OrientationRegistrationModal: React.FC<Props> = ({ isOpen, onClose }) => {
                       value={formData.status}
                       onChange={e => setFormData({...formData, status: e.target.value})}
                     >
-                      <option value="Undergraduate">Undergraduate</option>
-                      <option value="Secondary school student">Secondary school student</option>
-                      <option value="After-school student">After-school student (Pre-degree)</option>
+                      <option value="Student">Student</option>
+                      <option value="Radiographer">Radiographer</option>
+                      <option value="Interested">Interested Person</option>
+
                     </select>
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                         <ChevronDown size={18} />
