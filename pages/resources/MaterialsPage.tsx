@@ -49,7 +49,7 @@ const MaterialsPage = () => {
     "MRI",
     "USS",
     "Projects",
-    "Professional Exams PQ",
+    "Past Questions",
     "Others"
   ];
 
@@ -63,7 +63,7 @@ const MaterialsPage = () => {
     MRI: { main: "text-amber-600", light: "bg-amber-50", border: "border-amber-200" },
     USS: { main: "text-teal-600", light: "bg-teal-50", border: "border-teal-200" },
     Projects: { main: "text-indigo-600", light: "bg-indigo-50", border: "border-indigo-200" },
-    "Professional Exams PQ": { main: "text-slate-600", light: "bg-slate-100", border: "border-slate-200" },
+    "Past Questions": { main: "text-slate-600", light: "bg-slate-100", border: "border-slate-200" },
     Others: { main: "text-pink-600", light: "bg-pink-50", border: "border-pink-200" },
     All: { main: "text-brand-primary", light: "bg-slate-100", border: "border-slate-200" },
   };
