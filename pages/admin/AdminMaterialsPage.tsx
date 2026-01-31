@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import * as ReactRouterDOM from "react-router-dom";
+const { useLocation } = ReactRouterDOM as any;
 import { db } from "../../firebase";
 import {
   collection,
@@ -11,7 +13,7 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
-import { Trash2, ExternalLink, FileText, Check, Video, Link as LinkIcon, Image } from "lucide-react";
+import { Trash2, ExternalLink, FileText, Check, Video, Link as LinkIcon, Image, Loader2 } from "lucide-react";
 
 declare global {
   interface Window {
@@ -26,15 +28,14 @@ const AdminMaterialsPage = () => {
   const [course, setCourse] = useState("");
   const [title, setTitle] = useState("");
   const [uploader, setUploader] = useState("");
-  const [link, setLink] = useState("");
-  const [publicId, setPublicId] = useState(""); // Only for Cloudinary files
+  const [link, setLink] = useState(""); // Used for single link/video
+  const [bulkFiles, setBulkFiles] = useState<any[]>([]); // To store URLs/IDs of bulk uploaded files
   const [message, setMessage] = useState("");
   
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
 
-  // Helper to extract YouTube Thumbnail
   const getYoutubeThumbnail = (url: string) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
@@ -46,7 +47,6 @@ const AdminMaterialsPage = () => {
   const fetchItems = async () => {
     setFetching(true);
     try {
-      // Fetch from 'materials' or 'videos' based on activeTab
       const collectionName = activeTab;
       const q = query(collection(db, collectionName), orderBy("createdAt", "desc"));
       const querySnapshot = await getDocs(q);
@@ -72,21 +72,28 @@ const AdminMaterialsPage = () => {
       alert("Cloudinary script not loaded");
       return;
     }
+
+    const uploadedResults: any[] = [];
+    
     const myWidget = window.cloudinary.createUploadWidget(
       {
         cloudName: "dgorssyvm",
         uploadPreset: "ml_default",
         sources: ["local", "url", "camera"],
-        multiple: false,
+        multiple: true,
+        maxFiles: 5,
         resource_type: "raw",
         folder: "studiRad_materials",
       },
       (error: any, result: any) => {
         if (!error && result && result.event === "success") {
-          const uploaded = result.info;
-          setLink(uploaded.secure_url);
-          setPublicId(uploaded.public_id);
-          setMessage("✅ File uploaded successfully!");
+          uploadedResults.push({
+            url: result.info.secure_url,
+            publicId: result.info.public_id,
+            original_filename: result.info.original_filename
+          });
+          setBulkFiles([...uploadedResults]);
+          setMessage(`✅ ${uploadedResults.length} file(s) ready.`);
         } else if (error) {
           console.error("Upload error:", error);
           setMessage("❌ Upload failed. Try again.");
@@ -101,48 +108,69 @@ const AdminMaterialsPage = () => {
     setMessage("");
     setLoading(true);
 
-    if (!course || !title || !uploader || !link) {
-      setMessage("⚠️ Please fill in all fields.");
+    if (!course || !uploader) {
+      setMessage("⚠️ Please fill in course and uploader fields.");
       setLoading(false);
       return;
     }
 
     try {
-      let collectionName = "materials";
-      let payload: any = {
-        course,
-        title,
-        uploader,
-        link,
-        createdAt: serverTimestamp(),
-      };
+      if (submissionType === 'file') {
+        if (bulkFiles.length === 0) {
+          setMessage("⚠️ Please upload at least one file.");
+          setLoading(false);
+          return;
+        }
 
-      if (submissionType === 'video') {
-        collectionName = "videos";
-        const thumb = getYoutubeThumbnail(link);
-        payload.thumbnailUrl = thumb || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop";
+        // Process each file in bulkFiles
+        for (const fileData of bulkFiles) {
+          await addDoc(collection(db, "materials"), {
+            course,
+            title: title || fileData.original_filename, // Use specific title or fallback to filename
+            uploader,
+            link: fileData.url,
+            publicId: fileData.publicId,
+            type: "file",
+            createdAt: serverTimestamp(),
+          });
+        }
+        setMessage(`✅ ${bulkFiles.length} item(s) published successfully!`);
       } else {
-        // For 'file' or 'link' -> go to materials
-        payload.type = submissionType; // 'file' or 'link'
-        if (submissionType === 'file') payload.publicId = publicId;
+        // Handle single link or video
+        if (!title || !link) {
+          setMessage("⚠️ Title and URL are required.");
+          setLoading(false);
+          return;
+        }
+
+        let collectionName = "materials";
+        let payload: any = {
+          course,
+          title,
+          uploader,
+          link,
+          createdAt: serverTimestamp(),
+        };
+
+        if (submissionType === 'video') {
+          collectionName = "videos";
+          const thumb = getYoutubeThumbnail(link);
+          payload.thumbnailUrl = thumb || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop";
+        } else {
+          payload.type = "link";
+        }
+
+        await addDoc(collection(db, collectionName), payload);
+        setMessage(`✅ ${submissionType} published successfully!`);
       }
-
-      await addDoc(collection(db, collectionName), payload);
-
-      setMessage(`✅ ${submissionType === 'video' ? 'Video' : 'Material'} uploaded successfully!`);
       
       // Reset form
       setCourse("");
       setTitle("");
       setUploader("");
       setLink("");
-      setPublicId("");
-      
-      // Refresh list if we uploaded to the currently active tab
-      if ((submissionType === 'video' && activeTab === 'videos') || 
-          (submissionType !== 'video' && activeTab === 'materials')) {
-          fetchItems();
-      }
+      setBulkFiles([]);
+      fetchItems();
     } catch (error) {
       console.error("❌ Error uploading:", error);
       setMessage("❌ Failed to upload.");
@@ -184,8 +212,7 @@ const AdminMaterialsPage = () => {
           </div>
         )}
 
-        {/* Upload Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-12">
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-12 border border-gray-100">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-gray-800">Post New Content</h3>
             <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
@@ -195,6 +222,7 @@ const AdminMaterialsPage = () => {
                         onClick={() => {
                             setSubmissionType(type);
                             setLink("");
+                            setBulkFiles([]);
                         }}
                         className={`px-4 py-1.5 rounded-md text-sm font-bold capitalize transition-all ${submissionType === type ? 'bg-white shadow text-brand-primary' : 'text-gray-500 hover:text-gray-900'}`}
                     >
@@ -230,13 +258,12 @@ const AdminMaterialsPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Title</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Title {submissionType === 'file' && '(Optional if uploading files)'}</label>
                 <input
                   type="text"
                   placeholder="Enter title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  required
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 />
               </div>
@@ -256,22 +283,31 @@ const AdminMaterialsPage = () => {
 
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                {submissionType === 'file' ? 'Upload File' : submissionType === 'video' ? 'Video URL' : 'Link URL'}
+                {submissionType === 'file' ? 'Upload Files (Max 5)' : submissionType === 'video' ? 'Video URL' : 'Link URL'}
               </label>
               
               {submissionType === 'file' ? (
-                  <div className="flex gap-4 items-center">
-                    <button 
-                      type="button" 
-                      onClick={handleCloudinaryUpload}
-                      className="px-6 py-2 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition-colors"
-                    >
-                      Upload via Cloudinary
-                    </button>
-                    {link && (
-                      <span className="flex items-center gap-1 text-green-600 font-bold text-sm">
-                        <Check size={16} /> File Ready
-                      </span>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex gap-4 items-center">
+                      <button 
+                        type="button" 
+                        onClick={handleCloudinaryUpload}
+                        className="px-6 py-2 bg-slate-900 text-white font-bold rounded-lg hover:bg-brand-primary transition-colors flex items-center gap-2"
+                      >
+                        <Check size={18} /> Select Files via Cloudinary
+                      </button>
+                    </div>
+                    {bulkFiles.length > 0 && (
+                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Ready to publish:</p>
+                        <ul className="space-y-1">
+                          {bulkFiles.map((f, i) => (
+                            <li key={i} className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                              <FileText size={14} className="text-brand-primary" /> {f.original_filename}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     )}
                   </div>
               ) : (
@@ -297,14 +333,13 @@ const AdminMaterialsPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-brand-dark text-white font-bold rounded-xl hover:bg-brand-primary transition-all disabled:opacity-50"
+              className="w-full py-4 bg-brand-dark text-white font-bold rounded-xl hover:bg-brand-primary transition-all disabled:opacity-50 shadow-lg shadow-brand-dark/10"
             >
-              {loading ? "Processing..." : `Publish ${submissionType}`}
+              {loading ? <Loader2 className="animate-spin mx-auto" /> : `Publish ${submissionType === 'file' ? 'All Selected' : submissionType}`}
             </button>
           </form>
         </div>
 
-        {/* Management Section */}
         <div className="flex items-center gap-4 mb-6 border-b border-gray-200 pb-1">
             <button 
                 onClick={() => setActiveTab('materials')}
