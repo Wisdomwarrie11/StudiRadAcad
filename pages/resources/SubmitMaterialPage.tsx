@@ -210,8 +210,6 @@ const SubmitMaterialPage = () => {
                   <option value="Ultrasound">Ultrasound</option>
                   <option value="Projects">Projects</option>
                   <option value="Past Questions">Past Questions</option>
-  
-
                   <option value="Others">Others</option>
                 </select>
               </div>
