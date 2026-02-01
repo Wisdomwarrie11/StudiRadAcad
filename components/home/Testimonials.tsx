@@ -6,12 +6,12 @@ const testimonials = [
     id: 1,
     name: "Ayi Effiom",
     role: "Radiographer",
-    quote: "StudiRad's MRI safety course was exactly what I needed to advance my career. The mentorship feature connected me with a senior tech who guided my application process.",
+    quote: "StudiRad's mentorship feature connected me with a senior radiographer who guided my application process.",
     avatar: "Ayi.jpg"
   },
   {
     id: 2,
-    name: "David Chen",
+    name: "David Okechukwu",
     role: "Student Radiographer",
     quote: "The weekly quizzes and interactive anatomy tools make studying so much more engaging than textbooks. I aced my board exams thanks to this platform!",
     avatar: "manmed.jpeg"
