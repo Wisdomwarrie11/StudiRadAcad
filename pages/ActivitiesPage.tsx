@@ -19,31 +19,18 @@ const ActivitiesPage = () => {
     {
       id: 6,
       title: "Welcome to Radiography Orientation",
-      date: "Feb 6, 2026 • 7:00 PM",
+      date: "Past Event",
       description:
         "An exclusive orientation for new-year radiography students and prospects. Get the roadmap to a successful radiography career and connect with mentors.",
       image: "WelcomeToRad.jpeg",
-      link: "open-modal",
-      badge: "Registration Open",
+      link: "",
+      badge: "Completed",
       isHot: true,
-      disabled: false,
-      buttonText: "Register for Orientation"
+      disabled: true,
+      buttonText: "View Archive"
     },
 
 
-    // {
-    //   id: 3,
-    //   title: "6 Weeks Locked-In Challenge",
-    //   date: "Registration Closing Soon",
-    //   description:
-    //     "6 weeks of intense studies and assessment designed to push your limits and master core concepts. Final slots available for the winter batch.",
-    //   image: "LockedIn.jpg",
-    //   link: "/locked-in",
-    //   badge: "Final Call",
-    //   isUrgent: true,
-    //   disabled: false,
-    //   buttonText: "Register Now"
-    // },
     {
       id: 2,
       title: "Inside Radiography: The NeuroImaging Experience",
@@ -85,10 +72,10 @@ const ActivitiesPage = () => {
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">
-            Activities & Events
+            Our Webinars
           </h2>
           <p className="text-lg text-slate-600 font-medium">
-            Stay ahead with our community challenges, orientation programs, and specialized educational events.
+            Stay ahead with our orientation programs, and specialized educational events.
           </p>
         </div>
 
