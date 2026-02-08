@@ -2,10 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, ExternalLink, Flame, Timer, Building2, ShieldCheck, GraduationCap, CheckCircle2 } from "lucide-react";
-import SEO from "../components/SEO";
-import OrientationRegistrationModal from "../components/orientation/OrientationRegistrationModal";
 
-const ActivitiesPage = () => {
+const QuizChallenge = () => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [showOrientationModal, setShowOrientationModal] = useState(false);
 
@@ -16,80 +14,46 @@ const ActivitiesPage = () => {
   }, []);
 
   const activities = [
+  
     {
-      id: 6,
-      title: "Welcome to Radiography Orientation",
-      date: "Feb 6, 2026 • 7:00 PM",
+      id: 4,
+      title: "Daily Radiography Challenge",
+      date: "Starts Daily",
       description:
-        "An exclusive orientation for new-year radiography students and prospects. Get the roadmap to a successful radiography career and connect with mentors.",
-      image: "WelcomeToRad.jpeg",
-      link: "open-modal",
-      badge: "Registration Open",
-      isHot: true,
+        "A 6-day intensive challenge tailored to your level. Physics, Technique, MRI, CT and more. Compete for the top spot on the leaderboard!",
+      image: "Radstudent.jpg",
+      link: loggedIn ? "/challenge/dashboard" : "/challenge",
+      badge: loggedIn ? "In Progress" : "New Challenge",
+      isHot: false,
       disabled: false,
-      buttonText: "Register for Orientation"
-    },
-
-
-    // {
-    //   id: 3,
-    //   title: "6 Weeks Locked-In Challenge",
-    //   date: "Registration Closing Soon",
-    //   description:
-    //     "6 weeks of intense studies and assessment designed to push your limits and master core concepts. Final slots available for the winter batch.",
-    //   image: "LockedIn.jpg",
-    //   link: "/locked-in",
-    //   badge: "Final Call",
-    //   isUrgent: true,
-    //   disabled: false,
-    //   buttonText: "Register Now"
-    // },
-    {
-      id: 2,
-      title: "Inside Radiography: The NeuroImaging Experience",
-      date: "Past Event",
-      description:
-        "An educating session introducing Radiographers to neuroimaging and its role in modern medical Imaging and diagnosis.",
-      image: "Episode 1.jpg",
-      link: "#",
-      badge: "Completed",
-      disabled: true,
-      buttonText: "View Archive"
+      buttonText: loggedIn ? "Go to Dashboard" : "Start Challenge"
     },
     {
-      id: 1,
-      title: "From Induction to Impact: Navigating the Journey",
-      date: "Past Event",
+      id: 3,
+      title: "6 Weeks Locked-In Challenge",
+      date: "Registration Closing Soon",
       description:
-        "Four keynote speakers share insights on thriving during your induction period and navigating your long-term career path.",
-      image: "StudiRad.jpg",
-      link: "#",
-      badge: "Completed",
-      disabled: true,
-      buttonText: "View Archive"
+        "6 weeks of intense studies and assessment designed to push your limits and master core concepts. Final slots available for the winter batch.",
+      image: "LockedIn.jpg",
+      link: "/locked-in",
+      badge: "Final Call",
+      isUrgent: true,
+      disabled: false,
+      buttonText: "Register Now"
     },
+
   ];
 
   return (
     <div className="bg-slate-50 min-h-screen py-20 mt-16">
-      <SEO 
-        title="Events & Activities"
-        description="Join StudiRad's radiography challenges, orientation programs, and events. Master Physics, MRI, and CT concepts."
-      />
-      
-      <OrientationRegistrationModal 
-        isOpen={showOrientationModal} 
-        onClose={() => setShowOrientationModal(false)} 
-      />
 
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">
-            Activities & Events
+            Quiz/Challenge Corner
           </h2>
           <p className="text-lg text-slate-600 font-medium">
-            Stay ahead with our community challenges, orientation programs, and specialized educational events.
-          </p>
+Prove to yourself that you got what it takes          </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -238,4 +202,4 @@ const ActivitiesPage = () => {
   );
 };
 
-export default ActivitiesPage;
+export default QuizChallenge;
