@@ -84,7 +84,7 @@ const Header: React.FC = () => {
                   <Link to="/resources/blog" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Blog</Link>
                   <Link to="/resources/materials" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Learning Resources</Link>
                   <Link to="/webinars" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Webinars</Link>
-            <Link to="/resources/QuizChallenge" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Radiography Quiz</Link>
+                  <Link to="/resources/QuizChallenge" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Radiography Quiz</Link>
             
                 </div>
               )}
