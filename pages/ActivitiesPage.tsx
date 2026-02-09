@@ -17,7 +17,20 @@ const ActivitiesPage = () => {
 
   const activities = [
     {
-      id: 6,
+      id: 1,
+      title: "Inside Radiography. Episode 2",
+      date: "17th February 2026",
+      description:
+        "An exclusive orientation for new-year radiography students and prospects. Get the roadmap to a successful radiography career and connect with mentors.",
+      image: "WelcomeToRad.jpeg",
+      link: "",
+      badge: "",
+      isHot: true,
+      disabled: false,
+      buttonText: "View Archive"
+    },
+    {
+      id: 2,
       title: "Welcome to Radiography Orientation",
       date: "Past Event",
       description:
@@ -32,7 +45,7 @@ const ActivitiesPage = () => {
 
 
     {
-      id: 2,
+      id: 3,
       title: "Inside Radiography: The NeuroImaging Experience",
       date: "Past Event",
       description:
@@ -44,7 +57,7 @@ const ActivitiesPage = () => {
       buttonText: "View Archive"
     },
     {
-      id: 1,
+      id: 4,
       title: "From Induction to Impact: Navigating the Journey",
       date: "Past Event",
       description:

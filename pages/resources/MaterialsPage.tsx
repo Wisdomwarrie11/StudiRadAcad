@@ -132,7 +132,7 @@ const MaterialsPage = () => {
               <Book size={14} /> Academic Repository
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight mb-3">
-              Learning <span className="text-brand-primary">Materials</span>
+              Learning <span className="text-brand-primary">Resources</span>
             </h1>
             <p className="text-lg text-slate-500 font-medium leading-relaxed">
               Explore our curated library of radiography textbooks, lecture notes, and clinical guides contributed by experts.

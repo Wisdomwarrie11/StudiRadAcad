@@ -3,17 +3,17 @@
     "name": "StudiRad: Radiography Learning",
     "icons": [
       {
-        "src": "logo.svg",
+        "src": "logo.jpg",
         "type": "image/svg+xml",
         "sizes": "any"
       },
       {
-        "src": "logo.svg",
+        "src": "logo.jpg",
         "type": "image/svg+xml",
         "sizes": "192x192"
       },
       {
-        "src": "logo.svg",
+        "src": "logo.jpg",
         "type": "image/svg+xml",
         "sizes": "512x512"
       }
