@@ -18,14 +18,14 @@ const ActivitiesPage = () => {
   const activities = [
     {
       id: 1,
-      title: "Inside Radiography. Episode 2",
+      title: "Inside Radiography: Stepping into MRI - The roles. The reality. The rewards",
       date: "17th February 2026",
       description:
         "An exclusive orientation for new-year radiography students and prospects. Get the roadmap to a successful radiography career and connect with mentors.",
       image: "WelcomeToRad.jpeg",
       link: "",
       badge: "",
-      isHot: true,
+      isHot: false,
       disabled: false,
       buttonText: "View Archive"
     },
