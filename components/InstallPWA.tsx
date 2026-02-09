@@ -8,28 +8,33 @@ const InstallPWA: React.FC = () => {
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    // Check if app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    // Check if app is already running in standalone mode
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                        (window.navigator as any).standalone === true;
+    
+    if (isStandalone) {
       return;
     }
 
-    // iOS detection
-    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    // Improved iOS detection (including iPadOS which identifies as MacIntel)
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
     setIsIOS(isIOSDevice);
 
     // Capture install prompt for Chrome/Android
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      // Show prompt after a small delay
-      setTimeout(() => setShowPrompt(true), 5000);
+      // Show prompt after a delay
+      setTimeout(() => setShowPrompt(true), 3000);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // For iOS, we show the prompt if not in standalone
-    if (isIOSDevice && !window.matchMedia('(display-mode: standalone)').matches) {
-      setTimeout(() => setShowPrompt(true), 5000);
+    // For iOS, show if not standalone
+    if (isIOSDevice && !isStandalone) {
+      setTimeout(() => setShowPrompt(true), 3000);
     }
 
     return () => {
@@ -58,7 +63,7 @@ const InstallPWA: React.FC = () => {
 
         <button 
           onClick={() => setShowPrompt(false)}
-          className="absolute top-4 right-4 p-1 text-white/30 hover:text-white transition-colors z-20"
+          className="absolute top-4 right-4 p-2 text-white/30 hover:text-white transition-colors z-20 rounded-full hover:bg-white/5"
         >
           <X size={20} />
         </button>
@@ -68,10 +73,10 @@ const InstallPWA: React.FC = () => {
             <Download size={24} />
           </div>
           <div className="flex-1 pr-6">
-            <h4 className="text-white font-black text-sm uppercase tracking-widest mb-1">Add to Home Screen</h4>
+            <h4 className="text-white font-black text-sm uppercase tracking-widest mb-1">Install Meditin</h4>
             <p className="text-slate-400 text-[10px] sm:text-xs font-medium leading-tight">
               {isIOS 
-                ? 'Install Meditin for the best mobile experience and offline access.'
+                ? 'Add to home screen for the best mobile experience and offline access.'
                 : 'Get fast access to mocks & results directly from your home screen.'}
             </p>
           </div>
@@ -79,20 +84,21 @@ const InstallPWA: React.FC = () => {
 
         <div className="relative z-10">
           {isIOS ? (
-            <div className="bg-white/5 rounded-2xl p-4 flex items-center justify-between border border-white/5">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/10 rounded-lg text-white">
-                  <Share size={18} />
+            <div className="space-y-4">
+              <div className="bg-white/5 rounded-2xl p-4 flex items-center justify-between border border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/10 rounded-lg text-white">
+                    <Share size={18} />
+                  </div>
+                  <span className="text-[10px] font-black text-white/60 uppercase tracking-widest">1. Tap Share</span>
                 </div>
-                <span className="text-[10px] font-black text-white/60 uppercase tracking-widest">Tap Share</span>
-              </div>
-              {/* Added missing ChevronRight import */}
-              <ChevronRight className="text-white/20" size={16} />
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/10 rounded-lg text-white">
-                  <PlusSquare size={18} />
+                <ChevronRight className="text-white/20" size={16} />
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/10 rounded-lg text-white">
+                    <PlusSquare size={18} />
+                  </div>
+                  <span className="text-[10px] font-black text-white/60 uppercase tracking-widest">2. Add to Home</span>
                 </div>
-                <span className="text-[10px] font-black text-white/60 uppercase tracking-widest">Add to Home</span>
               </div>
             </div>
           ) : (
@@ -108,11 +114,11 @@ const InstallPWA: React.FC = () => {
       
       {isIOS && (
         <div className="mt-4 flex flex-col items-center gap-2 animate-bounce">
-          <div className="w-10 h-10 bg-brandOrange rounded-full flex items-center justify-center text-white shadow-xl">
+          <div className="w-10 h-10 bg-brandOrange rounded-full flex items-center justify-center text-white shadow-xl ring-4 ring-brandOrange/20">
              <ArrowUp size={20} />
           </div>
-          <p className="text-[8px] font-black text-navy/40 uppercase tracking-[0.2em] bg-white px-3 py-1 rounded-full border border-slate-100">
-             Menu is at the bottom center
+          <p className="text-[8px] font-black text-navy/60 uppercase tracking-[0.2em] bg-white px-4 py-1.5 rounded-full border border-slate-200 shadow-sm">
+             Tap the Share button below
           </p>
         </div>
       )}
