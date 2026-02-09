@@ -22,10 +22,10 @@ const ActivitiesPage = () => {
       date: "17th February 2026",
       description:
         "An exclusive orientation for new-year radiography students and prospects. Get the roadmap to a successful radiography career and connect with mentors.",
-      image: "WelcomeToRad.jpeg",
+      image: "Episode 2.jpg",
       link: "",
       badge: "",
-      isHot: false,
+      isHot: true,
       disabled: false,
       buttonText: "View Archive"
     },
@@ -38,7 +38,7 @@ const ActivitiesPage = () => {
       image: "WelcomeToRad.jpeg",
       link: "",
       badge: "Completed",
-      isHot: true,
+      isHot: false,
       disabled: true,
       buttonText: "View Archive"
     },
