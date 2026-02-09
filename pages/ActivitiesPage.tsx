@@ -15,7 +15,7 @@ const ActivitiesPage = () => {
     setLoggedIn(!!user);
   }, []);
 
-  const activities = [
+  const webinars = [
     {
       id: 1,
       title: "Inside Radiography: Stepping into MRI - The roles. The reality. The rewards",
@@ -93,7 +93,7 @@ const ActivitiesPage = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {activities.map((activity) => {
+          {webinars.map((activity) => {
             const isModal = activity.link === "open-modal";
             const isInternal = !isModal && activity.link.startsWith("/");
             const disabled = activity.disabled;

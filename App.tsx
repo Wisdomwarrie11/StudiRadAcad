@@ -68,7 +68,7 @@ const Layout: React.FC = () => {
       {/* Default Global SEO - Pages can override this */}
       <SEO 
         title="Home"
-        description="StudiRad is the premier platform for Radiography students and professionals. Access up-to-date information on Job openings, internship and scholarship opportunities. Daily challenges, study materials, and community."
+        description="StudiRad is the premier platform for Radiography students and professionals in Nigeria. Access up-to-date information on Job openings, internship and scholarship opportunities. Daily challenges, study materials, and community."
       />
       <Header />
       <main className="flex-grow">
@@ -103,7 +103,7 @@ const App: React.FC = () => {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="about" element={<AboutPage />} />
-          <Route path="activities" element={<ActivitiesPage />} />
+          <Route path="webinars" element={<ActivitiesPage />} />
           <Route path="freshers" element={<FreshersPage />} />
 
 
