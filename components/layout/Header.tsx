@@ -47,7 +47,7 @@ const Header: React.FC = () => {
                   <Link to="/resources/blog" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Blog</Link>
                   <Link to="/resources/materials" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Learning Resources</Link>
                   <Link to="/webinars" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Webinars</Link>
-                  <Link to="/resources/QuizChallenge" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Quiz corner</Link>
+                  <Link to="/resources/QuizChallenge" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Radiography Quiz</Link>
 
                 </div>
               </div>
@@ -77,19 +77,19 @@ const Header: React.FC = () => {
                 onClick={() => setResourcesOpen(!resourcesOpen)}
                 className="flex items-center justify-between w-full text-white text-lg font-medium hover:text-brand-accent"
               >
-                Resources <ChevronDown size={16} className={`transition-transform ${resourcesOpen ? 'rotate-180' : ''}`} />
+                Learning <ChevronDown size={16} className={`transition-transform ${resourcesOpen ? 'rotate-180' : ''}`} />
               </button>
               {resourcesOpen && (
                 <div className="pl-4 space-y-2 border-l border-gray-700 ml-2">
                   <Link to="/resources/blog" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Blog</Link>
-                  <Link to="/resources/materials" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Learning Materials</Link>
-                  <Link to="/resources/news" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Radiography News</Link>
+                  <Link to="/resources/materials" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Learning Resources</Link>
+                  <Link to="/webinars" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Webinars</Link>
+            <Link to="/resources/QuizChallenge" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300 hover:text-white">Radiography Quiz</Link>
+            
                 </div>
               )}
             </div>
-            <Link to="/activities" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium hover:text-brand-accent">Our Activities</Link>
-            <Link to="/classes" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium hover:text-brand-accent">Our Academy</Link>
-            <Link to="/opportunities" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium hover:text-brand-accent">Opportunities</Link>
+           <Link to="/opportunities" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium hover:text-brand-accent">Opportunities</Link>
             <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium hover:text-brand-accent">About Us</Link>
             <button className="w-full py-3 bg-brand-accent text-brand-dark font-bold rounded-lg mt-4">
               Get Started
