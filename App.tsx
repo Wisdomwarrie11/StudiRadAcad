@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Outlet, useLocation } from 'react-router-dom';
 import SEO from './components/SEO';
+import InstallPWA from './components/InstallPWA';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Home from './pages/Home';
@@ -163,6 +164,9 @@ const App: React.FC = () => {
           <Route path="post-opportunity" element={<AdminPostOpportunity />} />
         </Route>
       </Routes>
+
+      <InstallPWA />
+
     </Router>
   );
 };

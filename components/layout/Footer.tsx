@@ -47,8 +47,8 @@ const Footer: React.FC = () => {
             <h4 className="text-lg font-bold mb-6">Resources</h4>
             <ul className="space-y-3 text-gray-400">
               <li><Link to="/resources/blog" className="hover:text-brand-accent transition-colors">Blog & News</Link></li>
-              <li><Link to="/resources/case-studies" className="hover:text-brand-accent transition-colors">Case Studies</Link></li>
-              <li><Link to="/resources/exam-prep" className="hover:text-brand-accent transition-colors">Exam Prep</Link></li>
+              {/* <li><Link to="/resources/case-studies" className="hover:text-brand-accent transition-colors">Case Studies</Link></li> */}
+              <li><Link to="/resources/QuizChallenge" className="hover:text-brand-accent transition-colors">Exam Prep</Link></li>
               <li><Link to="/resources/anatomy" className="hover:text-brand-accent transition-colors">Anatomy Library</Link></li>
               <li><Link to="/scholarships" className="hover:text-brand-accent transition-colors">Scholarships</Link></li>
             </ul>
@@ -69,8 +69,8 @@ const Footer: React.FC = () => {
               </button>
             </div>
             <div className="mt-6 flex items-center gap-2 text-gray-400">
-              <Mail size={16} />
-              <span>studirad.org@gmail.com</span>
+              {/* <Mail size={16} /> */}
+              {/* <span>studirad.org@gmail.com</span> */}
             </div>
           </div>
         </div>

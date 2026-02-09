@@ -46,7 +46,7 @@ const Header: React.FC = () => {
                 <div className="bg-white rounded-xl shadow-xl overflow-hidden py-2 text-gray-800">
                   <Link to="/resources/blog" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Blog</Link>
                   <Link to="/resources/materials" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Learning Resources</Link>
-                  <Link to="/activities" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Webinars</Link>
+                  <Link to="/webinars" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Webinars</Link>
                   <Link to="/resources/QuizChallenge" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Quiz corner</Link>
 
                 </div>
@@ -54,11 +54,6 @@ const Header: React.FC = () => {
             </div>
             <Link to="/opportunities" className="text-sm font-medium hover:text-brand-accent transition-colors">Opportunities</Link>
             <Link to="/about" className="text-sm font-medium hover:text-brand-accent transition-colors">About Us</Link>
-
-            
-            <button className="px-5 py-2 bg-brand-accent text-brand-dark font-semibold rounded-full hover:bg-white transition-colors">
-              Get Started
-            </button>
           </nav>
 
           {/* Mobile Menu Button */}
