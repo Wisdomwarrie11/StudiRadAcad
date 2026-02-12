@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Analytics } from "@vercel/analytics/next"
 import { HashRouter as Router, Routes, Route, Outlet, useLocation } from 'react-router-dom';
 import SEO from './components/SEO';
 import InstallPWA from './components/InstallPWA';
