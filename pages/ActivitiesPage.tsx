@@ -23,9 +23,9 @@ const ActivitiesPage = () => {
       description:
         "An exclusive orientation for new-year radiography students and prospects. Get the roadmap to a successful radiography career and connect with mentors.",
       image: "Episode 2.jpg",
-      link: "",
-      badge: "",
-      isHot: true,
+      link: "https://meeting.zoho.com/meeting/public/videoprv?recordingId=e12039b9018aa0c2709dfaa42214bb4606c2c8723052b050829ca64e516ef474&x-meeting-org=912113804",
+      badge: "Completed",
+      isHot: false,
       disabled: false,
       buttonText: "View Archive"
     },
@@ -36,10 +36,10 @@ const ActivitiesPage = () => {
       description:
         "An exclusive orientation for new-year radiography students and prospects. Get the roadmap to a successful radiography career and connect with mentors.",
       image: "WelcomeToRad.jpeg",
-      link: "",
+      link: "https://meeting.zoho.com/meeting/public/videoprv?recordingId=d773f3a431c4b27afb901502197896b774f11af4e97e79853e5ccfc38974ccff&x-meeting-org=912113804",
       badge: "Completed",
       isHot: false,
-      disabled: true,
+      disabled: false,
       buttonText: "View Archive"
     },
 
