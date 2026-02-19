@@ -52,6 +52,7 @@ import LocumDashboard from "./pages/opportunities/LocumDashboard";
 import LocumPayment from "./pages/opportunities/LocumPayment";
 import LocumEditProfile from "./pages/opportunities/LocumEditProfile";
 import LocumLogin from './pages/opportunities/LocumLogin';
+import CommunitySection from './components/home/CommunitySection';
 
 // Scroll Restoration Component
 const ScrollToTop = () => {
@@ -155,6 +156,9 @@ const App: React.FC = () => {
 
         {/* Admin Login (Public) */}
         <Route path="admin/login" element={<AdminLoginPage />} />
+
+        <Route path="community" element={<CommunitySection/>} />
+
 
         {/* Admin Protected Routes */}
         <Route path="admin" element={<AdminLayout />}>
