@@ -96,9 +96,7 @@ const Header: React.FC = () => {
            <Link to="/community" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium hover:text-brand-accent">Our Community</Link>
 
             <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium hover:text-brand-accent">About Us</Link>
-            <button className="w-full py-3 bg-brand-accent text-brand-dark font-bold rounded-lg mt-4">
-              Get Started
-            </button>
+            
           </div>
         </div>
       )}
