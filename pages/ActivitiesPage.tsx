@@ -215,24 +215,7 @@ const ActivitiesPage = () => {
         </div>
 
         {/* Bottom Banner */}
-        <div className="mt-20 p-10 bg-brand-dark rounded-[3rem] text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-accent/10 rounded-full blur-[80px] -mr-32 -mt-32"></div>
-            <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
-                <div className="w-16 h-16 bg-white/10 rounded-3xl flex items-center justify-center text-brand-accent">
-                    <CheckCircle2 size={32} />
-                </div>
-                <div className="text-center md:text-left">
-                    <h4 className="text-xl font-black">Registered for a challenge?</h4>
-                    <p className="text-slate-400 font-medium">Log in to track your progress and compete on the leaderboard.</p>
-                </div>
-            </div>
-            <Link 
-              to="/challenge" 
-              className="relative z-10 bg-brand-accent text-brand-dark px-8 py-4 rounded-2xl font-black hover:scale-105 transition-all shadow-xl shadow-brand-accent/20 active:scale-95"
-            >
-                Access Dashboard
-            </Link>
-        </div>
+       
       </div>
     </div>
   );
