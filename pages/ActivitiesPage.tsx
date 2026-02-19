@@ -21,7 +21,7 @@ const ActivitiesPage = () => {
       title: "Inside Radiography: Stepping into MRI - The roles. The reality. The rewards",
       date: "17th February 2026",
       description:
-        "An exclusive orientation for new-year radiography students and prospects. Get the roadmap to a successful radiography career and connect with mentors.",
+        "An astute professional shares his journey from Nigeria to becoming a clinical leader in MRI in a well-known hospital in England. In this webinar, he shares roadmaps and advice for young radiographers and students",
       image: "Episode 2.jpg",
       link: "https://meeting.zoho.com/meeting/public/videoprv?recordingId=e12039b9018aa0c2709dfaa42214bb4606c2c8723052b050829ca64e516ef474&x-meeting-org=912113804",
       badge: "Completed",
