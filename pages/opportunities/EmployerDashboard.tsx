@@ -15,6 +15,7 @@ import {
   ChevronRight, 
   Eye, 
   Trash2,
+  Edit2,
   AlertCircle,
   Building2
 } from 'lucide-react';
@@ -177,6 +178,13 @@ const EmployerDashboard = () => {
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => navigate(`/employer/edit/${activeTab.slice(0, -1)}/${post.id}`)}
+                                        className="p-3 bg-slate-50 text-slate-400 hover:text-brand-primary rounded-xl transition-colors"
+                                        title="Edit Post"
+                                    >
+                                        <Edit2 size={18} />
+                                    </button>
                                     <button className="p-3 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-xl transition-colors"><Eye size={18} /></button>
                                     <button className="p-3 bg-slate-50 text-slate-400 hover:text-red-500 rounded-xl transition-colors"><Trash2 size={18} /></button>
                                 </div>

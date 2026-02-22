@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Building2, User, Mail, Lock, Phone, Globe, ShieldCheck, Loader2, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
+import { Building2, User, Mail, Lock, Phone, Globe, ShieldCheck, Loader2, ArrowRight, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { registerEmployer } from '../../services/employerService';
 import SEO from '../../components/SEO';
 
@@ -23,6 +23,7 @@ const EmployerRegistration = () => {
   });
 
   const [agreed, setAgreed] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -171,12 +172,19 @@ const EmployerRegistration = () => {
                     <div className="relative">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                       <input 
-                        type="password" required
+                        type={showPassword ? "text" : "password"} required
                         placeholder="••••••••"
                         value={formData.password}
                         onChange={e => setFormData({...formData, password: e.target.value})}
-                        className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
+                        className="w-full pl-12 pr-12 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
                       />
+                      <button 
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
                     </div>
                   </div>
                   <div className="space-y-2">

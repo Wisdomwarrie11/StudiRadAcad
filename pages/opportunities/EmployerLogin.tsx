@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, Loader2, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Loader2, ArrowRight, ShieldCheck, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { loginEmployer } from '../../services/employerService';
 import SEO from '../../components/SEO';
 
@@ -12,6 +12,7 @@ const EmployerLogin = () => {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,17 +67,25 @@ const EmployerLogin = () => {
             <div className="space-y-2">
               <div className="flex justify-between items-end mb-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
-                <Link to="/employer/forgot-password" size={10} className="text-[10px] font-black text-brand-primary hover:underline uppercase tracking-widest">Forgot?</Link>
+                {/* Fixed: Removed invalid 'size' prop from Link component */}
+                <Link to="/employer/forgot-password" className="text-[10px] font-black text-brand-primary hover:underline uppercase tracking-widest">Forgot?</Link>
               </div>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                 <input 
-                  type="password" required
+                  type={showPassword ? "text" : "password"} required
                   placeholder="••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
+                  className="w-full pl-12 pr-12 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
                 />
+                <button 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 

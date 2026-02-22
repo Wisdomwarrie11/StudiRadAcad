@@ -1,14 +1,62 @@
 import { db, auth, adminDb } from '../firebase';
 import { EmployerProfile } from '../types';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { collection, doc, setDoc, getDoc, addDoc, getDocs, query, where, updateDoc } from 'firebase/firestore';
 
 const COLLECTION = 'employer_profiles';
+
+/**
+ * Get all registered employers (Admin only)
+ */
+export const getAllEmployers = async (): Promise<EmployerProfile[]> => {
+  try {
+    const snapshot = await getDocs(collection(db, COLLECTION));
+    return snapshot.docs.map(doc => ({ ...doc.data() } as EmployerProfile));
+  } catch (error) {
+    console.error("Error fetching all employers:", error);
+    return [];
+  }
+};
+
+/**
+ * Update an existing opportunity
+ */
+export const updateEmployerOpportunity = async (type: 'job' | 'internship' | 'scholarship', id: string, data: any) => {
+  try {
+    const collectionName = type === 'job' ? 'jobs' : type === 'internship' ? 'internships' : 'scholarships';
+    const docRef = doc(adminDb, collectionName, id);
+    await updateDoc(docRef, {
+      ...data,
+      updatedAt: new Date().toISOString()
+    });
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Get a single opportunity by ID
+ */
+export const getOpportunityById = async (type: 'job' | 'internship' | 'scholarship', id: string) => {
+  try {
+    const collectionName = type === 'job' ? 'jobs' : type === 'internship' ? 'internships' : 'scholarships';
+    const docSnap = await getDoc(doc(adminDb, collectionName, id));
+    if (docSnap.exists()) {
+      return { success: true, data: { id: docSnap.id, ...docSnap.data() } };
+    }
+    return { success: false, error: "Not found" };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+};
 
 /**
  * Register a new employer organization
  */
 export const registerEmployer = async (email: string, pass: string, data: Omit<EmployerProfile, 'uid' | 'createdAt' | 'verified'>) => {
   try {
-    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
     const uid = cred.user?.uid;
     
     if (!uid) throw new Error("Auth failed");
@@ -22,7 +70,16 @@ export const registerEmployer = async (email: string, pass: string, data: Omit<E
     };
 
     // Profiles are kept in the primary db
-    await db.collection(COLLECTION).doc(uid).set(profile);
+    await setDoc(doc(db, COLLECTION, uid), profile);
+
+    // Send email verification
+    try {
+      await sendEmailVerification(cred.user);
+    } catch (emailError) {
+      console.error("Error sending verification email:", emailError);
+      // We don't fail registration if email fails, but we log it
+    }
+
     return { success: true, profile };
   } catch (error: any) {
     console.error("Employer Reg Error:", error);
@@ -35,14 +92,14 @@ export const registerEmployer = async (email: string, pass: string, data: Omit<E
  */
 export const loginEmployer = async (email: string, pass: string) => {
   try {
-    const cred = await auth.signInWithEmailAndPassword(email, pass);
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
     const uid = cred.user?.uid;
     if (!uid) throw new Error("Login failed");
     
-    const doc = await db.collection(COLLECTION).doc(uid).get();
-    if (!doc.exists) throw new Error("Profile not found");
+    const docSnap = await getDoc(doc(db, COLLECTION, uid));
+    if (!docSnap.exists()) throw new Error("Profile not found");
 
-    return { success: true, profile: doc.data() as EmployerProfile };
+    return { success: true, profile: docSnap.data() as EmployerProfile };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -54,8 +111,8 @@ export const loginEmployer = async (email: string, pass: string) => {
 export const getCurrentEmployer = async (): Promise<EmployerProfile | null> => {
   const user = auth.currentUser;
   if (!user) return null;
-  const doc = await db.collection(COLLECTION).doc(user.uid).get();
-  return doc.exists ? (doc.data() as EmployerProfile) : null;
+  const docSnap = await getDoc(doc(db, COLLECTION, user.uid));
+  return docSnap.exists() ? (docSnap.data() as EmployerProfile) : null;
 };
 
 /**
@@ -78,7 +135,7 @@ export const postEmployerOpportunity = async (type: 'job' | 'internship' | 'scho
     };
 
     // Use adminDb for consistency across all platform opportunities
-    const docRef = await adminDb.collection(collectionName).add(payload);
+    const docRef = await addDoc(collection(adminDb, collectionName), payload);
     return { success: true, id: docRef.id };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -94,11 +151,10 @@ export const getMyOpportunities = async (type: 'job' | 'internship' | 'scholarsh
     if (!user) return [];
 
     const collectionName = type === 'job' ? 'jobs' : type === 'internship' ? 'internships' : 'scholarships';
-    const snapshot = await adminDb.collection(collectionName)
-      .where('postedBy', '==', user.uid)
-      .get();
+    const q = query(collection(adminDb, collectionName), where('postedBy', '==', user.uid));
+    const snapshot = await getDocs(q);
 
-    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
     console.error("Error fetching my posts:", error);
     return [];
