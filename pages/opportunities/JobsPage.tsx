@@ -71,7 +71,7 @@ const JobsPage = () => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-10 gap-6">
           <div>
              <h1 className="text-4xl font-black text-slate-900 tracking-tight">Job Openings</h1>
-             <p className="text-slate-600 mt-2">Latest opportunities in Radiography and Medical Imaging.</p>
+             <p className="text-slate-600 mt-2">Check out Latest opportunities in Radiography and Medical Imaging.</p>
           </div>
           
           <div className="flex flex-wrap items-center gap-3">
