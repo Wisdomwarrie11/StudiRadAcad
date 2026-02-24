@@ -36,7 +36,7 @@ const CTQuestionBank: React.FC = () => {
             className="text-lg text-brand-muted max-w-2xl mx-auto"
           >
             Enhance your Computed Tomography knowledge with our comprehensive, 
-            topic-based question bank designed for radiographers and students.
+            topic-based question bank designed for pre-intern radiographers undergoing the PGC CT Course, Enugu 2026.
           </motion.p>
         </div>
 
