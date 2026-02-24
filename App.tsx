@@ -26,6 +26,9 @@ import TutoringBookingPage from './pages/classes/tutorialBookingPage';
 import DailyChallengeLanding from './pages/challenge/DailyChallengeLanding';
 import DailyChallengeDashboard from './pages/challenge/DailyChallengeDashboard';
 import DailyChallengeQuiz from './pages/challenge/DailyChallengeQuiz';
+import CTQuestionBank from './pages/resources/CTQuestionBank';
+import CTTopicQuiz from './pages/resources/CTTopicQuiz';
+
 // Opportunities
 import OpportunitiesPage from './pages/opportunities/OpportunitiesPage';
 import JobsPage from './pages/opportunities/JobsPage';
@@ -117,6 +120,8 @@ const App: React.FC = () => {
           <Route path="resources/submit-material" element={<SubmitMaterialPage />} />
           <Route path="quiz" element={<QuizPage />} />
           <Route path="resources/videos" element={<VideosPage />} />
+          <Route path="ctbank" element={<CTQuestionBank />} />
+          <Route path="resources/ct-bank/:topicId" element={<CTTopicQuiz />} />
           <Route path="resources/QuizChallenge" element={<QuizChallenge />} />
 
 
