@@ -6,25 +6,25 @@ const audiences = [
     title: "Students",
     description: "Access structured radiography courses, opportunities, and mentorship to build a solid career foundation.",
     image: "students.jpeg",
-    features: ["Exam Prep", "Mentorship", "Basics"]
+    features: ["Exam Prep", "Mentorship"]
   },
   {
     title: "Professionals",
-    description: "Stay updated with the latest techniques, collaborate with peers worldwide, and earn certifications that advance your career.",
+    description: "Stay updated with the latest opportunitoes and collaborate with peers worldwide that advance your career.",
     image: "nurse.jpeg",
-    features: ["CPD Points", "Networking", "Advanced"]
+    features: ["Caeer growth", "Networking"]
   },
   {
     title: "Institutes",
-    description: "Integrate StudiRad into your curriculum to provide standardized radiography training, research support, and student engagement.",
+    description: "Integrate StudiRad features into your curriculum to provide standardized radiography training, research support, and student engagement.",
     image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=800",
-    features: ["Curriculum", "Analytics", "Support"]
+    features: ["Curriculum", "Analytics"]
   },
   {
     title: "Teachers",
     description: "Enhance your teaching with digital radiographs, case libraries, and interactive lessons tailored for radiography education.",
     image: "lecturer.jpg",
-    features: ["Resources", "Tools", "Library"]
+    features: ["Resources", "Tools"]
   }
 ];
 
@@ -36,7 +36,7 @@ const TargetAudienceNew: React.FC = () => {
           <h2 className="text-base font-bold text-brand-accent uppercase tracking-wider mb-2">Community</h2>
           <h3 className="text-3xl md:text-4xl font-bold mb-4">Who StudiRad Is Meant For</h3>
           <p className="text-gray-400 max-w-2xl mx-auto">
-            A platform designed to connect learners, educators, and professionals across the entire radiography spectrum.
+            A platform designed to connect learners, educators, and professionals across the entire radiography ecosystem.
           </p>
         </div>
 

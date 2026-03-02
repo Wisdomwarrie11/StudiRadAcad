@@ -17,7 +17,7 @@ const Footer: React.FC = () => {
             <p className="text-gray-400 mb-6 leading-relaxed">
               Empowering radiographers worldwide with top-tier education, career opportunities, and a supportive community.
             </p>
-            <div className="flex gap-4">
+            {/* <div className="flex gap-4">
               {[Facebook, Twitter, Linkedin, Instagram].map((Icon, i) => (
                 <Link 
                   key={i} 
@@ -27,7 +27,7 @@ const Footer: React.FC = () => {
                   <Icon size={18} />
                 </Link>
               ))}
-            </div>
+            </div> */}
           </div>
 
           {/* Quick Links */}
@@ -38,7 +38,7 @@ const Footer: React.FC = () => {
               <li><Link to="/about" className="hover:text-brand-accent transition-colors">About Us</Link></li>
               <li><Link to="/classes" className="hover:text-brand-accent transition-colors">Classes</Link></li>
               <li><Link to="/opportunities" className="hover:text-brand-accent transition-colors">Opportunities</Link></li>
-              <li><Link to="/contact" className="hover:text-brand-accent transition-colors">Contact</Link></li>
+              <li><Link to="/about" className="hover:text-brand-accent transition-colors">Contact</Link></li>
             </ul>
           </div>
 
@@ -48,9 +48,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-3 text-gray-400">
               <li><Link to="/resources/blog" className="hover:text-brand-accent transition-colors">Blog & News</Link></li>
               {/* <li><Link to="/resources/case-studies" className="hover:text-brand-accent transition-colors">Case Studies</Link></li> */}
-              <li><Link to="/resources/QuizChallenge" className="hover:text-brand-accent transition-colors">Exam Prep</Link></li>
-              <li><Link to="/resources/anatomy" className="hover:text-brand-accent transition-colors">Anatomy Library</Link></li>
-              <li><Link to="/scholarships" className="hover:text-brand-accent transition-colors">Scholarships</Link></li>
+              <li><Link to="/scholarship" className="hover:text-brand-accent transition-colors">Scholarships</Link></li>
             </ul>
           </div>
 

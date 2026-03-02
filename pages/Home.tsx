@@ -24,7 +24,6 @@ const Home: React.FC = () => {
       <Testimonials />
       <OpportunitiesPreview />
       <WeeklyQuiz />
-      <NewsletterSignup />
       <FloatingCTA />
     </div>
   );
