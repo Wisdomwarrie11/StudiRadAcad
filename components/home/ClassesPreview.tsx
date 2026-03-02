@@ -63,7 +63,6 @@ const ClassesPreview: React.FC = () => {
                   <mod.icon size={24} />
                 </div>
                 <h4 className="font-bold text-gray-800 text-lg">{mod.title}</h4>
-                <p className="text-xs text-gray-500 mt-1">View Classes</p>
               </div>
             ))}
           </div>
@@ -114,7 +113,7 @@ const ClassesPreview: React.FC = () => {
         </div>
         
         <div className="mt-8 text-center md:hidden">
-          <a href= "classes">
+          <a href= "/classes/#classes">
           <button className="px-6 py-3 border-2 border-brand-primary text-brand-primary font-bold rounded-lg hover:bg-brand-primary hover:text-white transition-colors">
             View All Courses
           </button>
