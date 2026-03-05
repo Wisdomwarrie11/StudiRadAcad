@@ -115,7 +115,7 @@ const ClassesPreview: React.FC = () => {
         <div className="mt-8 text-center md:hidden">
           <Link to = "/classes/#classes" className="px-6 py-3 border-2 border-brand-primary text-brand-primary font-bold rounded-lg hover:bg-brand-primary hover:text-white transition-colors">
             View All Courses
-         /</Link>
+         </Link>
          
         </div>
       </div>
