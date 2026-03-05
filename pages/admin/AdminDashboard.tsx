@@ -1,10 +1,36 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { adminAuth } from "../../firebase";
-import { FileText, Book, Bell, Settings, LogOut, LayoutDashboard, ChevronRight, Briefcase } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  FileText, 
+  CheckSquare, 
+  Briefcase, 
+  Users, 
+  Book,
+  ChevronRight,
+  BookOpen, 
+  PlusCircle,
+  ArrowRight,
+  LogOut,
+  Bell,
+  Settings,
+  Video,
+  PlayCircle,
+  Calendar
+} from 'lucide-react';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = adminAuth.onAuthStateChanged((user) => {
+      if (!user) {
+        navigate("/admin/login");
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
 
   const handleLogout = async () => {
     try {
@@ -45,12 +71,27 @@ const AdminDashboard = () => {
         color: "bg-purple-100 text-purple-600",
     },
     {
-      title: "Settings",
-      description: "Manage admin preferences and account details.",
-      icon: Settings,
-      path: "#",
-      color: "bg-gray-100 text-gray-600",
+      title: 'Live Classes',
+      description: 'Manage live and cohort-based classes.',
+      icon: Calendar,
+      path: "/admin/classes/create",
+      color: 'bg-rose-50 text-rose-600'
     },
+    {
+      title: 'Pre-recorded Courses',
+      description: 'Manage video courses and modules.',
+      icon: PlayCircle,
+      path: '/admin/courses',
+      color: 'bg-indigo-50 text-indigo-600'
+    },
+
+    // {
+    //   title: "Settings",
+    //   description: "Manage admin preferences and account details.",
+    //   icon: Settings,
+    //   path: "#",
+    //   color: "bg-gray-100 text-gray-600",
+    // },
   ];
 
   return (

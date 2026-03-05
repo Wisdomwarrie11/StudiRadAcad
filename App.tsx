@@ -46,6 +46,9 @@ import AdminReviewPage from './pages/admin/AdminReviewPage';
 import AdminBlogPage from './pages/admin/AdminBlogPage';
 import AdminPostOpportunity from './pages/admin/AdminPostOpportunity';
 import AdminProtectedRoute from './components/auth/AdminProtectedRoute';
+import AdminClassesPage from './pages/admin/AdminClassesPage';
+import AdminCreateClassPage from './pages/admin/AdminCreateClassPage';
+import AdminCoursesPage from './pages/admin/AdminCoursesPage';
 
 import LocumPage from "./pages/opportunities/LocumPage";
 import LocumRegistration from "./pages/opportunities/LocumRegistration";
@@ -54,6 +57,8 @@ import LocumPayment from "./pages/opportunities/LocumPayment";
 import LocumEditProfile from "./pages/opportunities/LocumEditProfile";
 import LocumLogin from './pages/opportunities/LocumLogin';
 import CommunitySection from './components/home/CommunitySection';
+import AdminCreateCoursePage from './pages/admin/AdminCreateCoursePage';
+import CoursesPage from './pages/classes/CoursesPage';
 
 // Scroll Restoration Component
 const ScrollToTop = () => {
@@ -124,7 +129,9 @@ const App: React.FC = () => {
           {/* Classes Route */}
           <Route path="classes" element={<ClassesPage />} />
           <Route path="locked-in" element={<LockedInChallenge />} />
+          <Route path="courses" element={<CoursesPage />} />
           <Route path="tutoring-booking" element={<TutoringBookingPage />} />
+          
           
           {/* Daily Challenge Routes */}
           <Route path="challenge" element={<DailyChallengeLanding />} />
@@ -159,7 +166,11 @@ const App: React.FC = () => {
         <Route path="admin/login" element={<AdminLoginPage />} />
 
         <Route path="community" element={<CommunitySection/>} />
-
+        <Route path="admin/classes" element={<AdminClassesPage />} />
+          <Route path="admin/classes/create" element={<AdminCreateClassPage />} />
+          <Route path="admin/courses" element={<AdminCoursesPage />} />
+          <Route path="admin/create-course" element={<AdminCreateCoursePage />} />
+       
 
         {/* Admin Protected Routes */}
         <Route path="admin" element={<AdminLayout />}>
@@ -167,8 +178,9 @@ const App: React.FC = () => {
           <Route path="materials" element={<AdminMaterialsPage />} />
           <Route path="review" element={<AdminReviewPage />} />
           <Route path="blog" element={<AdminBlogPage />} />
+          <Route path="blog" element={<AdminCreateCoursePage />} />
           <Route path="post-opportunity" element={<AdminPostOpportunity />} />
-        </Route>
+     </Route>
       </Routes>
 
       {/* <InstallPWA /> */}
