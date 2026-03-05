@@ -113,7 +113,7 @@ const ClassesPreview: React.FC = () => {
         </div>
         
         <div className="mt-8 text-center md:hidden">
-          <a href= "/classes/#classes">
+          <a href= "#classes">
           <button className="px-6 py-3 border-2 border-brand-primary text-brand-primary font-bold rounded-lg hover:bg-brand-primary hover:text-white transition-colors">
             View All Courses
           </button>

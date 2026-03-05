@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { FaStar, FaChevronDown, FaSearch, FaFilter } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import CourseModal from '../../components/classes/CourseModal';
-import CourseInfoExtras from '../../components/classes/CourseInfoExtras';
+// import CourseInfoExtras from '../../components/classes/CourseInfoExtras';
 import { Course } from '../../types';
 
 // Mock Data
@@ -304,7 +304,7 @@ export default function ClassesPage() {
         </div>
       </div>
 
-      <CourseInfoExtras />
+      {/* <CourseInfoExtras /> */}
       <CourseModal show={showModal} handleClose={closeModal} course={selectedCourse} />
     </div>
   );
