@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from "react";
-import * as ReactRouterDOM from "react-router-dom";
-const { useLocation } = ReactRouterDOM as any;
-import { db } from "../../firebase";
+import { useNavigate, useLocation } from "react-router-dom";
+import { db, adminAuth } from "../../firebase";
+import { supabase } from "../../src/supabase";
 import {
   collection,
   addDoc,
@@ -13,15 +13,22 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
-import { Trash2, ExternalLink, FileText, Check, Video, Link as LinkIcon, Image, Loader2 } from "lucide-react";
-
-declare global {
-  interface Window {
-    cloudinary: any;
-  }
-}
+import { Trash2, ExternalLink, FileText, Check, Video, Link as LinkIcon, Image, Loader2, Upload, X } from "lucide-react";
+import imageCompression from 'browser-image-compression';
 
 const AdminMaterialsPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const unsubscribe = adminAuth.onAuthStateChanged((user) => {
+      if (!user) {
+        navigate('/admin/login');
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
+
   const [activeTab, setActiveTab] = useState<"materials" | "videos">("materials");
   const [submissionType, setSubmissionType] = useState<"file" | "link" | "video">("file");
   
@@ -29,7 +36,8 @@ const AdminMaterialsPage = () => {
   const [title, setTitle] = useState("");
   const [uploader, setUploader] = useState("");
   const [link, setLink] = useState(""); // Used for single link/video
-  const [bulkFiles, setBulkFiles] = useState<any[]>([]); // To store URLs/IDs of bulk uploaded files
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // To store selected files
+  const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
   const [message, setMessage] = useState("");
   
   const [items, setItems] = useState<any[]>([]);
@@ -67,46 +75,83 @@ const AdminMaterialsPage = () => {
     fetchItems();
   }, [activeTab]);
 
-  const handleCloudinaryUpload = () => {
-    if (!window.cloudinary) {
-      alert("Cloudinary script not loaded");
-      return;
-    }
+  const uploadToSupabase = async (fileToUpload: File, onProgress?: (percent: number) => void) => {
+    try {
+      let file = fileToUpload;
 
-    const uploadedResults: any[] = [];
-    
-    const myWidget = window.cloudinary.createUploadWidget(
-      {
-        cloudName: "dgorssyvm",
-        uploadPreset: "ml_default",
-        sources: ["local", "url", "camera"],
-        multiple: true,
-        maxFiles: 5,
-        resource_type: "raw",
-        folder: "studiRad_materials",
-      },
-      (error: any, result: any) => {
-        if (!error && result && result.event === "success") {
-          uploadedResults.push({
-            url: result.info.secure_url,
-            publicId: result.info.public_id,
-            original_filename: result.info.original_filename
-          });
-          setBulkFiles([...uploadedResults]);
-          setMessage(`✅ ${uploadedResults.length} file(s) ready.`);
-        } else if (error) {
-          console.error("Upload error:", error);
-          setMessage("❌ Upload failed. Try again.");
+      // Compress if it's an image
+      if (file.type.startsWith('image/')) {
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true
+        };
+        try {
+          file = await imageCompression(file, options);
+        } catch (error) {
+          console.warn("Compression failed, uploading original", error);
         }
       }
-    );
-    myWidget.open();
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const filePath = `admin/${Date.now()}_${fileName}`;
+
+      // Simulate progress for better UX
+      let progress = 10;
+      const interval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress > 90) {
+          clearInterval(interval);
+        } else if (onProgress) {
+          onProgress(Math.floor(progress));
+        }
+      }, 500);
+
+      const { data, error } = await supabase.storage
+        .from('materials')
+        .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+        });
+
+      clearInterval(interval);
+      if (error) throw error;
+
+      if (onProgress) onProgress(100);
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('materials')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (err) {
+      console.error("Supabase upload error:", err);
+      return null;
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      
+      // Check file sizes (50MB limit)
+      const oversized = files.filter((f: File) => f.size > 50 * 1024 * 1024);
+      if (oversized.length > 0) {
+          setMessage(`⚠️ Some files exceed the 50MB limit: ${oversized.map((f: File) => f.name).join(", ")}`);
+          return;
+      }
+
+      setSelectedFiles(files);
+      setMessage(`✅ ${files.length} file(s) selected.`);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
     setLoading(true);
+    setUploadProgress({});
 
     if (!course || !uploader) {
       setMessage("⚠️ Please fill in course and uploader fields.");
@@ -116,25 +161,43 @@ const AdminMaterialsPage = () => {
 
     try {
       if (submissionType === 'file') {
-        if (bulkFiles.length === 0) {
-          setMessage("⚠️ Please upload at least one file.");
+        if (selectedFiles.length === 0) {
+          setMessage("⚠️ Please select at least one file.");
           setLoading(false);
           return;
         }
 
-        // Process each file in bulkFiles
-        for (const fileData of bulkFiles) {
-          await addDoc(collection(db, "materials"), {
+        // Parallel uploads using Promise.all
+        const uploadPromises = selectedFiles.map(async (file) => {
+          setUploadProgress(prev => ({ ...prev, [file.name]: 10 }));
+
+          const uploadedUrl = await uploadToSupabase(file, (p) => {
+            setUploadProgress(prev => ({ ...prev, [file.name]: p }));
+          });
+
+          if (!uploadedUrl) {
+            throw new Error(`Failed to upload ${file.name}`);
+          }
+
+          return {
             course,
-            title: title || fileData.original_filename, // Use specific title or fallback to filename
+            title: title || file.name,
             uploader,
-            link: fileData.url,
-            publicId: fileData.publicId,
+            link: uploadedUrl,
             type: "file",
             createdAt: serverTimestamp(),
-          });
-        }
-        setMessage(`✅ ${bulkFiles.length} item(s) published successfully!`);
+          };
+        });
+
+        const uploadedItems = await Promise.all(uploadPromises);
+
+        // Add all to Firestore after successful uploads
+        const firestorePromises = uploadedItems.map(item => 
+          addDoc(collection(db, "materials"), item)
+        );
+        await Promise.all(firestorePromises);
+        
+        setMessage(`✅ ${uploadedItems.length} item(s) published successfully!`);
       } else {
         // Handle single link or video
         if (!title || !link) {
@@ -169,7 +232,7 @@ const AdminMaterialsPage = () => {
       setTitle("");
       setUploader("");
       setLink("");
-      setBulkFiles([]);
+      setSelectedFiles([]);
       fetchItems();
     } catch (error) {
       console.error("❌ Error uploading:", error);
@@ -222,7 +285,7 @@ const AdminMaterialsPage = () => {
                         onClick={() => {
                             setSubmissionType(type);
                             setLink("");
-                            setBulkFiles([]);
+                            setSelectedFiles([]);
                         }}
                         className={`px-4 py-1.5 rounded-md text-sm font-bold capitalize transition-all ${submissionType === type ? 'bg-white shadow text-brand-primary' : 'text-gray-500 hover:text-gray-900'}`}
                     >
@@ -289,24 +352,43 @@ const AdminMaterialsPage = () => {
               {submissionType === 'file' ? (
                   <div className="flex flex-col gap-4">
                     <div className="flex gap-4 items-center">
-                      <button 
-                        type="button" 
-                        onClick={handleCloudinaryUpload}
-                        className="px-6 py-2 bg-slate-900 text-white font-bold rounded-lg hover:bg-brand-primary transition-colors flex items-center gap-2"
-                      >
-                        <Check size={18} /> Select Files via Cloudinary
-                      </button>
+                      <label className="cursor-pointer px-6 py-2 bg-slate-900 text-white font-bold rounded-lg hover:bg-brand-primary transition-colors flex items-center gap-2">
+                        <Upload size={18} /> Select Files
+                        <input 
+                          type="file" 
+                          multiple 
+                          onChange={handleFileChange}
+                          className="hidden"
+                        />
+                      </label>
+                      <span className="text-xs text-slate-400 font-medium">PDF, DOCX, PPT, IMAGES (Max 50MB per file)</span>
                     </div>
-                    {bulkFiles.length > 0 && (
-                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Ready to publish:</p>
-                        <ul className="space-y-1">
-                          {bulkFiles.map((f, i) => (
-                            <li key={i} className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                              <FileText size={14} className="text-brand-primary" /> {f.original_filename}
-                            </li>
-                          ))}
-                        </ul>
+                    {selectedFiles.length > 0 && (
+                      <div className="space-y-3">
+                        {selectedFiles.map((f, i) => (
+                          <div key={i} className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-3 overflow-hidden">
+                                <FileText size={18} className="text-brand-primary shrink-0" />
+                                <span className="text-sm font-bold text-slate-700 truncate">{f.name}</span>
+                                <span className="text-[10px] text-slate-400 font-black">{(f.size / 1024 / 1024).toFixed(2)} MB</span>
+                              </div>
+                              {!loading && (
+                                  <button type="button" onClick={() => setSelectedFiles(prev => prev.filter((_, idx) => idx !== i))} className="text-red-400 hover:text-red-600 p-1">
+                                      <X size={18} />
+                                  </button>
+                              )}
+                            </div>
+                            {loading && uploadProgress[f.name] !== undefined && (
+                                <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                                    <div 
+                                        className="h-full bg-brand-primary transition-all duration-300"
+                                        style={{ width: `${uploadProgress[f.name]}%` }}
+                                    />
+                                </div>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>

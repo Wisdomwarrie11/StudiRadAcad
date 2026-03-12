@@ -2,8 +2,10 @@
 import React, { useState } from "react";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
+import { supabase } from "../../src/supabase";
 import { Upload, CheckCircle, AlertTriangle, Link as LinkIcon, Video, FileText, X, Loader2 } from "lucide-react";
 import Modal from "../../components/ui/Modal";
+import imageCompression from 'browser-image-compression';
 
 const SubmitMaterialPage = () => {
   const [submissionType, setSubmissionType] = useState<"file" | "link" | "video">("file");
@@ -13,6 +15,7 @@ const SubmitMaterialPage = () => {
   const [email, setEmail] = useState("");
   const [url, setUrl] = useState(""); 
   const [files, setFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
@@ -33,29 +36,71 @@ const SubmitMaterialPage = () => {
             setError("⚠️ Maximum of 5 files allowed at once.");
             return;
         }
+        
+        // Check file sizes (50MB limit)
+        const oversized = selectedFiles.filter((f: File) => f.size > 50 * 1024 * 1024);
+        if (oversized.length > 0) {
+            setError(`⚠️ Some files exceed the 50MB limit: ${oversized.map((f: File) => f.name).join(", ")}`);
+            return;
+        }
+
         setFiles(selectedFiles);
         setError("");
     }
   };
 
-  const uploadToCloudinary = async (fileToUpload: File) => {
-    const formData = new FormData();
-    formData.append("file", fileToUpload);
-    formData.append("upload_preset", "ml_default");
-    formData.append("resource_type", "raw");
-    formData.append("folder", "studiRad_materials");
-
+  const uploadToSupabase = async (fileToUpload: File, onProgress?: (percent: number) => void) => {
     try {
-      const response = await fetch(
-        "https://api.cloudinary.com/v1_1/dgorssyvm/raw/upload",
-        { method: "POST", body: formData }
-      );
+      let file = fileToUpload;
+      
+      // Compress if it's an image
+      if (file.type.startsWith('image/')) {
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true
+        };
+        try {
+          file = await imageCompression(file, options);
+        } catch (error) {
+          console.warn("Compression failed, uploading original", error);
+        }
+      }
 
-      const data = await response.json();
-      if (data.secure_url) return data.secure_url;
-      else throw new Error("Cloudinary upload failed");
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const filePath = `pending/${Date.now()}_${fileName}`;
+
+      // Simulate progress for better UX since standard upload doesn't provide it
+      let progress = 10;
+      const interval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress > 90) {
+          clearInterval(interval);
+        } else if (onProgress) {
+          onProgress(Math.floor(progress));
+        }
+      }, 500);
+
+      const { data, error } = await supabase.storage
+        .from('materials')
+        .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+        });
+
+      clearInterval(interval);
+      if (error) throw error;
+
+      if (onProgress) onProgress(100);
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('materials')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
     } catch (err) {
-      console.error("Upload error:", err);
+      console.error("Supabase upload error:", err);
       return null;
     }
   };
@@ -64,6 +109,7 @@ const SubmitMaterialPage = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
+    setUploadProgress({});
 
     if (!course || !uploader || !email) {
       setError("⚠️ Please fill in all required fields.");
@@ -91,24 +137,37 @@ const SubmitMaterialPage = () => {
 
     try {
       if (submissionType === "file") {
-        let successCount = 0;
-        for (const f of files) {
-          const uploadedUrl = await uploadToCloudinary(f);
-          if (uploadedUrl) {
-            await addDoc(collection(db, "pendingMaterials"), {
-              type: "file",
-              course,
-              title: files.length === 1 && title ? title : f.name, // Use custom title if single file, else filename
-              uploader,
-              email,
-              link: uploadedUrl,
-              createdAt: serverTimestamp(),
-              status: "pending",
-            });
-            successCount++;
+        // Parallel uploads using Promise.all
+        const uploadPromises = files.map(async (f) => {
+          setUploadProgress(prev => ({ ...prev, [f.name]: 10 }));
+          
+          const uploadedUrl = await uploadToSupabase(f, (p) => {
+            setUploadProgress(prev => ({ ...prev, [f.name]: p }));
+          });
+
+          if (!uploadedUrl) {
+            throw new Error(`Failed to upload ${f.name}`);
           }
-        }
-        if (successCount === 0) throw new Error("All file uploads failed.");
+
+          return {
+            type: "file",
+            course,
+            title: files.length === 1 && title ? title : f.name,
+            uploader,
+            email,
+            link: uploadedUrl,
+            createdAt: serverTimestamp(),
+            status: "pending",
+          };
+        });
+
+        const uploadedItems = await Promise.all(uploadPromises);
+
+        // Add all to Firestore after successful uploads
+        const firestorePromises = uploadedItems.map(item => 
+          addDoc(collection(db, "pendingMaterials"), item)
+        );
+        await Promise.all(firestorePromises);
       } else {
         // Single Link or Video
         let finalUrl = url;
@@ -275,24 +334,36 @@ const SubmitMaterialPage = () => {
                         <span className="text-slate-600 font-bold">
                            Click to Select or Drag Files
                         </span>
-                        <span className="text-xs text-slate-400 mt-2 font-medium tracking-wide">PDF, DOCX, PPT, IMAGES (Max 10MB per file)</span>
+                        <span className="text-xs text-slate-400 mt-2 font-medium tracking-wide">PDF, DOCX, PPT, IMAGES (Max 50MB per file)</span>
                     </div>
                     </div>
 
                     {files.length > 0 && (
                         <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Selected Files:</p>
-                             <div className="space-y-2">
+                             <div className="space-y-3">
                                  {files.map((f, i) => (
-                                     <div key={i} className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-100 shadow-sm animate-in fade-in slide-in-from-left-2">
-                                         <div className="flex items-center gap-3 overflow-hidden">
-                                             <FileText size={18} className="text-brand-primary shrink-0" />
-                                             <span className="text-sm font-bold text-slate-700 truncate">{f.name}</span>
-                                             <span className="text-[10px] text-slate-400 font-black">{(f.size / 1024 / 1024).toFixed(2)} MB</span>
+                                     <div key={i} className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm animate-in fade-in slide-in-from-left-2">
+                                         <div className="flex items-center justify-between mb-2">
+                                             <div className="flex items-center gap-3 overflow-hidden">
+                                                 <FileText size={18} className="text-brand-primary shrink-0" />
+                                                 <span className="text-sm font-bold text-slate-700 truncate">{f.name}</span>
+                                                 <span className="text-[10px] text-slate-400 font-black">{(f.size / 1024 / 1024).toFixed(2)} MB</span>
+                                             </div>
+                                             {!loading && (
+                                                 <button type="button" onClick={() => removeFile(i)} className="text-red-400 hover:text-red-600 p-1">
+                                                     <X size={18} />
+                                                 </button>
+                                             )}
                                          </div>
-                                         <button type="button" onClick={() => removeFile(i)} className="text-red-400 hover:text-red-600 p-1">
-                                             <X size={18} />
-                                         </button>
+                                         {loading && uploadProgress[f.name] !== undefined && (
+                                             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                 <div 
+                                                     className="h-full bg-brand-primary transition-all duration-300"
+                                                     style={{ width: `${uploadProgress[f.name]}%` }}
+                                                 />
+                                             </div>
+                                         )}
                                      </div>
                                  ))}
                              </div>
