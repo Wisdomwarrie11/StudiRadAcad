@@ -87,9 +87,9 @@ const OpportunitiesPage = () => {
         </div>
 
             {/* Employer/Hospital Portal CTA Section */}
-            <div className="mb-20 bg-brand-dark rounded-[3.5rem] p-10 md:p-16 text-white shadow-2xl relative overflow-hidden border border-white/5">
+            {/* <div className="mb-20 bg-brand-dark rounded-[3.5rem] p-10 md:p-16 text-white shadow-2xl relative overflow-hidden border border-white/5"> */}
            {/* Decorative Background Elements */}
-           <div className="absolute top-0 right-0 w-80 h-80 bg-brand-primary/20 rounded-full blur-[100px] -mr-40 -mt-40"></div>
+           {/* <div className="absolute top-0 right-0 w-80 h-80 bg-brand-primary/20 rounded-full blur-[100px] -mr-40 -mt-40"></div>
            <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-accent/10 rounded-full blur-[80px] -ml-32 -mb-32"></div>
 
            <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
@@ -129,16 +129,16 @@ const OpportunitiesPage = () => {
                     <p className="text-xs text-slate-400 leading-relaxed">Track applications and manage your listings through a dedicated facility dashboard.</p>
                  </div>
               </div>
-           </div>
+           </div> */}
         </div>
 
         {/* Footer Note */}
-        <div className="bg-slate-900 text-slate-400 p-8 rounded-[2.5rem] text-center text-sm font-medium border border-white/5">
+        {/* <div className="bg-slate-900 text-slate-400 p-8 rounded-[2.5rem] text-center text-sm font-medium border border-white/5">
            <p>Are you an individual Radiographer? <Link to="/locum/register" className="text-brand-accent font-black hover:underline">Register your personal Locum profile</Link> to get discovered by hospitals.</p>
-        </div>
+        </div> */}
 
       </div>
-    </div>
+    // </div>
   );
 };
 
