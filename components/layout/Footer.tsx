@@ -67,8 +67,8 @@ const Footer: React.FC = () => {
               </button>
             </div>
             <div className="mt-6 flex items-center gap-2 text-gray-400">
-              {/* <Mail size={16} /> */}
-              {/* <span>studirad.org@gmail.com</span> */}
+              <Mail size={16} />
+              <span>studiradinfo@gmail.com</span>
             </div>
           </div>
         </div>

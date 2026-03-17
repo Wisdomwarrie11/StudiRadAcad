@@ -139,7 +139,7 @@ const AboutPage = () => {
                 href="mailto:studirad@gmail.com" 
                 className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
               >
-                Contact Us: studirad@gmail.com
+                Contact Us: studiradinfo@gmail.com
               </a>
             </div>
             <div className="relative h-64 md:h-full min-h-[300px] rounded-2xl overflow-hidden">
