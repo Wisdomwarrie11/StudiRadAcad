@@ -1,5 +1,8 @@
+
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// Fix: Use type-safe module import workaround for missing useNavigate export
+import * as ReactRouterDOM from 'react-router-dom';
+const { useNavigate } = ReactRouterDOM as any;
 import { Lock, CheckCircle, Play, Trophy, Star, Loader2, AlertCircle, Coins, Plus, Unlock, CalendarClock, ChevronDown, ChevronUp, X, Clock, Share2 } from 'lucide-react';
 import { UserChallengeProfile, ChallengeTopic, ChallengeLevel, AlertConfig } from '../../types';
 import { getLeaderboard, canPlayDay, getUserProfile, unlockDay, switchLevel, rewardShare } from '../../services/challengeService';
@@ -102,17 +105,18 @@ const DailyChallengeDashboard: React.FC = () => {
 
   const fetchProfileData = async () => {
     try {
-      let email = sessionStorage.getItem('studiRad_challenge_email') || localStorage.getItem('studiRad_challenge_email');
+      const email = sessionStorage.getItem('studiRad_challenge_email') || localStorage.getItem('studiRad_challenge_email');
+      const nav = navigate;
       
       if (!email) {
-        navigate('/challenge');
+        nav('/challenge');
         return;
       }
       
       const userProfile = await getUserProfile(email);
       if (!userProfile) {
         setError("User profile not found. Please register again.");
-        navigate('/challenge');
+        nav('/challenge');
         return;
       }
 
@@ -235,7 +239,7 @@ const DailyChallengeDashboard: React.FC = () => {
     if (profile.coins < 2) {
       showAlert({
         title: 'Insufficient Coins',
-        message: 'You need 2 Coins (₦200) to unlock this day early.',
+        message: 'You need 2 Coins to unlock this day early.',
         type: 'warning',
         confirmText: 'Buy Coins',
         cancelText: 'Cancel',
@@ -260,9 +264,29 @@ const DailyChallengeDashboard: React.FC = () => {
     if (!profile) return;
     if (profile.level === targetLevel) return;
 
-    const isCompleted = profile.completedLevels?.includes(profile.level);
-    const targetIsCompleted = profile.completedLevels?.includes(targetLevel);
+    const completedLevels = profile.completedLevels || [];
+    const isCompleted = completedLevels.includes(profile.level);
+    const targetIsCompleted = completedLevels.includes(targetLevel);
     
+    // Level ranks for logic
+    const levelRanks: Record<string, number> = {
+      [ChallengeLevel.BASIC]: 1,
+      [ChallengeLevel.ADVANCED]: 2,
+      [ChallengeLevel.MASTER]: 3
+    };
+    
+    const highestCompletedRank = completedLevels.reduce((max, lvl) => {
+      return Math.max(max, levelRanks[lvl] || 0);
+    }, 0);
+    
+    const targetRank = levelRanks[targetLevel] || 0;
+    const isDowngradeFromCompleted = highestCompletedRank >= targetRank;
+
+    const isUnlockedByProgression = 
+        (targetLevel === ChallengeLevel.BASIC) ||
+        (targetLevel === ChallengeLevel.ADVANCED && completedLevels.includes(ChallengeLevel.BASIC)) ||
+        (targetLevel === ChallengeLevel.MASTER && completedLevels.includes(ChallengeLevel.ADVANCED));
+
     const performSwitch = async () => {
         setSwitchingLevel(targetLevel);
         try {
@@ -279,11 +303,17 @@ const DailyChallengeDashboard: React.FC = () => {
         }
     };
 
-    if (isCompleted || targetIsCompleted) {
+    // Free switch if any condition is met
+    if (isCompleted || targetIsCompleted || isDowngradeFromCompleted || isUnlockedByProgression) {
         setSwitchingLevel(targetLevel);
-        await switchLevel(profile.email, targetLevel);
-        await fetchProfileData();
-        setSwitchingLevel(null);
+        try {
+            await switchLevel(profile.email, targetLevel);
+            await fetchProfileData();
+        } catch (e) {
+            showAlert({ title: "Error", message: "Failed to switch level.", type: 'error' });
+        } finally {
+            setSwitchingLevel(null);
+        }
         return;
     }
 
@@ -394,14 +424,35 @@ const DailyChallengeDashboard: React.FC = () => {
                   </button>
                 </div>
               </div>
+            </div>
 
-              {/* Level Switcher */}
+            {/* Level Switcher */}
               <div className="bg-slate-100/50 p-2 rounded-xl flex flex-wrap gap-2 mb-6">
                 {[ChallengeLevel.BASIC, ChallengeLevel.ADVANCED, ChallengeLevel.MASTER].map((lvl) => {
                     const isActive = profile.level === lvl;
-                    const isCompleted = profile.completedLevels?.includes(profile.level); 
-                    const thisLevelCompleted = profile.completedLevels?.includes(lvl);
-                    const isLocked = !isActive && !isCompleted && !thisLevelCompleted;
+                    const completedLevels = profile.completedLevels || [];
+                    const thisLevelCompleted = completedLevels.includes(lvl);
+                    
+                    const levelRanks: Record<string, number> = {
+                      [ChallengeLevel.BASIC]: 1,
+                      [ChallengeLevel.ADVANCED]: 2,
+                      [ChallengeLevel.MASTER]: 3
+                    };
+                    
+                    const highestCompletedRank = completedLevels.reduce((max, cl) => {
+                      return Math.max(max, levelRanks[cl] || 0);
+                    }, 0);
+                    
+                    const targetRank = levelRanks[lvl] || 0;
+                    const isDowngradeFromCompleted = highestCompletedRank >= targetRank;
+
+                    const isUnlockedByProgression = 
+                        (lvl === ChallengeLevel.BASIC) ||
+                        (lvl === ChallengeLevel.ADVANCED && completedLevels.includes(ChallengeLevel.BASIC)) ||
+                        (lvl === ChallengeLevel.MASTER && completedLevels.includes(ChallengeLevel.ADVANCED));
+
+                    const isUnlocked = isActive || thisLevelCompleted || isDowngradeFromCompleted || isUnlockedByProgression;
+                    const isLocked = !isUnlocked;
 
                     return (
                         <button
@@ -410,14 +461,18 @@ const DailyChallengeDashboard: React.FC = () => {
                             disabled={switchingLevel === lvl || isActive}
                             className={`flex-1 px-4 py-3 rounded-lg text-sm font-bold flex items-center justify-center transition-all
                                 ${isActive ? 'bg-white shadow-md text-slate-900 ring-2 ring-slate-200' : 'text-slate-500 hover:bg-slate-100'}
-                                ${isLocked ? 'opacity-70 grayscale' : ''}
+                                ${isLocked ? 'opacity-70 grayscale cursor-not-allowed' : 'cursor-pointer'}
                             `}
                         >
                             {switchingLevel === lvl ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                                 <>
                                     {lvl}
                                     {isLocked && <Lock className="w-3 h-3 ml-2 text-slate-400" />}
-                                    {!isLocked && !isActive && <Unlock className="w-3 h-3 ml-2 text-emerald-500" />}
+                                    {!isLocked && !isActive && (
+                                        thisLevelCompleted ? 
+                                        <CheckCircle className="w-3 h-3 ml-2 text-emerald-500" /> : 
+                                        <Unlock className="w-3 h-3 ml-2 text-emerald-500" />
+                                    )}
                                 </>
                             )}
                         </button>
@@ -443,7 +498,6 @@ const DailyChallengeDashboard: React.FC = () => {
                     {showLeaderboard ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
                 </button>
               </div>
-            </div>
 
             <div className="grid md:grid-cols-2 gap-6">
               {days.map((day) => {
@@ -543,8 +597,11 @@ const DailyChallengeDashboard: React.FC = () => {
                         )}
                       </div>
                     ) : isPlayed ? (
-                      <button disabled className="w-full py-3 bg-emerald-100 text-emerald-700 font-bold rounded-xl flex items-center justify-center cursor-default">
-                        <CheckCircle className="w-5 h-5 mr-2" /> Completed
+                      <button 
+                        onClick={() => navigate(`/challenge/quiz/${day.num}`)}
+                        className="w-full py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl flex items-center justify-center transition-colors"
+                      >
+                        <CheckCircle className="w-5 h-5 mr-2" /> Replay Day
                       </button>
                     ) : (
                       <button 
@@ -623,8 +680,9 @@ const DailyChallengeDashboard: React.FC = () => {
         </div>
       </div>
 
-      {showBuyModal && profile && (
+      {profile && (
         <CoinPurchaseModal 
+            isOpen={showBuyModal}
             userEmail={profile.email}
             onClose={() => setShowBuyModal(false)}
             onSuccess={handlePurchaseSuccess}

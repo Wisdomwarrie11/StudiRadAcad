@@ -1,5 +1,6 @@
 import { db } from '../firebase';
 import { ChallengeLevel, ChallengePurpose, ChallengeQuestion, ChallengeTopic, UserChallengeProfile } from '../types';
+import { collection, doc, getDoc, setDoc, updateDoc, query, where, limit, getDocs } from 'firebase/firestore';
 
 // Import Question Data
 import { BASIC_TECHNIQUE, BASIC_SAFETY, BASIC_SPECIAL_PROCEDURES, BASIC_MRI, BASIC_CT, BASIC_USS } from '../data/basicQuestions';
@@ -8,6 +9,12 @@ import { MASTER_TECHNIQUE, MASTER_SAFETY, MASTER_SPECIAL_PROCEDURES, MASTER_MRI,
 
 // Collection Name in Firestore
 const COLLECTION_NAME = 'daily_challenge_users';
+
+const LEVEL_RANK: Record<ChallengeLevel, number> = {
+  [ChallengeLevel.BASIC]: 1,
+  [ChallengeLevel.ADVANCED]: 2,
+  [ChallengeLevel.MASTER]: 3
+};
 
 // Helper to sanitize email for use as Document ID
 const sanitizeId = (email: string) => {
@@ -27,8 +34,8 @@ const generateReferralCode = () => {
 export const checkUserExists = async (email: string): Promise<boolean> => {
   try {
     const docId = sanitizeId(email);
-    const doc = await db.collection(COLLECTION_NAME).doc(docId).get();
-    return doc.exists;
+    const docSnap = await getDoc(doc(db, COLLECTION_NAME, docId));
+    return docSnap.exists();
   } catch (error) {
     console.error("SERVICE ERROR: checkUserExists", error);
     return false;
@@ -50,12 +57,12 @@ export const registerUserForChallenge = async (
     const docId = sanitizeId(email); 
     console.log(`Checking Firestore for user: ${docId} in ${COLLECTION_NAME}`);
     
-    const userRef = db.collection(COLLECTION_NAME).doc(docId);
-    const doc = await userRef.get();
+    const userRef = doc(db, COLLECTION_NAME, docId);
+    const docSnap = await getDoc(userRef);
 
-    if (doc.exists) {
+    if (docSnap.exists()) {
       console.log("User found, returning profile.");
-      return doc.data() as UserChallengeProfile;
+      return docSnap.data() as UserChallengeProfile;
     } else {
       console.log("User not found, creating new profile.");
       
@@ -63,10 +70,8 @@ export const registerUserForChallenge = async (
       if (referrerCode) {
         try {
           // Find the user who owns this referral code
-          const referrerQuery = await db.collection(COLLECTION_NAME)
-            .where('referralCode', '==', referrerCode)
-            .limit(1)
-            .get();
+          const q = query(collection(db, COLLECTION_NAME), where('referralCode', '==', referrerCode), limit(1));
+          const referrerQuery = await getDocs(q);
 
           if (!referrerQuery.empty) {
             const referrerDoc = referrerQuery.docs[0];
@@ -75,7 +80,7 @@ export const registerUserForChallenge = async (
             // Avoid self-referral if email matches (though ID check prevents this usually)
             if (referrerData.email !== email) {
                 // Award 0.5 coins to referrer
-                await referrerDoc.ref.update({
+                await updateDoc(referrerDoc.ref, {
                     coins: (referrerData.coins || 0) + 0.5
                 });
                 console.log(`Referral reward applied to ${referrerData.email}`);
@@ -104,7 +109,7 @@ export const registerUserForChallenge = async (
         completedLevels: []
       };
       
-      await userRef.set(newProfile);
+      await setDoc(userRef, newProfile);
       return newProfile;
     }
   } catch (error) {
@@ -119,13 +124,13 @@ export const registerUserForChallenge = async (
 export const getUserProfile = async (email: string): Promise<UserChallengeProfile | null> => {
   try {
     const docId = sanitizeId(email);
-    const doc = await db.collection(COLLECTION_NAME).doc(docId).get();
-    if (doc.exists) {
+    const docSnap = await getDoc(doc(db, COLLECTION_NAME, docId));
+    if (docSnap.exists()) {
       // Ensure existing users get a referral code if they don't have one
-      const data = doc.data() as UserChallengeProfile;
+      const data = docSnap.data() as UserChallengeProfile;
       if (!data.referralCode) {
          const newCode = generateReferralCode();
-         await doc.ref.update({ referralCode: newCode });
+         await updateDoc(docSnap.ref, { referralCode: newCode });
          data.referralCode = newCode;
       }
       return data;
@@ -140,11 +145,11 @@ export const getUserProfile = async (email: string): Promise<UserChallengeProfil
 export const startChallengeDay = async (email: string, day: number): Promise<void> => {
   try {
     const docId = sanitizeId(email);
-    const userRef = db.collection(COLLECTION_NAME).doc(docId);
-    const doc = await userRef.get();
+    const userRef = doc(db, COLLECTION_NAME, docId);
+    const docSnap = await getDoc(userRef);
     
-    if (!doc.exists) return;
-    const data = doc.data() as UserChallengeProfile;
+    if (!docSnap.exists()) return;
+    const data = docSnap.data() as UserChallengeProfile;
 
     // Only update start time if it's the current day
     if (data.currentDay === day) {
@@ -154,7 +159,7 @@ export const startChallengeDay = async (email: string, day: number): Promise<voi
       const shouldUpdate = !lastStart || (now.getTime() - lastStart.getTime() > 24 * 60 * 60 * 1000);
 
       if (shouldUpdate) {
-        await userRef.update({
+        await updateDoc(userRef, {
           lastChallengeStartedAt: now.toISOString()
         });
       }
@@ -175,12 +180,12 @@ export const updateUserProgress = async (
 ): Promise<void> => {
   try {
     const docId = sanitizeId(email);
-    const userRef = db.collection(COLLECTION_NAME).doc(docId);
+    const userRef = doc(db, COLLECTION_NAME, docId);
     
-    const doc = await userRef.get();
-    if (!doc.exists) throw new Error("User not found");
+    const docSnap = await getDoc(userRef);
+    if (!docSnap.exists()) throw new Error("User not found");
     
-    const currentData = doc.data() as UserChallengeProfile;
+    const currentData = docSnap.data() as UserChallengeProfile;
     
     // Update scores map
     // We only update if the new score is higher or if it wasn't there before
@@ -216,7 +221,7 @@ export const updateUserProgress = async (
       updatePayload.completedLevels = Array.from(completedLevels);
     }
 
-    await userRef.update(updatePayload);
+    await updateDoc(userRef, updatePayload);
 
   } catch (error) {
     console.error("SERVICE ERROR: updateUserProgress", error);
@@ -230,17 +235,43 @@ export const updateUserProgress = async (
 export const switchLevel = async (email: string, newLevel: ChallengeLevel): Promise<boolean> => {
   try {
     const docId = sanitizeId(email);
-    const userRef = db.collection(COLLECTION_NAME).doc(docId);
-    const doc = await userRef.get();
+    const userRef = doc(db, COLLECTION_NAME, docId);
+    const docSnap = await getDoc(userRef);
     
-    if (!doc.exists) throw new Error("User not found");
-    const userData = doc.data() as UserChallengeProfile;
+    if (!docSnap.exists()) throw new Error("User not found");
+    const userData = docSnap.data() as UserChallengeProfile;
 
-    const isCompleted = userData.completedLevels?.includes(userData.level);
+    const completed = userData.completedLevels || [];
+    const isCompleted = completed.includes(userData.level);
+    const targetIsCompleted = completed.includes(newLevel);
     
-    if (isCompleted) {
-        await userRef.update({
+    // Check if user has completed a higher level than the target level
+    const highestCompletedRank = completed.reduce((max, lvl) => {
+      return Math.max(max, LEVEL_RANK[lvl as ChallengeLevel] || 0);
+    }, 0);
+    
+    const targetRank = LEVEL_RANK[newLevel] || 0;
+    const isDowngradeFromCompleted = highestCompletedRank >= targetRank;
+
+    // Progression logic:
+    // Basic is always free.
+    // Advanced is free if Basic is completed.
+    // Master is free if Advanced is completed.
+    const isUnlockedByProgression = 
+        (newLevel === ChallengeLevel.BASIC) ||
+        (newLevel === ChallengeLevel.ADVANCED && completed.includes(ChallengeLevel.BASIC)) ||
+        (newLevel === ChallengeLevel.MASTER && completed.includes(ChallengeLevel.ADVANCED));
+
+    // A switch is FREE if:
+    // 1. Target level is already completed
+    // 2. User is downgrading from a level they've already completed (e.g. finished Master, now switching between Basic/Advanced)
+    // 3. Target level is unlocked by progression
+    // 4. Current level is completed (user is moving forward naturally)
+    if (isCompleted || targetIsCompleted || isDowngradeFromCompleted || isUnlockedByProgression) {
+        await updateDoc(userRef, {
             level: newLevel,
+            currentDay: targetIsCompleted ? 7 : 1, // Reset day if not completed, set to 7 if it is
+            unlockedDays: targetIsCompleted ? [1, 2, 3, 4, 5, 6] : [1] // Unlock all days if completed
         });
         return true;
     }
@@ -250,8 +281,10 @@ export const switchLevel = async (email: string, newLevel: ChallengeLevel): Prom
         return false;
     }
 
-    await userRef.update({
+    await updateDoc(userRef, {
         level: newLevel,
+        currentDay: 1, // Reset day for new level
+        unlockedDays: [1],
         coins: userData.coins - 3
     });
 
@@ -269,14 +302,14 @@ export const switchLevel = async (email: string, newLevel: ChallengeLevel): Prom
 export const addCoins = async (email: string, amount: number): Promise<void> => {
   try {
     const docId = sanitizeId(email);
-    const userRef = db.collection(COLLECTION_NAME).doc(docId);
+    const userRef = doc(db, COLLECTION_NAME, docId);
     
-    const doc = await userRef.get();
-    if (!doc.exists) throw new Error("User not found");
+    const docSnap = await getDoc(userRef);
+    if (!docSnap.exists()) throw new Error("User not found");
     
-    const currentCoins = doc.data()?.coins || 0;
+    const currentCoins = docSnap.data()?.coins || 0;
     
-    await userRef.update({
+    await updateDoc(userRef, {
       coins: currentCoins + amount
     });
   } catch (error) {
@@ -292,12 +325,12 @@ export const addCoins = async (email: string, amount: number): Promise<void> => 
 export const rewardShare = async (email: string): Promise<{ success: boolean; message: string }> => {
   try {
     const docId = sanitizeId(email);
-    const userRef = db.collection(COLLECTION_NAME).doc(docId);
+    const userRef = doc(db, COLLECTION_NAME, docId);
     
-    const doc = await userRef.get();
-    if (!doc.exists) throw new Error("User not found");
+    const docSnap = await getDoc(userRef);
+    if (!docSnap.exists()) throw new Error("User not found");
     
-    const userData = doc.data() as UserChallengeProfile;
+    const userData = docSnap.data() as UserChallengeProfile;
     const now = new Date();
     
     // Check if shared today
@@ -316,7 +349,7 @@ export const rewardShare = async (email: string): Promise<{ success: boolean; me
     // Add 0.5 coins
     const currentCoins = userData.coins || 0;
     
-    await userRef.update({
+    await updateDoc(userRef, {
       coins: currentCoins + 0.5,
       lastShareDate: now.toISOString()
     });
@@ -334,12 +367,12 @@ export const rewardShare = async (email: string): Promise<{ success: boolean; me
 export const unlockDay = async (email: string, day: number): Promise<boolean> => {
   try {
     const docId = sanitizeId(email);
-    const userRef = db.collection(COLLECTION_NAME).doc(docId);
+    const userRef = doc(db, COLLECTION_NAME, docId);
     
-    const doc = await userRef.get();
-    if (!doc.exists) throw new Error("User not found");
+    const docSnap = await getDoc(userRef);
+    if (!docSnap.exists()) throw new Error("User not found");
     
-    const userData = doc.data() as UserChallengeProfile;
+    const userData = docSnap.data() as UserChallengeProfile;
     
     // Cost is 2 Coins (500 Naira) for a day
     if (userData.coins < 2) {
@@ -353,7 +386,7 @@ export const unlockDay = async (email: string, day: number): Promise<boolean> =>
     
     currentUnlocked.add(day);
     
-    await userRef.update({
+    await updateDoc(userRef, {
       coins: userData.coins - 2,
       unlockedDays: Array.from(currentUnlocked)
     });
@@ -370,16 +403,16 @@ export const unlockDay = async (email: string, day: number): Promise<boolean> =>
  */
 export const getLeaderboard = async (level?: ChallengeLevel): Promise<UserChallengeProfile[]> => {
   try {
-    let query = db.collection(COLLECTION_NAME);
+    let q = query(collection(db, COLLECTION_NAME));
     
     if (level) {
-        query = query.where('level', '==', level);
+        q = query(collection(db, COLLECTION_NAME), where('level', '==', level));
     }
     
     // Fetch all docs for this level (removed limit)
-    const snapshot = await query.get();
+    const snapshot = await getDocs(q);
     
-    const users = snapshot.docs.map((doc: any) => doc.data() as UserChallengeProfile);
+    const users = snapshot.docs.map((doc) => doc.data() as UserChallengeProfile);
     
     // Sort in memory (descending totalScore) to avoid requiring composite index immediately
     return users.sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0));
