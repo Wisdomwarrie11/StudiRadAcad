@@ -47,7 +47,7 @@ const MaterialsPage = () => {
     "Pathology",
     "CT",
     "MRI",
-    "USS",
+    "Ultrasound",
     "Projects",
     "Past Questions",
     "Others"
@@ -98,17 +98,17 @@ const MaterialsPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleShare = (title: string) => {
-    if (navigator.share) {
-      navigator.share({
-        title: `${title} | StudiRad Material`,
-        text: "Check out this radiography study material!",
-        url: window.location.href,
-      });
-    } else {
-      alert("Link copied to clipboard!");
-    }
-  };
+  // const handleShare = (title: string) => {
+  //   if (navigator.share) {
+  //     navigator.share({
+  //       title: `${title} | StudiRad Material`,
+  //       text: "Check out this radiography study material!",
+  //       url: window.location.href,
+  //     });
+  //   } else {
+  //     alert("Link copied to clipboard!");
+  //   }
+  // };
 
   const formatDate = (date: any) => {
     if (!date) return "Recently";
@@ -244,13 +244,13 @@ const MaterialsPage = () => {
                     <div className={`p-4 rounded-2xl ${config.light} ${config.main} shadow-inner`}>
                       {isLink ? <LinkIcon size={24} /> : <FileText size={24} />}
                     </div>
-                    <button 
+                    {/* <button 
                       onClick={() => handleShare(m.title)}
                       className="p-2 text-slate-300 hover:text-brand-primary hover:bg-brand-primary/5 rounded-xl transition-colors"
                       title="Share Material"
                     >
                       <Share2 size={18} />
-                    </button>
+                    </button> */}
                   </div>
 
                   <div className="flex-grow">

@@ -119,10 +119,10 @@ export default function ClassesPage() {
             Interactive Learning
           </span>
           <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl">
-            Live Radiography <span className="text-brand-primary">Cohorts</span>
+            Live Radiography <span className="text-brand-primary">Classes</span>
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-slate-300 md:text-xl font-medium">
-            Join expert-led live sessions, participate in group discussions, and get real-time feedback on your progress.
+            Join expert-led live sessions, and get real-time feedback on your progress.
           </p>
         </div>
       </div>
