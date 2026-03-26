@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Building2, User, Mail, Lock, Phone, Globe, ShieldCheck, Loader2, ArrowRight, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { registerEmployer } from '../../services/employerService';
 import SEO from '../../components/SEO';
+import { getFriendlyErrorMessage } from '../../src/lib/errorUtils';
 
 const EmployerRegistration = () => {
   const navigate = useNavigate();
@@ -41,11 +42,11 @@ const EmployerRegistration = () => {
     const result = await registerEmployer(email, password, { ...profileData, email });
 
     if (result.success) {
-      setEmailStatus({ sent: result.emailSent || false, error: result.emailError || null });
+      setEmailStatus({ sent: result.emailSent || false, error: getFriendlyErrorMessage(result.emailError) });
       setSuccess(true);
       setLoading(false);
     } else {
-      setError(result.error || "Registration failed.");
+      setError(getFriendlyErrorMessage(result.error));
       setLoading(false);
     }
   };

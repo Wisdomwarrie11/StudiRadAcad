@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Mail, Loader2, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 import { forgotPassword } from '../../services/employerService';
 import SEO from '../../components/SEO';
+import { getFriendlyErrorMessage } from '../../src/lib/errorUtils';
 
 const EmployerForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -21,7 +22,7 @@ const EmployerForgotPassword = () => {
     if (result.success) {
       setSuccess(true);
     } else {
-      setError(result.error || "Failed to send reset email.");
+      setError(getFriendlyErrorMessage(result.error));
     }
     setLoading(false);
   };

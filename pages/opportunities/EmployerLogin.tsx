@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, Loader2, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
 import { loginEmployer, resendVerificationEmail } from '../../services/employerService';
 import SEO from '../../components/SEO';
+import { getFriendlyErrorMessage } from '../../src/lib/errorUtils';
 
 const EmployerLogin = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const EmployerLogin = () => {
     if (result.success) {
       setResendStatus('Verification email sent! Please check your inbox.');
     } else {
-      setResendStatus(result.error || 'Failed to resend. Please try again later.');
+      setResendStatus(getFriendlyErrorMessage(result.error));
     }
     setResending(false);
   };
@@ -48,7 +49,7 @@ const EmployerLogin = () => {
         setLoading(false);
       }
     } else {
-      setError(result.error || "Login failed. Check your credentials.");
+      setError(getFriendlyErrorMessage(result.error));
       setLoading(false);
     }
   };

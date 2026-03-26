@@ -6,6 +6,7 @@ import { applyActionCode } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { CheckCircle, XCircle, Loader2, ArrowRight, ShieldCheck } from 'lucide-react';
 import SEO from '../../components/SEO';
+import { getFriendlyErrorMessage } from '../../src/lib/errorUtils';
 
 const EmployerVerify = () => {
   const [searchParams] = useSearchParams();
@@ -13,8 +14,21 @@ const EmployerVerify = () => {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Verifying your email...');
 
+  const verifiedRef = React.useRef(false);
+
+  useEffect(() => {
+    if (status === 'success') {
+      const timer = setTimeout(() => {
+        navigate('/employer/login');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [status, navigate]);
+
   useEffect(() => {
     const verify = async () => {
+      if (verifiedRef.current) return;
+      
       const oobCode = searchParams.get('oobCode');
       const mode = searchParams.get('mode');
 
@@ -27,11 +41,13 @@ const EmployerVerify = () => {
               await updateDoc(doc(db, 'employer_profiles', auth.currentUser.uid), {
                 verified: true
               });
+              verifiedRef.current = true;
               setStatus('success');
-              setMessage('Your email is already verified! You can proceed to your dashboard.');
+              setMessage('Your email is already verified! You will be redirected to the login page in a few seconds.');
             } catch (e) {
+              verifiedRef.current = true;
               setStatus('success');
-              setMessage('Your email is verified. Welcome back!');
+              setMessage('Your email is verified. Redirecting you to login...');
             }
           } else {
             setStatus('error');
@@ -46,6 +62,7 @@ const EmployerVerify = () => {
 
       try {
         await applyActionCode(auth, oobCode);
+        verifiedRef.current = true;
         
         // If user is logged in, we can update their profile in Firestore too
         if (auth.currentUser) {
@@ -55,16 +72,22 @@ const EmployerVerify = () => {
         }
         
         setStatus('success');
-        setMessage('Your email has been successfully verified! You can now access your dashboard.');
+        setMessage('Your email has been successfully verified! You will be redirected to the login page in a few seconds.');
       } catch (error: any) {
-        console.error("Verification error:");
+        console.error("Verification error:", error);
         setStatus('error');
         if (error.code === 'auth/invalid-action-code') {
+          // Check if user is already verified (maybe they clicked the link twice)
+          if (auth.currentUser?.emailVerified) {
+            setStatus('success');
+            setMessage('Your email is already verified! Redirecting to login...');
+            return;
+          }
           setMessage('The verification link is invalid or has already been used.');
         } else if (error.code === 'auth/expired-action-code') {
           setMessage('The verification link has expired. Please request a new one.');
         } else {
-          setMessage(error.message || 'Failed to verify email. Please try again.');
+          setMessage(getFriendlyErrorMessage(error));
         }
       }
     };
