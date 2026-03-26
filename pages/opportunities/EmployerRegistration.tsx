@@ -12,6 +12,7 @@ const EmployerRegistration = () => {
   const [error, setError] = useState('');
   const [step, setStep] = useState(1);
   const [success, setSuccess] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<{ sent: boolean; error: string | null }>({ sent: true, error: null });
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -40,6 +41,7 @@ const EmployerRegistration = () => {
     const result = await registerEmployer(email, password, { ...profileData, email });
 
     if (result.success) {
+      setEmailStatus({ sent: result.emailSent || false, error: result.emailError || null });
       setSuccess(true);
       setLoading(false);
     } else {
@@ -62,10 +64,22 @@ const EmployerRegistration = () => {
             <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle size={40} />
             </div>
-            <h2 className="text-3xl font-black text-slate-900">Verify Your Email</h2>
+            <h2 className="text-3xl font-black text-slate-900">
+              {emailStatus.sent ? "Verify Your Email" : "Registration Pending"}
+            </h2>
             <p className="text-slate-500 font-medium leading-relaxed">
-              Registration pending! We've sent a verification link to <br/>
-              <span className="text-slate-900 font-bold">{formData.email}</span>. 
+              {emailStatus.sent ? (
+                <>
+                  Registration pending! We've sent a verification link to <br/>
+                  <span className="text-slate-900 font-bold">{formData.email}</span>. 
+                </>
+              ) : (
+                <div className="p-4 bg-amber-50 border border-amber-100 text-amber-700 rounded-2xl text-sm font-bold">
+                  <AlertCircle size={20} className="mx-auto mb-2" />
+                  We couldn't send the verification email: <br/>
+                  <span className="text-red-600">{emailStatus.error}</span>
+                </div>
+              )}
               <br/><br/>
               Please verify your email to complete your registration and access the dashboard.
             </p>

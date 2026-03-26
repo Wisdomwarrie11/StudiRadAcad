@@ -97,20 +97,26 @@ export const registerEmployer = async (email: string, pass: string, data: Omit<E
     await setDoc(doc(db, COLLECTION, uid), profile);
 
     // Send email verification
+    let emailSent = true;
+    let emailError = null;
     try {
       const actionCodeSettings = {
-        url: `${window.location.origin}/#/employer/verify`,
+        url: `https://www.studirad.org/#/employer/verify`,
         handleCodeInApp: true,
       };
       await sendEmailVerification(cred.user, actionCodeSettings);
-    } catch (emailError) {
-      console.error("Error sending verification email:", emailError);
-      // We don't fail registration if email fails, but we log it
+    } catch (err: any) {
+      console.error("Error sending verification email:");
+      emailSent = false;
+      emailError = err.message;
+      if (err.code === 'auth/unauthorized-continue-uri') {
+        emailError = "Theres an error detected. We are going to fix this";
+      }
     }
 
-    return { success: true, profile };
+    return { success: true, profile, emailSent, emailError };
   } catch (error: any) {
-    console.error("Employer Reg Error:", error);
+    console.error("Employer Reg Error:");
     return { success: false, error: error.message };
   }
 };
@@ -124,7 +130,7 @@ export const resendVerificationEmail = async () => {
     if (!user) throw new Error("No user session found. Please try logging in again.");
     
     const actionCodeSettings = {
-      url: `${window.location.origin}/#/employer/verify`,
+      url: `${window.location.origin}/#/employer/login`,
       handleCodeInApp: true,
     };
     await sendEmailVerification(user, actionCodeSettings);

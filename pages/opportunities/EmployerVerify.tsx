@@ -1,298 +1,136 @@
 
-
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Building2, User, Mail, Lock, Phone, Globe, ShieldCheck, Loader2, ArrowRight, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
-import { registerEmployer } from '../../services/employerService';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { auth, db } from '../../firebase';
+import { applyActionCode } from 'firebase/auth';
+import { doc, updateDoc } from 'firebase/firestore';
+import { CheckCircle, XCircle, Loader2, ArrowRight, ShieldCheck } from 'lucide-react';
 import SEO from '../../components/SEO';
 
-const EmployerRegistration = () => {
+const EmployerVerify = () => {
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [step, setStep] = useState(1);
-  const [success, setSuccess] = useState(false);
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [message, setMessage] = useState('Verifying your email...');
 
-  const [formData, setFormData] = useState({
-    fullName: '',
-    roleInOrg: '',
-    organizationName: '',
-    email: '',
-    password: '',
-    phoneNumber: '',
-    website: ''
-  });
+  useEffect(() => {
+    const verify = async () => {
+      const oobCode = searchParams.get('oobCode');
+      const mode = searchParams.get('mode');
 
-  const [agreed, setAgreed] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+      // If no mode/oobCode, we might be coming from a simple "Check Status" link
+      if (!oobCode || mode !== 'verifyEmail') {
+        // Check if user is already logged in and verified
+        if (auth.currentUser) {
+          if (auth.currentUser.emailVerified) {
+            try {
+              await updateDoc(doc(db, 'employer_profiles', auth.currentUser.uid), {
+                verified: true
+              });
+              setStatus('success');
+              setMessage('Your email is already verified! You can proceed to your dashboard.');
+            } catch (e) {
+              setStatus('success');
+              setMessage('Your email is verified. Welcome back!');
+            }
+          } else {
+            setStatus('error');
+            setMessage('Please click the link in your email to verify your account.');
+          }
+        } else {
+          setStatus('error');
+          setMessage('Invalid or missing verification code. Please use the link sent to your email.');
+        }
+        return;
+      }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!agreed) {
-      setError("Please agree to the terms and privacy policy.");
-      return;
-    }
+      try {
+        await applyActionCode(auth, oobCode);
+        
+        // If user is logged in, we can update their profile in Firestore too
+        if (auth.currentUser) {
+          await updateDoc(doc(db, 'employer_profiles', auth.currentUser.uid), {
+            verified: true
+          });
+        }
+        
+        setStatus('success');
+        setMessage('Your email has been successfully verified! You can now access your dashboard.');
+      } catch (error: any) {
+        console.error("Verification error:");
+        setStatus('error');
+        if (error.code === 'auth/invalid-action-code') {
+          setMessage('The verification link is invalid or has already been used.');
+        } else if (error.code === 'auth/expired-action-code') {
+          setMessage('The verification link has expired. Please request a new one.');
+        } else {
+          setMessage(error.message || 'Failed to verify email. Please try again.');
+        }
+      }
+    };
 
-    setLoading(true);
-    setError('');
-
-    const { email, password, ...profileData } = formData;
-    const result = await registerEmployer(email, password, { ...profileData, email });
-
-    if (result.success) {
-      setSuccess(true);
-      setLoading(false);
-    } else {
-      setError(result.error || "Registration failed.");
-      setLoading(false);
-    }
-  };
+    verify();
+  }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-slate-50 py-24 px-4 flex items-center justify-center">
-      <SEO 
-        title="Hire with StudiRad"
-        description="Register your hospital or medical imaging facility to post job openings and internship opportunities."
-      />
-
-      {/* Verification Modal */}
-      {success && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white rounded-[3rem] shadow-2xl max-w-md w-full p-10 text-center space-y-6 animate-in zoom-in-95 duration-300 border border-white">
-            <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle size={40} />
-            </div>
-            <h2 className="text-3xl font-black text-slate-900">Verify Your Email</h2>
-            <p className="text-slate-500 font-medium leading-relaxed">
-              Registration pending! We've sent a verification link to <br/>
-              <span className="text-slate-900 font-bold">{formData.email}</span>. 
-              <br/><br/>
-              Please verify your email to complete your registration and access the dashboard.
-            </p>
-            <div className="pt-8 space-y-4">
-              <Link 
-                to="/employer/login" 
-                className="w-full py-4 bg-brand-primary text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-brand-dark transition-all shadow-xl shadow-brand-primary/20"
-              >
-                Go to Login <ArrowRight size={18} />
-              </Link>
-              <button 
-                onClick={() => setSuccess(false)}
-                className="text-xs text-slate-400 font-black uppercase tracking-widest hover:text-slate-600 transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 pt-24">
+      <SEO title="Verify Email" description="Verify your employer account email address." />
       
-      <div className="max-w-5xl w-full grid lg:grid-cols-2 gap-12 items-center">
-        
-        {/* Left Side: Brand & Social Proof */}
-        <div className="hidden lg:block space-y-8">
-          <div className="space-y-4">
-             <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand-primary/10 text-brand-primary rounded-full text-xs font-black uppercase tracking-widest">
-                <ShieldCheck size={16} /> Verified Employer Portal
-             </div>
-             <h1 className="text-5xl font-black text-slate-900 leading-tight">
-                Connect with the Next Generation of <span className="text-brand-primary">Radiography Talent.</span>
-             </h1>
-             <p className="text-xl text-slate-500 font-light leading-relaxed">
-                StudiRad is the hub for Nigeria's best radiography students and professionals. Post your openings directly where the talent lives.
-             </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-              <h4 className="text-3xl font-black text-brand-primary mb-1">500+</h4>
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Active Radiographers</p>
-            </div>
-            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-              <h4 className="text-3xl font-black text-brand-primary mb-1">100+</h4>
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Internship Seekers</p>
-            </div>
-          </div>
+      <div className="max-w-md w-full bg-white rounded-[3rem] shadow-2xl p-10 text-center border border-white">
+        <div className="w-16 h-16 bg-brand-primary/10 text-brand-primary rounded-3xl flex items-center justify-center mx-auto mb-8">
+            <ShieldCheck size={32} />
         </div>
 
-        {/* Right Side: Registration Form */}
-        <div className="bg-white rounded-[3rem] shadow-2xl shadow-slate-200/60 p-8 md:p-12 border border-white">
-          <div className="mb-10 text-center lg:text-left">
-            <h2 className="text-3xl font-black text-slate-900 mb-2">Create Organization Account</h2>
-            <p className="text-slate-500 font-medium">Join our network of elite hiring facilities.</p>
+        {status === 'loading' && (
+          <div className="flex flex-col items-center py-4">
+            <Loader2 className="w-12 h-12 text-brand-primary animate-spin mb-6" />
+            <h2 className="text-2xl font-black text-slate-900 mb-2">Verifying Email</h2>
+            <p className="text-slate-500 font-medium">{message}</p>
           </div>
+        )}
 
-          {error && (
-            <div className="mb-8 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl flex items-center gap-3 text-sm font-bold">
-               <AlertCircle size={20} /> {error}
+        {status === 'success' && (
+          <div className="flex flex-col items-center py-4 animate-in fade-in zoom-in duration-500">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 text-green-600">
+              <CheckCircle size={48} />
             </div>
-          )}
+            <h2 className="text-2xl font-black text-slate-900 mb-2">Success!</h2>
+            <p className="text-slate-500 font-medium mb-10 leading-relaxed">{message}</p>
+            
+            <button
+              onClick={() => navigate('/employer/login')}
+              className="w-full py-5 bg-brand-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-brand-dark transition-all shadow-xl shadow-brand-primary/20 flex items-center justify-center gap-3"
+            >
+              Go to Login
+              <ArrowRight size={18} />
+            </button>
+          </div>
+        )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-                
-                {step === 1 && (
-                  <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Personal Name</label>
-                        <div className="relative">
-                          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                          <input 
-                            type="text" required
-                            placeholder="e.g. Dr. Ada Obi"
-                            value={formData.fullName}
-                            onChange={e => setFormData({...formData, fullName: e.target.value})}
-                            className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Your Role</label>
-                        <input 
-                          type="text" required
-                          placeholder="e.g. HR Manager"
-                          value={formData.roleInOrg}
-                          onChange={e => setFormData({...formData, roleInOrg: e.target.value})}
-                          className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hospital / Organization Name</label>
-                      <div className="relative">
-                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                        <input 
-                          type="text" required
-                          placeholder="e.g. Grace Medical Center"
-                          value={formData.organizationName}
-                          onChange={e => setFormData({...formData, organizationName: e.target.value})}
-                          className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <button 
-                      type="button"
-                      onClick={() => setStep(2)}
-                      disabled={!formData.fullName || !formData.organizationName}
-                      className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-slate-800 disabled:opacity-50 transition-all shadow-xl shadow-slate-900/10"
-                    >
-                      Next Step <ArrowRight size={18} />
-                    </button>
-                  </div>
-                )}
-
-                {step === 2 && (
-                  <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Organization Email</label>
-                      <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                        <input 
-                          type="email" required
-                          placeholder="hr@hospital.com"
-                          value={formData.email}
-                          onChange={e => setFormData({...formData, email: e.target.value})}
-                          className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
-                        <div className="relative">
-                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                          <input 
-                            type={showPassword ? "text" : "password"} required
-                            placeholder="••••••••"
-                            value={formData.password}
-                            onChange={e => setFormData({...formData, password: e.target.value})}
-                            className="w-full pl-12 pr-12 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
-                          />
-                          <button 
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
-                          >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                          </button>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
-                        <div className="relative">
-                          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                          <input 
-                            type="tel" required
-                            placeholder="08012345678"
-                            value={formData.phoneNumber}
-                            onChange={e => setFormData({...formData, phoneNumber: e.target.value})}
-                            className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Organization Website (Optional)</label>
-                      <div className="relative">
-                        <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                        <input 
-                          type="url"
-                          placeholder="https://www.hospital.com"
-                          value={formData.website}
-                          onChange={e => setFormData({...formData, website: e.target.value})}
-                          className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 space-y-4">
-                       <label className="flex items-start gap-3 cursor-pointer select-none">
-                          <input 
-                            type="checkbox" 
-                            checked={agreed}
-                            onChange={e => setAgreed(e.target.checked)}
-                            className="mt-1 w-5 h-5 accent-brand-primary rounded-lg"
-                          />
-                          <span className="text-xs text-slate-500 leading-relaxed font-medium">
-                            I confirm that I am authorized to post on behalf of <strong>{formData.organizationName || 'this organization'}</strong>. I agree to the <Link to="/terms" className="text-brand-primary hover:underline">Terms of Service</Link> and <Link to="/privacy" className="text-brand-primary hover:underline">Privacy Policy</Link>.
-                          </span>
-                       </label>
-                    </div>
-
-                    <div className="flex gap-4">
-                       <button 
-                        type="button"
-                        onClick={() => setStep(1)}
-                        className="flex-1 py-4 text-slate-400 font-bold hover:text-slate-900 transition-colors"
-                       >
-                         Back
-                       </button>
-                       <button 
-                        type="submit"
-                        disabled={loading || !formData.email || !formData.password || !agreed}
-                        className="flex-[2] py-4 bg-brand-primary text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-brand-dark disabled:opacity-50 transition-all shadow-xl shadow-brand-primary/10"
-                       >
-                         {loading ? <Loader2 className="animate-spin" /> : <CheckCircle size={18} />}
-                         Register & Log In
-                       </button>
-                    </div>
-                  </div>
-                )}
-              </form>
-
-              <div className="mt-8 text-center pt-8 border-t border-slate-50">
-                <p className="text-sm text-slate-500 font-medium">
-                  Already have an account? <Link to="/employer/login" className="text-brand-primary font-black hover:underline">Sign In</Link>
-                </p>
-              </div>
-        </div>
+        {status === 'error' && (
+          <div className="flex flex-col items-center py-4 animate-in fade-in zoom-in duration-500">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6 text-red-600">
+              <XCircle size={48} />
+            </div>
+            <h2 className="text-2xl font-black text-slate-900 mb-2">Verification Failed</h2>
+            <p className="text-slate-500 font-medium mb-10 leading-relaxed">{message}</p>
+            
+            <div className="flex flex-col gap-4 w-full">
+              <Link
+                to="/employer/login"
+                className="w-full py-5 bg-brand-dark text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-brand-primary transition-all text-center flex items-center justify-center gap-2 shadow-xl shadow-brand-dark/10"
+              >
+                Back to Login
+              </Link>
+              <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+                Need help? Contact support@studirad.com
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default EmployerRegistration;
+export default EmployerVerify;
