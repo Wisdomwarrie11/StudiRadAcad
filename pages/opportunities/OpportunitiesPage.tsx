@@ -12,7 +12,7 @@ const OpportunitiesPage = () => {
   const opportunityCards = [
     {
       title: "Job Opportunities",
-      desc: "Find radiography-related job openings across healthcare facilities and imaging centers.",
+      desc: "Find information on radiography-related job openings across healthcare facilities and imaging centers.",
       link: "/jobs",
       icon: FaBriefcaseMedical,
       color: "amber",
@@ -20,7 +20,7 @@ const OpportunitiesPage = () => {
     },
     {
       title: "Internships",
-      desc: "Gain clinical exposure and hands-on training that bridges theory with practice.",
+      desc: "Get updates on internship opportunities opened to radiography graduates.",
       link: "/internship",
       icon: FaLaptopMedical,
       color: "indigo",
@@ -28,7 +28,7 @@ const OpportunitiesPage = () => {
     },
     {
       title: "Scholarships",
-      desc: "Access funding and academic support designed for radiography students worldwide.",
+      desc: "Access latest updates on funding and academic support designed for radiography students and professionals worldwide.",
       link: "/scholarship",
       icon: FaUserGraduate,
       color: "emerald",
@@ -60,13 +60,13 @@ const OpportunitiesPage = () => {
              transition={{ duration: 0.8 }}
            >
            
-             <h1 className="text-4xl md:text-6xl font-serif italic font-light leading-tight mb-8">
+             <h1 className="text-4xl md:text-6xl font-serif italic font-light leading-tight mt-8 mb-8">
                Career <br />
                <span className="font-sans font-black uppercase tracking-tighter text-brand-primary">Growth</span> <br />
                Pathways
              </h1>
              <p className="text-lg text-slate-600 max-w-md font-light leading-relaxed mb-10">
-               The premier destination for radiography professionals. Discover clinical internships, global jobs, and scholarships.
+               The right platform for radiography professionals. Discover clinical internships, global jobs, and scholarships.
              </p>
              <div className="flex flex-wrap gap-4">
                <a href="#opportunities" className="bg-slate-900 text-white px-8 py-4 rounded-lg font-bold text-xs uppercase tracking-widest hover:bg-brand-primary transition-all shadow-lg">
@@ -113,12 +113,11 @@ const OpportunitiesPage = () => {
       {/* Opportunity Types Grid - Technical Cards */}
       <section id="opportunities" className="py-24 px-4 border-b border-slate-300">
         <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-6">
+          <div className="flex flex-col md:flex-row justify-between mb-20 gap-6">
             <h2 className="text-4xl md:text-6xl font-serif italic font-light tracking-tight leading-none">
               Explore <br /> <span className="font-sans font-black uppercase tracking-tighter text-brand-primary">Pathways</span>
             </h2>
-            <div className="text-right">
-              <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-slate-400 block mb-1">Status: Online</span>
+            <div className="">
               <p className="text-slate-500 font-bold text-[10px] tracking-[0.2em] uppercase">
                 Select a category to begin.
               </p>
@@ -142,7 +141,6 @@ const OpportunitiesPage = () => {
                       <div className={`w-16 h-16 bg-white text-slate-900 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 border border-slate-200 shadow-sm`}>
                         <item.icon size={28} />
                       </div>
-                      <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">Cat_0{idx + 1}</span>
                     </div>
                     
                     <h3 className="text-2xl font-black text-slate-900 mb-4 uppercase tracking-tight">{item.title}</h3>
