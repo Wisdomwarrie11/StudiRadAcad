@@ -59,16 +59,14 @@ const OpportunitiesPage = () => {
              animate={{ opacity: 1, x: 0 }}
              transition={{ duration: 0.8 }}
            >
-             <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-900 text-white rounded-md text-[9px] font-mono uppercase tracking-[0.3em] mb-8">
-               System.Career_Hub
-             </div>
+           
              <h1 className="text-4xl md:text-6xl font-serif italic font-light leading-tight mb-8">
                Career <br />
                <span className="font-sans font-black uppercase tracking-tighter text-brand-primary">Growth</span> <br />
                Pathways
              </h1>
              <p className="text-lg text-slate-600 max-w-md font-light leading-relaxed mb-10">
-               The premier destination for radiography professionals. Discover clinical internships, global jobs, and academic funding.
+               The premier destination for radiography professionals. Discover clinical internships, global jobs, and scholarships.
              </p>
              <div className="flex flex-wrap gap-4">
                <a href="#opportunities" className="bg-slate-900 text-white px-8 py-4 rounded-lg font-bold text-xs uppercase tracking-widest hover:bg-brand-primary transition-all shadow-lg">
@@ -111,58 +109,6 @@ const OpportunitiesPage = () => {
         </div>
       </section>
 
-      {/* Organization Portal - High Contrast */}
-      <section className="grid lg:grid-cols-2 min-h-[60vh] border-b border-slate-300">
-        <div className="p-8 md:p-20 bg-slate-900 text-white flex flex-col justify-center">
-           <motion.div
-             initial={{ opacity: 0, scale: 0.98 }}
-             whileInView={{ opacity: 1, scale: 1 }}
-             viewport={{ once: true }}
-             className="space-y-8"
-           >
-              <div className="w-16 h-16 bg-brand-primary text-white rounded-xl flex items-center justify-center shadow-2xl">
-                <FaBuilding size={24} />
-              </div>
-              <h2 className="text-3xl md:text-5xl font-serif italic font-light leading-tight">
-                Hiring for a <br /> <span className="font-sans font-black uppercase tracking-tighter">Hospital?</span>
-              </h2>
-              <p className="text-lg text-slate-400 font-light leading-relaxed max-w-md">
-                Access the largest pool of qualified radiography talent in Nigeria. Post jobs, internships, and scholarships instantly.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link to="/employer/register" className="bg-brand-primary text-white px-8 py-4 rounded-lg font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all">
-                  Register Facility
-                </Link>
-                <Link to="/employer/login" className="px-8 py-4 rounded-lg border border-white/20 font-bold text-xs uppercase tracking-widest hover:bg-white/5 transition-all">
-                  Employer Sign In
-                </Link>
-              </div>
-           </motion.div>
-        </div>
-        
-        <div className="p-8 md:p-20 flex flex-col justify-center space-y-10 bg-slate-100/30">
-           <div className="grid gap-10">
-              <div className="flex gap-6 group">
-                 <div className="w-14 h-14 bg-white rounded-lg flex-shrink-0 flex items-center justify-center border border-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all duration-300 shadow-sm">
-                    <ShieldCheck size={24} />
-                 </div>
-                 <div>
-                    <h4 className="text-base font-black uppercase tracking-widest mb-1">Targeted Reach</h4>
-                    <p className="text-xs text-slate-500 font-medium leading-relaxed">Instantly connect with verified radiography professionals and students across the country.</p>
-                 </div>
-              </div>
-              <div className="flex gap-6 group">
-                 <div className="w-14 h-14 bg-white rounded-lg flex-shrink-0 flex items-center justify-center border border-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all duration-300 shadow-sm">
-                    <Sparkles size={24} />
-                 </div>
-                 <div>
-                    <h4 className="text-base font-black uppercase tracking-widest mb-1">Simple Management</h4>
-                    <p className="text-xs text-slate-500 font-medium leading-relaxed">Track applications and manage your listings through a dedicated, high-performance dashboard.</p>
-                 </div>
-              </div>
-           </div>
-        </div>
-      </section>
 
       {/* Opportunity Types Grid - Technical Cards */}
       <section id="opportunities" className="py-24 px-4 border-b border-slate-300">
@@ -214,6 +160,59 @@ const OpportunitiesPage = () => {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+            {/* Organization Portal - High Contrast */}
+            <section className="grid lg:grid-cols-2 min-h-[60vh] border-b border-slate-300">
+        <div className="p-8 md:p-20 bg-slate-900 text-white flex flex-col justify-center">
+           <motion.div
+             initial={{ opacity: 0, scale: 0.98 }}
+             whileInView={{ opacity: 1, scale: 1 }}
+             viewport={{ once: true }}
+             className="space-y-8"
+           >
+              <div className="w-16 h-16 bg-brand-primary text-white rounded-xl flex items-center justify-center shadow-2xl">
+                <FaBuilding size={24} />
+              </div>
+              <h2 className="text-3xl md:text-5xl font-serif italic font-light leading-tight">
+                Hiring for a <br /> <span className="font-sans font-black uppercase tracking-tighter">Hospital?</span>
+              </h2>
+              <p className="text-lg text-slate-400 font-light leading-relaxed max-w-md">
+                Access the largest pool of qualified radiography talent in Nigeria. Post jobs, internships, and scholarships instantly.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Link to="/employer/register" className="bg-brand-primary text-white px-8 py-4 rounded-lg font-bold text-xs uppercase tracking-widest hover:scale-105 transition-all">
+                  Register Facility
+                </Link>
+                <Link to="/employer/login" className="px-8 py-4 rounded-lg border border-white/20 font-bold text-xs uppercase tracking-widest hover:bg-white/5 transition-all">
+                  Employer Sign In
+                </Link>
+              </div>
+           </motion.div>
+        </div>
+        
+        <div className="p-8 md:p-20 flex flex-col justify-center space-y-10 bg-slate-100/30">
+           <div className="grid gap-10">
+              <div className="flex gap-6 group">
+                 <div className="w-14 h-14 bg-white rounded-lg flex-shrink-0 flex items-center justify-center border border-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all duration-300 shadow-sm">
+                    <ShieldCheck size={24} />
+                 </div>
+                 <div>
+                    <h4 className="text-base font-black uppercase tracking-widest mb-1">Targeted Reach</h4>
+                    <p className="text-xs text-slate-500 font-medium leading-relaxed">Instantly connect with verified radiography professionals and students across the country.</p>
+                 </div>
+              </div>
+              <div className="flex gap-6 group">
+                 <div className="w-14 h-14 bg-white rounded-lg flex-shrink-0 flex items-center justify-center border border-slate-300 group-hover:bg-slate-900 group-hover:text-white transition-all duration-300 shadow-sm">
+                    <Sparkles size={24} />
+                 </div>
+                 <div>
+                    <h4 className="text-base font-black uppercase tracking-widest mb-1">Simple Management</h4>
+                    <p className="text-xs text-slate-500 font-medium leading-relaxed">Track applications and manage your listings through a dedicated, high-performance dashboard.</p>
+                 </div>
+              </div>
+           </div>
         </div>
       </section>
 
