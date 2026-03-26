@@ -162,7 +162,7 @@ const OpportunitiesPage = () => {
       </section>
 
             {/* Organization Portal - High Contrast */}
-            <section className="grid lg:grid-cols-2 min-h-[60vh] border-b border-slate-300">
+            {/* <section className="grid lg:grid-cols-2 min-h-[60vh] border-b border-slate-300">
         <div className="p-8 md:p-20 bg-slate-900 text-white flex flex-col justify-center">
            <motion.div
              initial={{ opacity: 0, scale: 0.98 }}
@@ -212,7 +212,7 @@ const OpportunitiesPage = () => {
               </div>
            </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Footer Note - Technical Bar */}
       <section className="py-20 px-4">
