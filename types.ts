@@ -260,6 +260,7 @@ export enum BlogCategory {
 
 // employer type
 
+
 export interface EmployerProfile {
   uid: string;
   email: string;
@@ -269,5 +270,6 @@ export interface EmployerProfile {
   phoneNumber: string;
   website: string;
   verified: boolean;
+  isPreExisting?: boolean;
   createdAt: string;
 }

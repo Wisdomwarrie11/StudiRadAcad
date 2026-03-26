@@ -1,10 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { collection, onSnapshot, doc, deleteDoc, addDoc } from "firebase/firestore";
-import { db } from "../../firebase";
-import { Check, X, FileText, User, Tag, Video, Link as LinkIcon, ExternalLink, Mail } from "lucide-react";
+import { db, adminAuth } from "../../firebase";
+import { Check, X, FileText, User, Tag, Video, Link as LinkIcon, ExternalLink, Mail, Youtube, Facebook, Music, Play } from "lucide-react";
 import Modal from "../../components/ui/Modal";
 
+import { useNavigate } from "react-router-dom";
+
 const AdminReviewPage = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = adminAuth.onAuthStateChanged((user) => {
+      if (!user) {
+        navigate('/admin/login');
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
+
   const [pendingMaterials, setPendingMaterials] = useState<any[]>([]);
   const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -109,9 +122,18 @@ const AdminReviewPage = () => {
     }
   };
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (material: any) => {
+    const type = material.type || 'file';
+    const url = material.link || material.fileUrl || "";
+
+    if (type === 'video') {
+      if (url.includes('youtube.com') || url.includes('youtu.be')) return <Youtube size={16} className="text-red-600" />;
+      if (url.includes('facebook.com') || url.includes('fb.watch')) return <Facebook size={16} className="text-blue-600" />;
+      if (url.includes('tiktok.com')) return <Music size={16} className="text-black" />;
+      return <Video size={16} className="text-red-500" />;
+    }
+    
     switch (type) {
-        case 'video': return <Video size={16} className="text-red-500" />;
         case 'link': return <LinkIcon size={16} className="text-blue-500" />;
         default: return <FileText size={16} className="text-gray-500" />;
     }
@@ -136,7 +158,7 @@ const AdminReviewPage = () => {
               >
                 <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-2 bg-gray-100 px-2 py-1 rounded text-xs font-bold uppercase tracking-wider">
-                        {getTypeIcon(material.type)}
+                        {getTypeIcon(material)}
                         <span>{material.type || 'file'}</span>
                     </div>
                 </div>
@@ -214,11 +236,23 @@ const AdminReviewPage = () => {
             <div className="h-[400px] border border-gray-200 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center relative">
               {(selectedMaterial.link || selectedMaterial.fileUrl) ? (
                  selectedMaterial.type === 'video' ? (
-                     <div className="text-center">
-                        {selectedMaterial.thumbnailUrl && <img src={selectedMaterial.thumbnailUrl} alt="Thumbnail" className="h-48 object-cover rounded mb-4 mx-auto" />}
-                        <a href={selectedMaterial.link || selectedMaterial.fileUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-2 rounded-lg font-bold">
-                             <Video size={20} /> Open Video Link
-                        </a>
+                     <div className="text-center w-full px-4">
+                        {selectedMaterial.thumbnailUrl && (
+                           <div className="relative aspect-video max-w-md mx-auto mb-4 rounded-xl overflow-hidden shadow-lg border border-gray-200">
+                              <img src={selectedMaterial.thumbnailUrl} alt="Thumbnail" className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                 <Play className="w-12 h-12 text-white fill-current" />
+                              </div>
+                           </div>
+                        )}
+                        <div className="flex flex-col items-center gap-3">
+                           <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                              {selectedMaterial.link?.includes('youtube') ? 'YouTube' : selectedMaterial.link?.includes('tiktok') ? 'TikTok' : selectedMaterial.link?.includes('facebook') || selectedMaterial.link?.includes('fb.watch') ? 'Facebook' : 'Video'} Source
+                           </p>
+                           <a href={selectedMaterial.link || selectedMaterial.fileUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-brand-dark text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-brand-primary transition-all shadow-lg">
+                                <ExternalLink size={18} /> Open Video Link
+                           </a>
+                        </div>
                      </div>
                  ) : (selectedMaterial.link || selectedMaterial.fileUrl).endsWith(".pdf") ? (
                     <iframe

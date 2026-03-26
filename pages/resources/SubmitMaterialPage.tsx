@@ -14,6 +14,8 @@ const SubmitMaterialPage = () => {
   const [uploader, setUploader] = useState("");
   const [email, setEmail] = useState("");
   const [url, setUrl] = useState(""); 
+  const [detectedThumbnail, setDetectedThumbnail] = useState<string | null>(null);
+  const [isDetecting, setIsDetecting] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
   const [loading, setLoading] = useState(false);
@@ -21,12 +23,85 @@ const SubmitMaterialPage = () => {
   const [error, setError] = useState("");
   const [agreed, setAgreed] = useState(false);
 
-  const getYoutubeThumbnail = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) 
-      ? `https://img.youtube.com/vi/${match[2]}/hqdefault.jpg` 
-      : null;
+  const getVideoThumbnail = (url: string) => {
+    if (!url) return null;
+
+    // YouTube
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) 
+        ? `https://img.youtube.com/vi/${match[2]}/hqdefault.jpg` 
+        : null;
+    }
+
+    return null;
+  };
+
+  const detectExternalThumbnail = async (videoUrl: string) => {
+    if (!videoUrl) return;
+    
+    // Check if it's YouTube first (fastest)
+    const ytThumb = getVideoThumbnail(videoUrl);
+    if (ytThumb) {
+      setDetectedThumbnail(ytThumb);
+      return;
+    }
+
+    setIsDetecting(true);
+    try {
+      // Use noembed for TikTok, Facebook, etc.
+      const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(videoUrl)}`);
+      const data = await response.json();
+      if (data.thumbnail_url) {
+        setDetectedThumbnail(data.thumbnail_url);
+      } else {
+        // Fallbacks based on domain
+        if (videoUrl.includes('tiktok.com')) {
+          setDetectedThumbnail("https://images.unsplash.com/photo-1595053826286-2e59efd9ff18?q=80&w=1000&auto=format&fit=crop");
+        } else if (videoUrl.includes('facebook.com') || videoUrl.includes('fb.watch')) {
+          setDetectedThumbnail("https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=1000&auto=format&fit=crop");
+        } else {
+          setDetectedThumbnail(null);
+        }
+      }
+    } catch (e) {
+      console.error("Thumbnail detection failed:", e);
+    } finally {
+      setIsDetecting(false);
+    }
+  };
+
+  const generateVideoThumbnail = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.muted = true;
+      video.playsInline = true;
+      
+      const url = URL.createObjectURL(file);
+      video.src = url;
+
+      video.onloadedmetadata = () => {
+        video.currentTime = 1; // Seek to 1 second
+      };
+
+      video.onseeked = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        URL.revokeObjectURL(url);
+        resolve(dataUrl);
+      };
+
+      video.onerror = (e) => {
+        URL.revokeObjectURL(url);
+        reject(e);
+      };
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,13 +224,30 @@ const SubmitMaterialPage = () => {
             throw new Error(`Failed to upload ${f.name}`);
           }
 
+          let fileThumbnail = "";
+          const isVideoFile = f.type.startsWith('video/');
+          
+          if (isVideoFile) {
+            try {
+              const thumbDataUrl = await generateVideoThumbnail(f);
+              // Convert dataUrl to File to upload
+              const res = await fetch(thumbDataUrl);
+              const blob = await res.blob();
+              const thumbFile = new File([blob], "thumb.jpg", { type: "image/jpeg" });
+              fileThumbnail = await uploadToSupabase(thumbFile) || "";
+            } catch (e) {
+              console.warn("Could not generate thumbnail for video file", e);
+            }
+          }
+
           return {
-            type: "file",
+            type: isVideoFile ? "video" : "file",
             course,
             title: files.length === 1 && title ? title : f.name,
             uploader,
             email,
             link: uploadedUrl,
+            thumbnailUrl: fileThumbnail,
             createdAt: serverTimestamp(),
             status: "pending",
           };
@@ -171,11 +263,10 @@ const SubmitMaterialPage = () => {
       } else {
         // Single Link or Video
         let finalUrl = url;
-        let thumbnailUrl = "";
+        let thumbnailUrl = detectedThumbnail || "";
 
-        if (submissionType === "video") {
-          const thumb = getYoutubeThumbnail(url);
-          thumbnailUrl = thumb || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop";
+        if (submissionType === "video" && !thumbnailUrl) {
+          thumbnailUrl = "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop";
         }
 
         await addDoc(collection(db, "pendingMaterials"), {
@@ -198,6 +289,7 @@ const SubmitMaterialPage = () => {
       setEmail("");
       setFiles([]);
       setUrl("");
+      setDetectedThumbnail(null);
       setAgreed(false);
     } catch (error: any) {
       console.error("Error submitting material:", error);
@@ -270,7 +362,7 @@ const SubmitMaterialPage = () => {
                         <option value="Anatomy">Anatomy</option>
                         <option value="Physiology">Physiology</option>
                         <option value="Rad Tech">Rad Tech</option>
-                        <option value="Rad Equipment">Rad Equipment</option>
+                        <option value="Rad Equipment">Radiographic Equipment</option>
                         <option value="Pathology">Pathology</option>
                         <option value="CT">CT</option>
                         <option value="MRI">MRI</option>
@@ -325,7 +417,7 @@ const SubmitMaterialPage = () => {
                     <input
                         type="file"
                         multiple
-                        accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.png"
+                        accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.png,.mp4,.mov,.webm"
                         onChange={handleFileChange}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                     />
@@ -334,7 +426,7 @@ const SubmitMaterialPage = () => {
                         <span className="text-slate-600 font-bold">
                            Click to Select or Drag Files
                         </span>
-                        <span className="text-xs text-slate-400 mt-2 font-medium tracking-wide">PDF, DOCX, PPT, IMAGES (Max 50MB per file)</span>
+                        <span className="text-xs text-slate-400 mt-2 font-medium tracking-wide">PDF, DOCX, PPT, IMAGES, VIDEO (Max 50MB per file)</span>
                     </div>
                     </div>
 
@@ -379,14 +471,31 @@ const SubmitMaterialPage = () => {
                         type="url"
                         placeholder="https://..."
                         value={url}
-                        onChange={(e) => setUrl(e.target.value)}
+                        onChange={(e) => {
+                          const newUrl = e.target.value;
+                          setUrl(newUrl);
+                          detectExternalThumbnail(newUrl);
+                        }}
                         required
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary font-bold text-sm"
                     />
-                    {submissionType === 'video' && url && getYoutubeThumbnail(url) && (
+                    {submissionType === 'video' && url && (detectedThumbnail || isDetecting) && (
                         <div className="mt-4 flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                             <img src={getYoutubeThumbnail(url)!} alt="Preview" className="w-24 h-16 object-cover rounded-lg shadow-md shrink-0" />
-                             <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Video Detected</p>
+                             {isDetecting ? (
+                               <div className="w-24 h-16 bg-gray-200 rounded-lg flex items-center justify-center animate-pulse">
+                                  <Loader2 className="animate-spin text-gray-400" size={20} />
+                               </div>
+                             ) : (
+                               <img src={detectedThumbnail!} alt="Preview" className="w-24 h-16 object-cover rounded-lg shadow-md shrink-0" />
+                             )}
+                             <div>
+                               <p className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                                  {isDetecting ? 'Detecting Video...' : (url.includes('youtube') ? 'YouTube' : url.includes('tiktok') ? 'TikTok' : url.includes('facebook') || url.includes('fb.watch') ? 'Facebook' : 'Video') + ' Detected'}
+                               </p>
+                               {!isDetecting && !detectedThumbnail && (
+                                 <p className="text-[10px] text-red-400 font-bold mt-1">Could not detect thumbnail. A default will be used.</p>
+                               )}
+                             </div>
                         </div>
                     )}
                 </div>

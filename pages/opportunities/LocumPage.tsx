@@ -1,5 +1,8 @@
+
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// Fix: Use type-safe module import workaround for missing useNavigate export
+import * as ReactRouterDOM from 'react-router-dom';
+const { useNavigate } = ReactRouterDOM as any;
 import { MapPin, Search, UserPlus, Stethoscope, Briefcase, Filter, Loader2, AlertCircle, Calendar } from 'lucide-react';
 import { NIGERIA_STATES_LGAS } from '../../data/nigerianData';
 import { searchLocums } from '../../services/locumService';
@@ -48,10 +51,11 @@ const LocumPage = () => {
 
   const handleLoginNav = () => {
       const savedEmail = localStorage.getItem('studiRad_locum_email');
+      const nav = navigate;
       if (savedEmail) {
-          navigate('/locum/dashboard');
+          nav('/locum/dashboard');
       } else {
-          navigate('/locum/login');
+          nav('/locum/login');
       }
   };
 
@@ -64,45 +68,51 @@ const LocumPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 pb-12 px-4">
-      <div className="container mx-auto max-w-6xl">
+    <div className="min-h-screen bg-slate-200 text-slate-900 pt-24 pb-12 px-4 font-sans relative overflow-hidden">
+      {/* Decorative Grid Lines */}
+      <div className="fixed inset-0 pointer-events-none opacity-20 z-0" style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
+
+      <div className="container mx-auto max-w-6xl relative z-10">
         
-        <div className="text-center mb-12">
-            <h1 className="text-4xl font-extrabold text-slate-900 mb-4">Locum Finder</h1>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+        <div className="text-center mb-16">
+            <span className="text-[9px] font-mono uppercase tracking-[0.4em] text-slate-400 block mb-2">System.Service: Locum_Network</span>
+            <h1 className="text-4xl md:text-5xl font-serif italic font-light text-slate-900 tracking-tight leading-none mb-4">
+              Locum <span className="font-sans font-black uppercase tracking-tighter text-brand-primary">Finder</span>
+            </h1>
+            <p className="text-sm font-medium text-slate-500 max-w-2xl mx-auto uppercase tracking-widest">
                 Connect with qualified Locum Radiographers near you or register to offer your services.
             </p>
         </div>
 
         {/* Toggle Switches */}
-        <div className="flex justify-center mb-10">
-            <div className="bg-white p-1 rounded-xl shadow-sm border border-slate-200 inline-flex">
+        <div className="flex justify-center mb-12">
+            <div className="bg-slate-50/80 backdrop-blur-md p-1.5 rounded-xl shadow-sm border border-slate-300 inline-flex">
                 <button 
                     onClick={() => setActiveTab('find')}
-                    className={`px-6 py-3 rounded-lg font-bold flex items-center transition-all ${activeTab === 'find' ? 'bg-amber-500 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+                    className={`px-8 py-3 rounded-lg font-bold text-xs uppercase tracking-widest flex items-center transition-all ${activeTab === 'find' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-500 hover:bg-white'}`}
                 >
-                    <Search className="w-4 h-4 mr-2" /> Find a Locum
+                    <Search className="w-3.5 h-3.5 mr-2" /> Find a Locum
                 </button>
                 <button 
                     onClick={() => setActiveTab('join')}
-                    className={`px-6 py-3 rounded-lg font-bold flex items-center transition-all ${activeTab === 'join' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+                    className={`px-8 py-3 rounded-lg font-bold text-xs uppercase tracking-widest flex items-center transition-all ${activeTab === 'join' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-500 hover:bg-white'}`}
                 >
-                    <UserPlus className="w-4 h-4 mr-2" /> Register as a Locum
+                    <UserPlus className="w-3.5 h-3.5 mr-2" /> Register as a Locum
                 </button>
             </div>
         </div>
 
         {activeTab === 'find' ? (
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4">
                 {/* Search Box */}
-                <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 mb-8">
-                    <form onSubmit={handleSearch} className="grid md:grid-cols-3 gap-4">
+                <div className="bg-slate-50/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-300 mb-10">
+                    <form onSubmit={handleSearch} className="grid md:grid-cols-3 gap-6">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">State</label>
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">State_Selection</label>
                             <select 
                                 value={searchState}
                                 onChange={(e) => { setSearchState(e.target.value); setSearchLga(''); }}
-                                className="w-full p-3 rounded-xl border border-slate-200 focus:border-amber-500 focus:outline-none"
+                                className="w-full p-3.5 rounded-lg border border-slate-300 bg-white font-bold text-xs text-slate-700 focus:border-brand-primary focus:outline-none appearance-none cursor-pointer transition-all"
                                 required
                             >
                                 <option value="">Select State</option>
@@ -110,11 +120,11 @@ const LocumPage = () => {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">L.G.A (Optional)</label>
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">L.G.A_Scope (Optional)</label>
                             <select 
                                 value={searchLga}
                                 onChange={(e) => setSearchLga(e.target.value)}
-                                className="w-full p-3 rounded-xl border border-slate-200 focus:border-amber-500 focus:outline-none"
+                                className="w-full p-3.5 rounded-lg border border-slate-300 bg-white font-bold text-xs text-slate-700 focus:border-brand-primary focus:outline-none appearance-none cursor-pointer transition-all disabled:opacity-50"
                                 disabled={!searchState}
                             >
                                 <option value="">All LGAs</option>
@@ -125,9 +135,9 @@ const LocumPage = () => {
                             <button 
                                 type="submit" 
                                 disabled={loading}
-                                className="w-full bg-slate-900 text-white p-3 rounded-xl font-bold hover:bg-slate-800 transition-colors flex justify-center items-center h-[50px]"
+                                className="w-full bg-slate-900 text-white p-4 rounded-lg font-bold text-xs uppercase tracking-[0.2em] hover:bg-brand-primary transition-all flex justify-center items-center h-[50px] shadow-xl shadow-slate-900/10 active:scale-95"
                             >
-                                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Search Locums'}
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Execute Search'}
                             </button>
                         </div>
                     </form>
@@ -135,68 +145,70 @@ const LocumPage = () => {
 
                 {/* Results */}
                 {loading ? (
-                    <div className="text-center py-20">
-                        <Loader2 className="w-12 h-12 text-amber-500 animate-spin mx-auto mb-4" />
-                        <p className="text-slate-500">Searching specifically for available radiographers...</p>
+                    <div className="text-center py-24">
+                        <Loader2 className="w-10 h-10 text-brand-primary animate-spin mx-auto mb-6" />
+                        <p className="text-[10px] font-mono text-slate-400 uppercase tracking-[0.3em]">Querying_Database...</p>
                     </div>
                 ) : hasSearched && results.length === 0 ? (
-                    <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
-                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <AlertCircle className="w-8 h-8 text-slate-400" />
+                    <div className="text-center py-20 bg-slate-50/80 backdrop-blur-md rounded-2xl border border-slate-300 shadow-sm">
+                        <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mx-auto mb-6 border border-slate-200">
+                            <AlertCircle className="w-8 h-8 text-slate-300" />
                         </div>
-                        <h3 className="text-lg font-bold text-slate-800">No Locums Found</h3>
-                        <p className="text-slate-500">No active locum radiographers found in this location right now.</p>
+                        <h3 className="text-lg font-black uppercase tracking-tight text-slate-800">No Records Found</h3>
+                        <p className="text-slate-500 mt-2 text-sm font-medium">No active locum radiographers found in this location right now.</p>
                     </div>
                 ) : (
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid md:grid-cols-2 gap-8">
                         {results.map((locum) => (
-                            <div key={locum.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-amber-300 transition-all flex flex-col">
-                                <div className="flex justify-between items-start mb-4">
+                            <div key={locum.id} className="bg-slate-50/80 backdrop-blur-md p-8 rounded-2xl shadow-sm border border-slate-300 hover:border-slate-400 transition-all flex flex-col group relative overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-brand-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                
+                                <div className="flex justify-between items-start mb-6">
                                     <div className="flex items-center">
-                                        <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-bold text-xl mr-4 uppercase">
+                                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-slate-900 font-black text-xl mr-4 uppercase border border-slate-200 shadow-sm group-hover:scale-110 transition-transform">
                                             {locum.fullName.charAt(0)}
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-slate-900 text-lg">{locum.fullName}</h3>
-                                            <div className="flex flex-wrap gap-1 mt-1">
+                                            <h3 className="font-black text-slate-900 text-lg uppercase tracking-tight">{locum.fullName}</h3>
+                                            <div className="flex flex-wrap gap-2 mt-2">
                                                 {locum.specialties && locum.specialties.map(s => (
-                                                    <span key={s} className="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-md font-bold">{s}</span>
+                                                    <span key={s} className="bg-slate-900 text-white text-[8px] px-2 py-0.5 rounded font-mono uppercase tracking-widest">{s}</span>
                                                 ))}
                                                 {(!locum.specialties || locum.specialties.length === 0) && (
-                                                    <span className="text-xs text-slate-400">Radiographer</span>
+                                                    <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">Radiographer</span>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
-                                    <span className="text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded-full flex items-center">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div> Available
+                                    <span className="text-emerald-600 text-[9px] font-mono font-bold bg-emerald-50 px-2 py-1 rounded border border-emerald-100 flex items-center uppercase tracking-widest">
+                                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></div> Available
                                     </span>
                                 </div>
                                 
-                                <div className="space-y-2 mb-6 flex-grow">
-                                    <div className="flex items-center text-slate-600 text-sm">
-                                        <MapPin className="w-4 h-4 mr-2 text-slate-400" />
-                                        <span>Available in: <strong>{executedSearchState}</strong> ({executedSearchLga || 'Various Areas'})</span>
+                                <div className="space-y-3 mb-8 flex-grow">
+                                    <div className="flex items-center text-slate-500 text-[11px] font-bold uppercase tracking-widest">
+                                        <MapPin className="w-3.5 h-3.5 mr-3 text-slate-400" />
+                                        <span>Loc: <strong className="text-slate-700">{executedSearchState}</strong></span>
                                     </div>
-                                    <div className="flex items-center text-slate-600 text-sm">
-                                        <Filter className="w-4 h-4 mr-2 text-slate-400" />
-                                        <span>Min Charge: <strong>₦{locum.minCharge.toLocaleString()}</strong></span>
+                                    <div className="flex items-center text-slate-500 text-[11px] font-bold uppercase tracking-widest">
+                                        <Filter className="w-3.5 h-3.5 mr-3 text-slate-400" />
+                                        <span>Rate: <strong className="text-slate-700">₦{locum.minCharge.toLocaleString()}</strong></span>
                                     </div>
-                                    <div className="flex items-center text-slate-600 text-sm">
-                                        <Briefcase className="w-4 h-4 mr-2 text-slate-400" />
-                                        <span>Max Hours: <strong>{locum.maxHours} hrs</strong></span>
+                                    <div className="flex items-center text-slate-500 text-[11px] font-bold uppercase tracking-widest">
+                                        <Briefcase className="w-3.5 h-3.5 mr-3 text-slate-400" />
+                                        <span>Min: <strong className="text-slate-700">{locum.maxHours} hrs</strong></span>
                                     </div>
-                                    <div className="flex items-center text-slate-600 text-sm">
-                                        <Calendar className="w-4 h-4 mr-2 text-slate-400" />
-                                        <span>Days: <strong>{formatAvailability(locum.availability)}</strong></span>
+                                    <div className="flex items-center text-slate-500 text-[11px] font-bold uppercase tracking-widest">
+                                        <Calendar className="w-3.5 h-3.5 mr-3 text-slate-400" />
+                                        <span>Days: <strong className="text-slate-700">{formatAvailability(locum.availability)}</strong></span>
                                     </div>
                                 </div>
 
-                                <div className="pt-4 border-t border-slate-100 grid grid-cols-2 gap-3">
-                                    <a href={`tel:${locum.phone}`} className="bg-slate-100 hover:bg-slate-200 text-slate-800 py-2 rounded-lg text-center text-sm font-bold transition-colors">
+                                <div className="pt-6 border-t border-slate-200 grid grid-cols-2 gap-4">
+                                    <a href={`tel:${locum.phone}`} className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-900 py-3 rounded-lg text-center text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm">
                                         Call
                                     </a>
-                                    <a href={`mailto:${locum.email}`} className="bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-lg text-center text-sm font-bold transition-colors">
+                                    <a href={`mailto:${locum.email}`} className="bg-slate-900 hover:bg-brand-primary text-white py-3 rounded-lg text-center text-[10px] font-bold uppercase tracking-widest transition-all shadow-xl shadow-slate-900/10">
                                         Email
                                     </a>
                                 </div>
@@ -206,41 +218,42 @@ const LocumPage = () => {
                 )}
             </div>
         ) : (
-            <div className="max-w-3xl mx-auto">
-                <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-slate-200">
-                    <div className="bg-slate-900 p-8 text-white text-center">
-                        <Stethoscope className="w-16 h-16 mx-auto mb-4 text-amber-500" />
-                        <h2 className="text-3xl font-bold mb-2">Join as a Locum Radiographer</h2>
-                        <p className="text-slate-300">Boost your income and flexibility. Register to get hired by facilities near you.</p>
+            <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4">
+                <div className="bg-slate-50/80 backdrop-blur-md rounded-2xl overflow-hidden shadow-2xl border border-slate-300">
+                    <div className="bg-slate-900 p-12 text-white text-center relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-8 opacity-10"><Stethoscope size={120} /></div>
+                        <Stethoscope className="w-16 h-16 mx-auto mb-6 text-brand-primary relative z-10" />
+                        <h2 className="text-3xl md:text-4xl font-black mb-4 uppercase tracking-tight relative z-10">Join the Network</h2>
+                        <p className="text-slate-400 font-medium uppercase tracking-widest text-xs max-w-md mx-auto relative z-10">Boost your income and flexibility. Register to get hired by facilities near you.</p>
                     </div>
-                    <div className="p-8 md:p-12 space-y-8">
-                        <div className="grid md:grid-cols-3 gap-6 text-center">
-                            <div>
-                                <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                                    <UserPlus />
+                    <div className="p-10 md:p-16 space-y-12">
+                        <div className="grid md:grid-cols-3 gap-8 text-center">
+                            <div className="group">
+                                <div className="w-14 h-14 bg-white border border-slate-200 text-slate-900 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                                    <UserPlus size={24} />
                                 </div>
-                                <h3 className="font-bold text-slate-900">1. Register Free</h3>
-                                <p className="text-sm text-slate-500">Create your professional profile and set your rates.</p>
+                                <h3 className="font-black text-slate-900 text-xs uppercase tracking-widest mb-2">1. Register</h3>
+                                <p className="text-[10px] text-slate-500 font-medium uppercase tracking-widest leading-relaxed">Create your professional profile and set your rates.</p>
                             </div>
-                            <div>
-                                <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                                    <MapPin />
+                            <div className="group">
+                                <div className="w-14 h-14 bg-white border border-slate-200 text-slate-900 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                                    <MapPin size={24} />
                                 </div>
-                                <h3 className="font-bold text-slate-900">2. Set Locations</h3>
-                                <p className="text-sm text-slate-500">Select states and LGAs where you are available to work.</p>
+                                <h3 className="font-black text-slate-900 text-xs uppercase tracking-widest mb-2">2. Set Scope</h3>
+                                <p className="text-[10px] text-slate-500 font-medium uppercase tracking-widest leading-relaxed">Select states and LGAs where you are available to work.</p>
                             </div>
-                            <div>
-                                <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                                    <Briefcase />
+                            <div className="group">
+                                <div className="w-14 h-14 bg-white border border-slate-200 text-slate-900 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                                    <Briefcase size={24} />
                                 </div>
-                                <h3 className="font-bold text-slate-900">3. Get Hired</h3>
-                                <p className="text-sm text-slate-500">Toggle availability ON and get calls from facilities.</p>
+                                <h3 className="font-black text-slate-900 text-xs uppercase tracking-widest mb-2">3. Get Hired</h3>
+                                <p className="text-[10px] text-slate-500 font-medium uppercase tracking-widest leading-relaxed">Toggle availability ON and get calls from facilities.</p>
                             </div>
                         </div>
 
-                        <div className="bg-green-50 p-6 rounded-xl border border-green-100 text-center">
-                            <h3 className="font-bold text-green-800 mb-2">100% Free for Radiographers</h3>
-                            <p className="text-green-700 text-sm">
+                        <div className="bg-white p-8 rounded-xl border border-slate-200 text-center shadow-sm">
+                            <h3 className="font-black text-slate-900 text-xs uppercase tracking-[0.2em] mb-3">100% Free for Radiographers</h3>
+                            <p className="text-slate-500 text-[10px] font-medium uppercase tracking-widest leading-relaxed">
                                 Registration is completely free. We do not charge commissions on your earnings.
                             </p>
                         </div>
@@ -248,13 +261,13 @@ const LocumPage = () => {
                         <div className="flex flex-col gap-4">
                             <button 
                                 onClick={() => navigate('/locum/register')}
-                                className="w-full bg-amber-500 text-white py-4 rounded-xl font-bold text-lg hover:bg-amber-600 transition-colors shadow-lg shadow-amber-500/20"
+                                className="w-full bg-slate-900 text-white py-5 rounded-lg font-bold text-xs uppercase tracking-[0.3em] hover:bg-brand-primary transition-all shadow-xl shadow-slate-900/10 active:scale-95"
                             >
                                 Register Now (Free)
                             </button>
                             <button 
                                 onClick={handleLoginNav}
-                                className="w-full bg-white text-slate-600 border border-slate-200 py-3 rounded-xl font-bold hover:bg-slate-50 transition-colors"
+                                className="w-full bg-white text-slate-500 border border-slate-300 py-4 rounded-lg font-bold text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all"
                             >
                                 Already registered? Login to Dashboard
                             </button>

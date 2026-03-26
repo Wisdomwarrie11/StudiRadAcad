@@ -15,14 +15,15 @@ import {
   ChevronRight, 
   Eye, 
   Trash2,
-  Edit2,
   AlertCircle,
-  Building2
+  Building2,
+  Edit2
 } from 'lucide-react';
-import { getCurrentEmployer, getMyOpportunities } from '../../services/employerService';
+import { getCurrentEmployer, getMyOpportunities, deleteEmployerOpportunity } from '../../services/employerService';
 import { EmployerProfile } from '../../types';
 import SEO from '../../components/SEO';
-import { auth } from '../../firebase';
+import { auth, db } from '../../firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 
 const EmployerDashboard = () => {
   const navigate = useNavigate();
@@ -30,34 +31,78 @@ const EmployerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'jobs' | 'internships' | 'scholarships'>('jobs');
   const [posts, setPosts] = useState<any[]>([]);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        navigate('/employer/login');
+        return;
+      }
+
       const data = await getCurrentEmployer();
       if (!data) {
         navigate('/employer/login');
         return;
       }
+
+      // Verification check
+      if (!user.emailVerified && !data.isPreExisting) {
+        navigate('/employer/login');
+        return;
+      }
+
+      // Sync verification status to Firestore if needed
+      if (user.emailVerified && !data.verified && !data.isPreExisting) {
+        try {
+          await updateDoc(doc(db, 'employer_profiles', user.uid), {
+            verified: true
+          });
+        } catch (e) {
+          console.error("Error syncing verification status:", e);
+        }
+      }
+
       setProfile(data);
       setLoading(false);
     };
     fetchProfile();
   }, [navigate]);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      if (!profile) return;
-      // Comment: Converting plural tab keys to singular values expected by the service API
-      const typeMap: Record<string, 'job' | 'internship' | 'scholarship'> = {
-        jobs: 'job',
-        internships: 'internship',
-        scholarships: 'scholarship'
-      };
-      const data = await getMyOpportunities(typeMap[activeTab]);
-      setPosts(data);
+  const fetchPosts = async () => {
+    if (!profile) return;
+    const typeMap: Record<string, 'job' | 'internship' | 'scholarship'> = {
+      jobs: 'job',
+      internships: 'internship',
+      scholarships: 'scholarship'
     };
+    const data = await getMyOpportunities(typeMap[activeTab]);
+    setPosts(data);
+  };
+
+  useEffect(() => {
     fetchPosts();
   }, [activeTab, profile]);
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    
+    setDeletingId(id);
+    const typeMap: Record<string, 'job' | 'internship' | 'scholarship'> = {
+      jobs: 'job',
+      internships: 'internship',
+      scholarships: 'scholarship'
+    };
+    
+    const result = await deleteEmployerOpportunity(typeMap[activeTab], id);
+    if (result.success) {
+      await fetchPosts();
+    } else {
+      alert(result.error || "Failed to delete.");
+    }
+    setDeletingId(null);
+  };
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -178,15 +223,19 @@ const EmployerDashboard = () => {
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button 
-                                        onClick={() => navigate(`/employer/edit/${activeTab.slice(0, -1)}/${post.id}`)}
-                                        className="p-3 bg-slate-50 text-slate-400 hover:text-brand-primary rounded-xl transition-colors"
-                                        title="Edit Post"
+                                    <Link 
+                                      to={`/employer/edit/${activeTab.slice(0, -1)}/${post.id}`}
+                                      className="p-3 bg-slate-50 text-slate-400 hover:text-brand-primary rounded-xl transition-colors"
                                     >
-                                        <Edit2 size={18} />
+                                      <Edit2 size={18} />
+                                    </Link>
+                                    <button 
+                                      onClick={() => handleDelete(post.id)}
+                                      disabled={deletingId === post.id}
+                                      className="p-3 bg-slate-50 text-slate-400 hover:text-red-500 rounded-xl transition-colors disabled:opacity-50"
+                                    >
+                                      {deletingId === post.id ? <Loader2 className="w-[18px] h-[18px] animate-spin" /> : <Trash2 size={18} />}
                                     </button>
-                                    <button className="p-3 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-xl transition-colors"><Eye size={18} /></button>
-                                    <button className="p-3 bg-slate-50 text-slate-400 hover:text-red-500 rounded-xl transition-colors"><Trash2 size={18} /></button>
                                 </div>
                             </div>
                         ))}

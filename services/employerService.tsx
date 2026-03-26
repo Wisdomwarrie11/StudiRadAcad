@@ -1,7 +1,7 @@
 import { db, auth, adminDb } from '../firebase';
 import { EmployerProfile } from '../types';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import { collection, doc, setDoc, getDoc, addDoc, getDocs, query, where, updateDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from 'firebase/auth';
+import { collection, doc, setDoc, getDoc, addDoc, getDocs, query, where, updateDoc, deleteDoc } from 'firebase/firestore';
 
 const COLLECTION = 'employer_profiles';
 
@@ -15,6 +15,29 @@ export const getAllEmployers = async (): Promise<EmployerProfile[]> => {
   } catch (error) {
     console.error("Error fetching all employers:", error);
     return [];
+  }
+};
+
+/**
+ * Delete an opportunity
+ */
+export const deleteEmployerOpportunity = async (type: 'job' | 'internship' | 'scholarship', id: string) => {
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error("Not logged in");
+
+    const collectionName = type === 'job' ? 'jobs' : type === 'internship' ? 'internships' : 'scholarships';
+    const docRef = doc(adminDb, collectionName, id);
+    
+    // Verify ownership before deleting (Security rules should also handle this)
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) throw new Error("Not found");
+    if (docSnap.data().postedBy !== user.uid) throw new Error("Unauthorized");
+
+    await deleteDoc(docRef);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
   }
 };
 
@@ -66,6 +89,7 @@ export const registerEmployer = async (email: string, pass: string, data: Omit<E
       uid,
       email,
       verified: false,
+      isPreExisting: false,
       createdAt: new Date().toISOString()
     };
 
@@ -74,7 +98,11 @@ export const registerEmployer = async (email: string, pass: string, data: Omit<E
 
     // Send email verification
     try {
-      await sendEmailVerification(cred.user);
+      const actionCodeSettings = {
+        url: `${window.location.origin}/#/employer/verify`,
+        handleCodeInApp: true,
+      };
+      await sendEmailVerification(cred.user, actionCodeSettings);
     } catch (emailError) {
       console.error("Error sending verification email:", emailError);
       // We don't fail registration if email fails, but we log it
@@ -83,6 +111,37 @@ export const registerEmployer = async (email: string, pass: string, data: Omit<E
     return { success: true, profile };
   } catch (error: any) {
     console.error("Employer Reg Error:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Resend verification email to current user
+ */
+export const resendVerificationEmail = async () => {
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error("No user session found. Please try logging in again.");
+    
+    const actionCodeSettings = {
+      url: `${window.location.origin}/#/employer/verify`,
+      handleCodeInApp: true,
+    };
+    await sendEmailVerification(user, actionCodeSettings);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Send password reset email
+ */
+export const forgotPassword = async (email: string) => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return { success: true };
+  } catch (error: any) {
     return { success: false, error: error.message };
   }
 };
@@ -99,7 +158,15 @@ export const loginEmployer = async (email: string, pass: string) => {
     const docSnap = await getDoc(doc(db, COLLECTION, uid));
     if (!docSnap.exists()) throw new Error("Profile not found");
 
-    return { success: true, profile: docSnap.data() as EmployerProfile };
+    const profile = docSnap.data() as EmployerProfile;
+    // Handle pre-existing users
+    const isPreExisting = profile.isPreExisting === undefined && profile.verified === undefined;
+
+    return { 
+      success: true, 
+      profile: { ...profile, isPreExisting: isPreExisting || profile.isPreExisting },
+      emailVerified: cred.user.emailVerified
+    };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -112,7 +179,15 @@ export const getCurrentEmployer = async (): Promise<EmployerProfile | null> => {
   const user = auth.currentUser;
   if (!user) return null;
   const docSnap = await getDoc(doc(db, COLLECTION, user.uid));
-  return docSnap.exists() ? (docSnap.data() as EmployerProfile) : null;
+  if (!docSnap.exists()) return null;
+  
+  const data = docSnap.data() as EmployerProfile;
+  // If isPreExisting is not set, we assume it's an old user who doesn't need verification
+  if (data.isPreExisting === undefined && data.verified === undefined) {
+    return { ...data, isPreExisting: true };
+  }
+  
+  return data;
 };
 
 /**

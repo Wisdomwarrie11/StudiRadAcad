@@ -1,8 +1,12 @@
+
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+// Fix: Use type-safe module import workaround for missing useNavigate export
+import * as ReactRouterDOM from "react-router-dom";
+const { useNavigate } = ReactRouterDOM as any;
 import { db } from "../../firebase";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
-import { Play, Search, Filter, BookOpen, Plus, ExternalLink, Youtube } from "lucide-react";
+import { Play, Search, Filter, BookOpen, Plus, ExternalLink, Youtube, Facebook, Video, Music } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import SEO from "../../components/SEO";
 
 const VideosPage = () => {
@@ -31,21 +35,42 @@ const VideosPage = () => {
     return matchesSearch && matchesCourse;
   });
 
-  // Helper to ensure we get a thumbnail if one wasn't saved, or if it's missing
-  const getThumbnail = (video: any) => {
-    if (video.thumbnailUrl) return video.thumbnailUrl;
-    
-    // Fallback extraction for YouTube links
-    if (video.link) {
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = video.link.match(regExp);
-        if (match && match[2].length === 11) {
-            return `https://img.youtube.com/vi/${match[2]}/hqdefault.jpg`;
-        }
+  // Helper to get video metadata based on URL
+  const getVideoMetadata = (video: any) => {
+    const url = video.link || "";
+    const metadata = {
+      type: 'other',
+      label: 'Video',
+      icon: Play,
+      thumbnail: video.thumbnailUrl || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop"
+    };
+
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      metadata.type = 'youtube';
+      metadata.label = 'YouTube';
+      metadata.icon = Youtube;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+      if (match && match[2].length === 11 && !video.thumbnailUrl) {
+        metadata.thumbnail = `https://img.youtube.com/vi/${match[2]}/hqdefault.jpg`;
+      }
+    } else if (url.includes('tiktok.com')) {
+      metadata.type = 'tiktok';
+      metadata.label = 'TikTok';
+      metadata.icon = Music;
+      if (!video.thumbnailUrl) {
+        metadata.thumbnail = "https://images.unsplash.com/photo-1595053826286-2e59efd9ff18?q=80&w=1000&auto=format&fit=crop"; 
+      }
+    } else if (url.includes('facebook.com') || url.includes('fb.watch')) {
+      metadata.type = 'facebook';
+      metadata.label = 'Facebook';
+      metadata.icon = Facebook;
+      if (!video.thumbnailUrl) {
+        metadata.thumbnail = "https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=1000&auto=format&fit=crop";
+      }
     }
-    
-    // Generic fallback
-    return "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop";
+
+    return metadata;
   };
 
   return (
@@ -66,7 +91,7 @@ const VideosPage = () => {
                 onClick={() => navigate("/resources/materials")}
                 className="flex items-center gap-2 bg-white text-gray-700 border border-gray-200 px-6 py-3 rounded-xl font-bold hover:bg-gray-50 transition-colors shadow-sm"
              >
-                <BookOpen size={20} className="text-blue-500" /> Reading Library
+                <BookOpen size={20} className="text-blue-500" /> Learning Materials
              </button>
              <button 
                 onClick={() => navigate("/resources/submit-material")}
@@ -109,53 +134,73 @@ const VideosPage = () => {
         </div>
 
         {/* Grid */}
-        {filteredVideos.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
-            <Filter size={48} className="mx-auto text-gray-300 mb-4" />
-            <h3 className="text-lg font-bold text-gray-600">No videos found</h3>
-            <p className="text-gray-400">Try adjusting your search or category filter.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredVideos.map((video) => (
-              <a 
-                key={video.id}
-                href={video.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer flex flex-col h-full ring-1 ring-gray-100 hover:ring-red-100"
-              >
-                {/* Thumbnail */}
-                <div className="relative aspect-video bg-gray-900 overflow-hidden">
-                   <img 
-                     src={getThumbnail(video)} 
-                     alt={video.title}
-                     className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105"
-                   />
-                   <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-14 h-14 bg-red-600/90 rounded-full flex items-center justify-center group-hover:bg-red-600 group-hover:scale-110 transition-all shadow-lg">
-                         <Play className="w-6 h-6 text-white fill-current ml-1" />
-                      </div>
-                   </div>
-                   <div className="absolute top-2 right-2 bg-black/60 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm">
-                      {video.course}
-                   </div>
-                   <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1 backdrop-blur-sm">
-                      <Youtube size={12} /> YouTube
-                   </div>
-                </div>
+        <AnimatePresence mode="popLayout">
+          {filteredVideos.length === 0 ? (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200"
+            >
+              <Filter size={48} className="mx-auto text-gray-300 mb-4" />
+              <h3 className="text-lg font-bold text-gray-600">No videos found</h3>
+              <p className="text-gray-400">Try adjusting your search or category filter.</p>
+            </motion.div>
+          ) : (
+            <motion.div 
+              layout
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            >
+              {filteredVideos.map((video) => {
+                const meta = getVideoMetadata(video);
+                const Icon = meta.icon;
 
-                <div className="p-4 flex flex-col flex-1">
-                   <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 leading-tight group-hover:text-red-600 transition-colors">{video.title}</h3>
-                   <div className="mt-auto flex justify-between items-center text-xs text-gray-500">
-                        <span>By {video.uploader}</span>
-                        <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500" />
-                   </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        )}
+                return (
+                  <motion.a 
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    whileHover={{ y: -5 }}
+                    key={video.id}
+                    href={video.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer flex flex-col h-full ring-1 ring-gray-100 hover:ring-red-100"
+                  >
+                    {/* Thumbnail */}
+                    <div className="relative aspect-video bg-gray-900 overflow-hidden">
+                       <img 
+                         src={meta.thumbnail} 
+                         alt={video.title}
+                         className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105"
+                       />
+                       <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-14 h-14 bg-red-600/90 rounded-full flex items-center justify-center group-hover:bg-red-600 group-hover:scale-110 transition-all shadow-lg">
+                             <Play className="w-6 h-6 text-white fill-current ml-1" />
+                          </div>
+                       </div>
+                       <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded backdrop-blur-sm">
+                          {video.course}
+                       </div>
+                       <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded flex items-center gap-1 backdrop-blur-sm">
+                          <Icon size={12} /> {meta.label}
+                       </div>
+                    </div>
+
+                    <div className="p-4 flex flex-col flex-1">
+                       <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 leading-tight group-hover:text-red-600 transition-colors">{video.title}</h3>
+                       <div className="mt-auto flex justify-between items-center text-xs text-gray-500">
+                            <span className="font-medium">By {video.uploader}</span>
+                            <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500" />
+                       </div>
+                    </div>
+                  </motion.a>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

@@ -39,6 +39,9 @@ import EmployerRegistration from './pages/opportunities/EmployerRegistration';
 import EmployerLogin from './pages/opportunities/EmployerLogin';
 import EmployerDashboard from './pages/opportunities/EmployerDashboard';
 import PostOpportunity from './pages/opportunities/PostOpportunity';
+import EmployerVerify from './pages/opportunities/EmployerVerify';
+import EditOpportunity from './pages/opportunities/EditOpportunity';
+
 // Admin Imports
 import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -156,11 +159,13 @@ const App: React.FC = () => {
         {/* Daily Challenge Quiz (Standalone - No Header/Footer) */}
         <Route path="challenge/quiz/:dayId" element={<DailyChallengeQuiz />} />
 
-         {/* Employer Portal */}
-         <Route path="employer/register" element={<EmployerRegistration />} />
+            {/* Employer Portal */}
+            <Route path="employer/register" element={<EmployerRegistration />} />
           <Route path="employer/login" element={<EmployerLogin />} />
+          <Route path="employer/verify" element={<EmployerVerify />} />
           <Route path="employer/dashboard" element={<EmployerDashboard />} />
           <Route path="employer/post" element={<PostOpportunity />} />
+          <Route path="employer/edit/:type/:id" element={<EditOpportunity />} />
 
 
         {/* Admin Login (Public) */}

@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, Loader2, ArrowRight, ShieldCheck, AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { loginEmployer } from '../../services/employerService';
+import { Mail, Lock, Loader2, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
+import { loginEmployer, resendVerificationEmail } from '../../services/employerService';
 import SEO from '../../components/SEO';
 
 const EmployerLogin = () => {
@@ -12,17 +12,41 @@ const EmployerLogin = () => {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showResend, setShowResend] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendStatus, setResendStatus] = useState('');
+
+  const handleResend = async () => {
+    setResending(true);
+    setResendStatus('');
+    const result = await resendVerificationEmail();
+    if (result.success) {
+      setResendStatus('Verification email sent! Please check your inbox.');
+    } else {
+      setResendStatus(result.error || 'Failed to resend. Please try again later.');
+    }
+    setResending(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setShowResend(false);
+    setResendStatus('');
 
     const result = await loginEmployer(email, password);
 
     if (result.success) {
-      navigate('/employer/dashboard');
+      const res = result as any;
+      const profile = res.profile;
+      if (res.emailVerified || profile.isPreExisting) {
+        navigate('/employer/dashboard');
+      } else {
+        setError("Please verify your email address before logging in.");
+        setShowResend(true);
+        setLoading(false);
+      }
     } else {
       setError(result.error || "Login failed. Check your credentials.");
       setLoading(false);
@@ -44,8 +68,22 @@ const EmployerLogin = () => {
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl flex items-center gap-3 text-sm font-bold">
-               <AlertCircle size={20} /> {error}
+            <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl flex flex-col gap-3 text-sm font-bold">
+               <div className="flex items-center gap-3">
+                 <AlertCircle size={20} /> {error}
+               </div>
+               {showResend && (
+                 <button 
+                  onClick={handleResend}
+                  disabled={resending}
+                  className="text-xs text-brand-primary hover:underline uppercase tracking-widest text-left mt-1 disabled:opacity-50"
+                 >
+                   {resending ? 'Sending...' : 'Resend Verification Link'}
+                 </button>
+               )}
+               {resendStatus && (
+                 <p className="text-[10px] text-green-600 uppercase tracking-widest mt-1">{resendStatus}</p>
+               )}
             </div>
           )}
 
@@ -73,19 +111,12 @@ const EmployerLogin = () => {
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                 <input 
-                  type={showPassword ? "text" : "password"} required
+                  type="password" required
                   placeholder="••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-12 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
                 />
-                <button 
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
               </div>
             </div>
 
