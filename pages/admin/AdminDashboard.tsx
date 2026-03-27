@@ -74,7 +74,7 @@ const AdminDashboard = () => {
       title: 'Live Classes',
       description: 'Manage live and cohort-based classes.',
       icon: Calendar,
-      path: "/admin/classes/create",
+      path: "/admin/create-class",
       color: 'bg-rose-50 text-rose-600'
     },
     {
@@ -84,14 +84,14 @@ const AdminDashboard = () => {
       path: '/admin/courses',
       color: 'bg-indigo-50 text-indigo-600'
     },
-
-    // {
-    //   title: "Settings",
-    //   description: "Manage admin preferences and account details.",
-    //   icon: Settings,
-    //   path: "#",
-    //   color: "bg-gray-100 text-gray-600",
-    // },
+    {
+      title: 'Employer Database',
+      description: 'View and export registered organization data.',
+      icon: Users,
+      path: '/admin/employers-database',
+      color: 'bg-purple-50 text-purple-600'
+    }
+  
   ];
 
   return (

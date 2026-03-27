@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Building2, User, Mail, Lock, Phone, Globe, ShieldCheck, Loader2, ArrowRight, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { Building2, User, Mail, Lock, Phone, Globe, ShieldCheck, Loader2, ArrowRight, AlertCircle, CheckCircle, Eye, EyeOff, MapPin } from 'lucide-react';
 import { registerEmployer } from '../../services/employerService';
 import SEO from '../../components/SEO';
 import { getFriendlyErrorMessage } from '../../src/lib/errorUtils';
@@ -19,6 +19,7 @@ const EmployerRegistration = () => {
     fullName: '',
     roleInOrg: '',
     organizationName: '',
+    address: '',
     email: '',
     password: '',
     phoneNumber: '',
@@ -182,6 +183,20 @@ const EmployerRegistration = () => {
                           placeholder="e.g. Grace Medical Center"
                           value={formData.organizationName}
                           onChange={e => setFormData({...formData, organizationName: e.target.value})}
+                          className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Address / Location</label>
+                      <div className="relative">
+                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                        <input 
+                          type="text" required
+                          placeholder="e.g. 123 Medical Way, Lagos"
+                          value={formData.address}
+                          onChange={e => setFormData({...formData, address: e.target.value})}
                           className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
                         />
                       </div>

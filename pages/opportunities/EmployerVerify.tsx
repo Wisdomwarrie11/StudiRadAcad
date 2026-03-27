@@ -18,10 +18,7 @@ const EmployerVerify = () => {
 
   useEffect(() => {
     if (status === 'success') {
-      const timer = setTimeout(() => {
-        navigate('/employer/login');
-      }, 3000);
-      return () => clearTimeout(timer);
+      navigate('/employer/login');
     }
   }, [status, navigate]);
 
@@ -43,7 +40,7 @@ const EmployerVerify = () => {
               });
               verifiedRef.current = true;
               setStatus('success');
-              setMessage('Your email is already verified! You will be redirected to the login page in a few seconds.');
+              setMessage('Your email is already verified! Redirecting to login...');
             } catch (e) {
               verifiedRef.current = true;
               setStatus('success');
@@ -72,7 +69,7 @@ const EmployerVerify = () => {
         }
         
         setStatus('success');
-        setMessage('Your email has been successfully verified! You will be redirected to the login page in a few seconds.');
+        setMessage('Your email has been successfully verified! Redirecting to login...');
       } catch (error: any) {
         console.error("Verification error:", error);
         setStatus('error');

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Building2, Mail, Phone, Globe, Calendar, ArrowLeft, Download, Loader2, Search, LogOut } from 'lucide-react';
+import { Building2, Mail, Phone, Globe, Calendar, ArrowLeft, Download, Loader2, Search, LogOut, MapPin } from 'lucide-react';
 import { getAllEmployers } from '../../services/employerService';
 import { EmployerProfile } from '../../types';
 import SEO from '../../components/SEO';
+import { adminAuth } from '../../firebase';
 
 const AdminEmployerList = () => {
   const navigate = useNavigate();
@@ -12,30 +13,43 @@ const AdminEmployerList = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const auth = localStorage.getItem('studiRad_admin_auth');
-    if (!auth) {
-      navigate('/admin/login');
-      return;
-    }
+    const unsubscribe = adminAuth.onAuthStateChanged((user) => {
+      if (!user) {
+        navigate('/admin/login');
+      }
+    });
 
     const fetchEmployers = async () => {
       const data = await getAllEmployers();
-      setEmployers(data);
+      // Deduplicate by organization name to ensure each facility appears only once
+      const uniqueMap = new Map();
+      data.forEach(emp => {
+        const key = emp.organizationName.toLowerCase().trim();
+        // If duplicate, keep the one that is verified or the most recent one
+        if (!uniqueMap.has(key) || (emp.verified && !uniqueMap.get(key).verified)) {
+          uniqueMap.set(key, emp);
+        }
+      });
+      setEmployers(Array.from(uniqueMap.values()));
       setLoading(false);
     };
     fetchEmployers();
-  }, []);
+
+    return () => unsubscribe();
+  }, [navigate]);
 
   const filteredEmployers = employers.filter(emp => 
     emp.organizationName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emp.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.email.toLowerCase().includes(searchTerm.toLowerCase())
+    emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (emp.address && emp.address.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const exportToCSV = () => {
-    const headers = ['Organization Name', 'Full Name', 'Role', 'Email', 'Status', 'Phone', 'Website', 'Registered At'];
+    const headers = ['Organization Name', 'Address', 'Full Name', 'Role', 'Email', 'Status', 'Phone', 'Website', 'Registered At'];
     const rows = employers.map(emp => [
       emp.organizationName,
+      emp.address || 'N/A',
       emp.fullName,
       emp.roleInOrg,
       emp.email,
@@ -105,9 +119,13 @@ const AdminEmployerList = () => {
               <Download size={18} /> Export CSV
             </button>
             <button 
-              onClick={() => {
-                localStorage.removeItem('studiRad_admin_auth');
-                navigate('/admin/login');
+              onClick={async () => {
+                try {
+                  await adminAuth.signOut();
+                  navigate('/admin/login');
+                } catch (error) {
+                  console.error('Logout error:', error);
+                }
               }}
               className="p-3 bg-white text-slate-400 hover:text-red-500 rounded-2xl border border-slate-100 transition-colors shadow-sm"
               title="Logout"
@@ -128,6 +146,7 @@ const AdminEmployerList = () => {
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
                     <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Organization</th>
+                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Address</th>
                     <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact Person</th>
                     <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Email</th>
                     <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
@@ -145,6 +164,12 @@ const AdminEmployerList = () => {
                             <Building2 size={14} />
                           </div>
                           <span className="font-bold text-slate-900 text-sm">{emp.organizationName}</span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <MapPin size={14} className="text-slate-300" />
+                          <span className="text-slate-500 font-medium text-xs">{emp.address || 'N/A'}</span>
                         </div>
                       </td>
                       <td className="p-4">

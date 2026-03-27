@@ -53,6 +53,8 @@ import AdminProtectedRoute from './components/auth/AdminProtectedRoute';
 import AdminClassesPage from './pages/admin/AdminClassesPage';
 import AdminCreateClassPage from './pages/admin/AdminCreateClassPage';
 import AdminCoursesPage from './pages/admin/AdminCoursesPage';
+import AdminOpportunitiesSpreadsheet from './pages/admin/SpreadSheet';
+import AdminEmployerList from './pages/opportunities/AdminEmployerList';
 
 import LocumPage from "./pages/opportunities/LocumPage";
 import LocumRegistration from "./pages/opportunities/LocumRegistration";
@@ -176,6 +178,10 @@ const App: React.FC = () => {
           <Route path="admin/classes/create" element={<AdminCreateClassPage />} />
           <Route path="admin/courses" element={<AdminCoursesPage />} />
           <Route path="admin/create-course" element={<AdminCreateCoursePage />} />
+          <Route path="admin/opportunities-database" element={<AdminOpportunitiesSpreadsheet />} />
+          <Route path="admin/employers-database" element={<AdminEmployerList />} />
+
+
        
 
         {/* Admin Protected Routes */}

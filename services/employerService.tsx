@@ -79,6 +79,13 @@ export const getOpportunityById = async (type: 'job' | 'internship' | 'scholarsh
  */
 export const registerEmployer = async (email: string, pass: string, data: Omit<EmployerProfile, 'uid' | 'createdAt' | 'verified'>) => {
   try {
+    // Check if organization name already exists before creating auth account
+    const q = query(collection(db, COLLECTION), where('organizationName', '==', data.organizationName));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      throw new Error("An organization with this name is already registered. Please contact support if you believe this is an error.");
+    }
+
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     const uid = cred.user?.uid;
     
@@ -101,22 +108,22 @@ export const registerEmployer = async (email: string, pass: string, data: Omit<E
     let emailError = null;
     try {
       const actionCodeSettings = {
-        url: `https://www.studirad.org/#/employer/verify`,
+        url: `${window.location.origin}/employer/verify`,
         handleCodeInApp: true,
       };
       await sendEmailVerification(cred.user, actionCodeSettings);
     } catch (err: any) {
-      console.error("Error sending verification email:");
+      console.error("Error sending verification email:", err);
       emailSent = false;
       emailError = err.message;
       if (err.code === 'auth/unauthorized-continue-uri') {
-        emailError = "Theres an error detected. We are going to fix this";
+        emailError = "Domain not allowlisted. Please add " + window.location.origin + " to Authorized Domains in Firebase Console.";
       }
     }
 
     return { success: true, profile, emailSent, emailError };
   } catch (error: any) {
-    console.error("Employer Reg Error:");
+    console.error("Employer Reg Error:", error);
     return { success: false, error: error.message };
   }
 };
@@ -130,7 +137,7 @@ export const resendVerificationEmail = async () => {
     if (!user) throw new Error("No user session found. Please try logging in again.");
     
     const actionCodeSettings = {
-      url: `${window.location.origin}/#/employer/login`,
+      url: `${window.location.origin}/employer/verify`,
       handleCodeInApp: true,
     };
     await sendEmailVerification(user, actionCodeSettings);
@@ -175,6 +182,32 @@ export const loginEmployer = async (email: string, pass: string) => {
     };
   } catch (error: any) {
     return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Get all opportunities across all types (Admin only)
+ */
+export const getAllOpportunities = async () => {
+  try {
+    const types = ['jobs', 'internships', 'scholarships'];
+    const allData: any[] = [];
+
+    for (const type of types) {
+      const snapshot = await getDocs(collection(adminDb, type));
+      snapshot.docs.forEach(doc => {
+        allData.push({
+          id: doc.id,
+          type: type.slice(0, -1), // remove 's'
+          ...doc.data()
+        });
+      });
+    }
+
+    return allData;
+  } catch (error) {
+    console.error("Error fetching all opportunities:", error);
+    return [];
   }
 };
 

@@ -63,8 +63,25 @@ export interface TimelineEvent {
   isHighlight?: boolean;
 }
 
-// --- New Types for Opportunities ---
 
+
+// Employer Types
+
+export interface EmployerProfile {
+  uid: string;
+  email: string;
+  fullName: string;
+  roleInOrg: string;
+  organizationName: string;
+  phoneNumber: string;
+  website: string;
+  verified: boolean;
+  isPreExisting?: boolean;
+  createdAt: string;
+  address: string;
+}
+
+// --- New Types for Opportunities ---
 export interface JobListing {
   id: number | string;
   title: string;
