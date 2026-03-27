@@ -69,7 +69,7 @@ const EmployerRegistration = () => {
             <h2 className="text-3xl font-black text-slate-900">
               {emailStatus.sent ? "Verify Your Email" : "Registration Pending"}
             </h2>
-            <p className="text-slate-500 font-medium leading-relaxed">
+            <div className="text-slate-500 font-medium leading-relaxed">
               {emailStatus.sent ? (
                 <>
                   Registration pending! We've sent a verification link to <br/>
@@ -84,7 +84,7 @@ const EmployerRegistration = () => {
               )}
               <br/><br/>
               Please verify your email to complete your registration and access the dashboard.
-            </p>
+            </div>
             <div className="pt-8 space-y-4">
               <Link 
                 to="/employer/login" 

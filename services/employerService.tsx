@@ -108,7 +108,7 @@ export const registerEmployer = async (email: string, pass: string, data: Omit<E
     let emailError = null;
     try {
       const actionCodeSettings = {
-        url: `${window.location.origin}/employer/verify`,
+        url: `${window.location.origin}/#/employer/verify`,
         handleCodeInApp: true,
       };
       await sendEmailVerification(cred.user, actionCodeSettings);
