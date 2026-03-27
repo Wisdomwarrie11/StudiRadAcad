@@ -72,9 +72,9 @@ const OpportunitiesPage = () => {
                <a href="#opportunities" className="bg-slate-900 text-white px-8 py-4 rounded-lg font-bold text-xs uppercase tracking-widest hover:bg-brand-primary transition-all shadow-lg">
                  Explore Now
                </a>
-               <Link to="/employer/register" className="px-8 py-4 rounded-lg border border-slate-400 font-bold text-xs uppercase tracking-widest hover:bg-slate-300 transition-all">
+               {/* <Link to="/employer/register" className="px-8 py-4 rounded-lg border border-slate-400 font-bold text-xs uppercase tracking-widest hover:bg-slate-300 transition-all">
                  Post a Job
-               </Link>
+               </Link> */}
              </div>
            </motion.div>
         </div>
