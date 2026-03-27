@@ -137,7 +137,7 @@ export const resendVerificationEmail = async () => {
     if (!user) throw new Error("No user session found. Please try logging in again.");
     
     const actionCodeSettings = {
-      url: `${window.location.origin}/employer/verify`,
+      url: `${window.location.origin}/#/employer/verify`,
       handleCodeInApp: true,
     };
     await sendEmailVerification(user, actionCodeSettings);
