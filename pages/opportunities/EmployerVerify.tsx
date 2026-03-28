@@ -17,12 +17,6 @@ const EmployerVerify = () => {
   const verifiedRef = React.useRef(false);
 
   useEffect(() => {
-    if (status === 'success') {
-      navigate('/employer/login');
-    }
-  }, [status, navigate]);
-
-  useEffect(() => {
     const verify = async () => {
       if (verifiedRef.current) return;
       
@@ -39,12 +33,10 @@ const EmployerVerify = () => {
                 verified: true
               });
               verifiedRef.current = true;
-              setStatus('success');
-              setMessage('Your email is already verified! Redirecting to login...');
+              navigate('/employer/login');
             } catch (e) {
               verifiedRef.current = true;
-              setStatus('success');
-              setMessage('Your email is verified. Redirecting you to login...');
+              navigate('/employer/login');
             }
           } else {
             setStatus('error');
@@ -68,16 +60,15 @@ const EmployerVerify = () => {
           });
         }
         
-        setStatus('success');
-        setMessage('Your email has been successfully verified! Redirecting to login...');
+        // Navigate immediately as requested by user
+        navigate('/employer/login');
       } catch (error: any) {
         console.error("Verification error:", error);
         setStatus('error');
         if (error.code === 'auth/invalid-action-code') {
           // Check if user is already verified (maybe they clicked the link twice)
           if (auth.currentUser?.emailVerified) {
-            setStatus('success');
-            setMessage('Your email is already verified! Redirecting to login...');
+            navigate('/employer/login');
             return;
           }
           setMessage('The verification link is invalid or has already been used.');
@@ -106,24 +97,6 @@ const EmployerVerify = () => {
             <Loader2 className="w-12 h-12 text-brand-primary animate-spin mb-6" />
             <h2 className="text-2xl font-black text-slate-900 mb-2">Verifying Email</h2>
             <p className="text-slate-500 font-medium">{message}</p>
-          </div>
-        )}
-
-        {status === 'success' && (
-          <div className="flex flex-col items-center py-4 animate-in fade-in zoom-in duration-500">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 text-green-600">
-              <CheckCircle size={48} />
-            </div>
-            <h2 className="text-2xl font-black text-slate-900 mb-2">Success!</h2>
-            <p className="text-slate-500 font-medium mb-10 leading-relaxed">{message}</p>
-            
-            <button
-              onClick={() => navigate('/employer/login')}
-              className="w-full py-5 bg-brand-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-brand-dark transition-all shadow-xl shadow-brand-primary/20 flex items-center justify-center gap-3"
-            >
-              Go to Login
-              <ArrowRight size={18} />
-            </button>
           </div>
         )}
 
