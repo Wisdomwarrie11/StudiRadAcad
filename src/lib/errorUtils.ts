@@ -3,7 +3,8 @@
  * Maps Firebase Auth error codes to user-friendly messages.
  */
 export const getFriendlyErrorMessage = (error: any): string => {
-  const errorCode = error?.code || error?.message || '';
+  // If error is already a string, use it as the code/message
+  const errorCode = typeof error === 'string' ? error : (error?.code || error?.message || '');
 
   if (errorCode.includes('auth/invalid-email')) {
     return 'The email address is not valid. Please check and try again.';

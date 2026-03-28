@@ -39,15 +39,20 @@ const EmployerRegistration = () => {
     setLoading(true);
     setError('');
 
-    const { email, password, ...profileData } = formData;
-    const result = await registerEmployer(email, password, { ...profileData, email });
+    try {
+      const { email, password, ...profileData } = formData;
+      const result = await registerEmployer(email, password, { ...profileData, email });
 
-    if (result.success) {
-      setEmailStatus({ sent: result.emailSent || false, error: getFriendlyErrorMessage(result.emailError) });
-      setSuccess(true);
-      setLoading(false);
-    } else {
-      setError(getFriendlyErrorMessage(result.error));
+      if (result.success) {
+        setEmailStatus({ sent: result.emailSent || false, error: getFriendlyErrorMessage(result.emailError) });
+        setSuccess(true);
+      } else {
+        setError(getFriendlyErrorMessage(result.error));
+      }
+    } catch (err: any) {
+      console.error("Registration submission error:", err);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
