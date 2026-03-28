@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, Loader2, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Loader2, ArrowRight, ShieldCheck, AlertCircle, CheckCircle } from 'lucide-react';
 import { loginEmployer, resendVerificationEmail } from '../../services/employerService';
 import SEO from '../../components/SEO';
 import { getFriendlyErrorMessage } from '../../src/lib/errorUtils';
@@ -16,6 +16,19 @@ const EmployerLogin = () => {
   const [showResend, setShowResend] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendStatus, setResendStatus] = useState('');
+  
+  const location = React.useMemo(() => window.location, []);
+  const [successMessage, setSuccessMessage] = useState(() => {
+    // We can't use useLocation easily if we want to avoid re-renders or if we're not using HashRouter correctly
+    // But we can check history state if available
+    if (window.history.state?.usr?.verified) {
+      return "Email verified successfully! You can now sign in.";
+    }
+    if (window.history.state?.usr?.registered) {
+      return "Registration successful! Please check your email to verify your account before signing in.";
+    }
+    return "";
+  });
 
   const handleResend = async () => {
     setResending(true);
@@ -67,6 +80,12 @@ const EmployerLogin = () => {
             <h2 className="text-3xl font-black text-slate-900 mb-2">Employer Sign In</h2>
             <p className="text-slate-500 font-medium">Manage your facility's opportunities.</p>
           </div>
+
+          {successMessage && (
+            <div className="mb-6 p-4 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-2xl flex items-center gap-3 text-sm font-bold animate-in fade-in slide-in-from-top-2">
+               <CheckCircle size={20} /> {successMessage}
+            </div>
+          )}
 
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl flex flex-col gap-3 text-sm font-bold">

@@ -61,18 +61,19 @@ const EmployerVerify = () => {
         }
         
         // Navigate immediately as requested by user
-        navigate('/employer/login');
+        navigate('/employer/login', { state: { verified: true } });
       } catch (error: any) {
         console.error("Verification error:", error);
-        setStatus('error');
+        
         if (error.code === 'auth/invalid-action-code') {
-          // Check if user is already verified (maybe they clicked the link twice)
-          if (auth.currentUser?.emailVerified) {
-            navigate('/employer/login');
-            return;
-          }
-          setMessage('The verification link is invalid or has already been used.');
-        } else if (error.code === 'auth/expired-action-code') {
+          // This often means it's already verified. Redirect to login anyway.
+          verifiedRef.current = true;
+          navigate('/employer/login', { state: { verified: true } });
+          return;
+        }
+
+        setStatus('error');
+        if (error.code === 'auth/expired-action-code') {
           setMessage('The verification link has expired. Please request a new one.');
         } else {
           setMessage(getFriendlyErrorMessage(error));

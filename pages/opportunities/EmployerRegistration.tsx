@@ -12,8 +12,6 @@ const EmployerRegistration = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState(1);
-  const [success, setSuccess] = useState(false);
-  const [emailStatus, setEmailStatus] = useState<{ sent: boolean; error: string | null }>({ sent: true, error: null });
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -44,8 +42,7 @@ const EmployerRegistration = () => {
       const result = await registerEmployer(email, password, { ...profileData, email });
 
       if (result.success) {
-        setEmailStatus({ sent: result.emailSent || false, error: getFriendlyErrorMessage(result.emailError) });
-        setSuccess(true);
+        navigate('/employer/login', { state: { registered: true } });
       } else {
         setError(getFriendlyErrorMessage(result.error));
       }
@@ -64,50 +61,6 @@ const EmployerRegistration = () => {
         description="Register your hospital or medical imaging facility to post job openings and internship opportunities."
       />
 
-      {/* Verification Modal */}
-      {success && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white rounded-[3rem] shadow-2xl max-w-md w-full p-10 text-center space-y-6 animate-in zoom-in-95 duration-300 border border-white">
-            <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle size={40} />
-            </div>
-            <h2 className="text-3xl font-black text-slate-900">
-              {emailStatus.sent ? "Verify Your Email" : "Registration Pending"}
-            </h2>
-            <div className="text-slate-500 font-medium leading-relaxed">
-              {emailStatus.sent ? (
-                <>
-                  Registration pending! We've sent a verification link to <br/>
-                  <span className="text-slate-900 font-bold">{formData.email}</span>. 
-                </>
-              ) : (
-                <div className="p-4 bg-amber-50 border border-amber-100 text-amber-700 rounded-2xl text-sm font-bold">
-                  <AlertCircle size={20} className="mx-auto mb-2" />
-                  We couldn't send the verification email: <br/>
-                  <span className="text-red-600">{emailStatus.error}</span>
-                </div>
-              )}
-              <br/><br/>
-              Please verify your email to complete your registration and access the dashboard.
-            </div>
-            <div className="pt-8 space-y-4">
-              <Link 
-                to="/employer/login" 
-                className="w-full py-4 bg-brand-primary text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-brand-dark transition-all shadow-xl shadow-brand-primary/20"
-              >
-                Go to Login <ArrowRight size={18} />
-              </Link>
-              <button 
-                onClick={() => setSuccess(false)}
-                className="text-xs text-slate-400 font-black uppercase tracking-widest hover:text-slate-600 transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
       <div className="max-w-5xl w-full grid lg:grid-cols-2 gap-12 items-center">
         
         {/* Left Side: Brand & Social Proof */}
