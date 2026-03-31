@@ -25,7 +25,17 @@ const EmployerLogin = () => {
       return "Email verified successfully! You can now sign in.";
     }
     if (window.history.state?.usr?.registered) {
-      return "Registration successful! Please check your email to verify your account before signing in.";
+      return "Registration successful! Please check your email (and spam folder) to verify your account before signing in.";
+    }
+    if (window.history.state?.usr?.info) {
+      return window.history.state.usr.info;
+    }
+    return "";
+  });
+
+  const [infoMessage, setInfoMessage] = useState(() => {
+    if (window.history.state?.usr?.info) {
+      return window.history.state.usr.info;
     }
     return "";
   });
@@ -35,7 +45,7 @@ const EmployerLogin = () => {
     setResendStatus('');
     const result = await resendVerificationEmail();
     if (result.success) {
-      setResendStatus('Verification email sent! Please check your inbox.');
+      setResendStatus('Verification email sent! Please check your inbox and spam folder.');
     } else {
       setResendStatus(getFriendlyErrorMessage(result.error));
     }
@@ -57,7 +67,7 @@ const EmployerLogin = () => {
       if (res.emailVerified || profile.isPreExisting) {
         navigate('/employer/dashboard');
       } else {
-        setError("Please verify your email address before logging in.");
+        setError("Please verify your email address before logging in. Check your inbox and spam folder for the verification link.");
         setShowResend(true);
         setLoading(false);
       }

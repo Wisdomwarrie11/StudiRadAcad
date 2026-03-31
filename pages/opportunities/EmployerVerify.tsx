@@ -1,55 +1,85 @@
+
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { auth, db } from '../../firebase';
-import { applyActionCode, checkActionCode, signInWithEmailAndPassword } from 'firebase/auth';
+import { applyActionCode } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
-import { CheckCircle, XCircle, Loader2, ShieldCheck } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, ArrowRight, ShieldCheck } from 'lucide-react';
 import SEO from '../../components/SEO';
 import { getFriendlyErrorMessage } from '../../src/lib/errorUtils';
 
 const EmployerVerify = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'login'>('loading');
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Verifying your email...');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loginLoading, setLoginLoading] = useState(false);
+
+  const verifiedRef = React.useRef(false);
 
   useEffect(() => {
     const verify = async () => {
+      if (verifiedRef.current) return;
+      
       const oobCode = searchParams.get('oobCode');
       const mode = searchParams.get('mode');
 
+      // If no mode/oobCode, we might be coming from a simple "Check Status" link
+      // or from the "Continue" button on the Firebase default verification page.
       if (!oobCode || mode !== 'verifyEmail') {
-        setStatus('error');
-        setMessage('Invalid or missing verification link.');
+        // Check if user is already logged in and verified
+        if (auth.currentUser) {
+          if (auth.currentUser.emailVerified) {
+            try {
+              await updateDoc(doc(db, 'employer_profiles', auth.currentUser.uid), {
+                verified: true
+              });
+              verifiedRef.current = true;
+              navigate('/employer/login', { state: { verified: true } });
+            } catch (e) {
+              verifiedRef.current = true;
+              navigate('/employer/login', { state: { verified: true } });
+            }
+          } else {
+            setStatus('error');
+            setMessage('Please click the link in your email to verify your account.');
+          }
+        } else {
+          // If not logged in and no code, they might have just verified on the Firebase page.
+          // Redirect to login and let them try to sign in.
+          navigate('/employer/login', { state: { info: "If you've just verified your email, please sign in to continue." } });
+        }
         return;
       }
 
+      // Set ref immediately to prevent double execution
+      verifiedRef.current = true;
+
       try {
-        // Get the email associated with this code
-        const info = await checkActionCode(auth, oobCode);
-        setEmail(info.data.email || '');
-
-        // Apply the verification code
         await applyActionCode(auth, oobCode);
+        
+        // If user is logged in, we can update their profile in Firestore too
+        if (auth.currentUser) {
+          await updateDoc(doc(db, 'employer_profiles', auth.currentUser.uid), {
+            verified: true
+          });
+        }
+        
+        // Navigate immediately as requested by user
+        navigate('/employer/login', { state: { verified: true } });
+      } catch (error: any) {
+        console.error("Verification error:", error);
+        
+        // auth/invalid-action-code often means the link was already used (verified)
+        if (error.code === 'auth/invalid-action-code' || error.code === 'auth/action-code-already-used') {
+          navigate('/employer/login', { state: { verified: true } });
+          return;
+        }
 
-        setStatus('login');
-        setMessage('Email verified! Please enter your password to complete login.');
-
-      } catch (err: any) {
-        console.error(err);
-        if (err.code === 'auth/expired-action-code') {
-          setStatus('error');
-          setMessage('Verification link expired. Request a new email.');
-        } else if (err.code === 'auth/invalid-action-code') {
-          setStatus('success');
-          setMessage('Your email is already verified. You can log in.');
-          setTimeout(() => navigate('/employer/login'), 1500);
+        setStatus('error');
+        if (error.code === 'auth/expired-action-code') {
+          setMessage('The verification link has expired. Please request a new one.');
         } else {
-          setStatus('error');
-          setMessage(getFriendlyErrorMessage(err) || 'Unexpected error occurred.');
+          setMessage(getFriendlyErrorMessage(error));
         }
       }
     };
@@ -57,83 +87,44 @@ const EmployerVerify = () => {
     verify();
   }, [searchParams, navigate]);
 
-  const handleLogin = async () => {
-    if (!email || !password) return;
-    setLoginLoading(true);
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // Update Firestore verified field
-      await updateDoc(doc(db, 'employer_profiles', userCredential.user.uid), { verified: true });
-      setStatus('success');
-      setMessage('Logged in successfully! Redirecting...');
-      setTimeout(() => navigate('/employer/dashboard'), 1500);
-    } catch (err: any) {
-      console.error(err);
-      setMessage(getFriendlyErrorMessage(err) || 'Failed to log in.');
-    } finally {
-      setLoginLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 pt-24">
       <SEO title="Verify Email" description="Verify your employer account email address." />
-      <div className="max-w-md w-full bg-white rounded-[3rem] shadow-2xl p-10 text-center border border-white relative">
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 flex items-center justify-center">
-          {status === 'success' && (
-            <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center shadow-lg animate-in zoom-in">
-              <CheckCircle size={48} />
-            </div>
-          )}
-          {status === 'loading' && (
-            <Loader2 className="w-12 h-12 text-brand-primary animate-spin" />
-          )}
-          {status === 'error' && (
-            <div className="w-24 h-24 bg-red-100 text-red-600 rounded-full flex items-center justify-center shadow-lg animate-in zoom-in">
+      
+      <div className="max-w-md w-full bg-white rounded-[3rem] shadow-2xl p-10 text-center border border-white">
+        <div className="w-16 h-16 bg-brand-primary/10 text-brand-primary rounded-3xl flex items-center justify-center mx-auto mb-8">
+            <ShieldCheck size={32} />
+        </div>
+
+        {status === 'loading' && (
+          <div className="flex flex-col items-center py-4">
+            <Loader2 className="w-12 h-12 text-brand-primary animate-spin mb-6" />
+            <h2 className="text-2xl font-black text-slate-900 mb-2">Verifying Email</h2>
+            <p className="text-slate-500 font-medium">{message}</p>
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className="flex flex-col items-center py-4 animate-in fade-in zoom-in duration-500">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6 text-red-600">
               <XCircle size={48} />
             </div>
-          )}
-          {status === 'login' && (
-            <div className="w-24 h-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shadow-lg animate-in zoom-in">
-              <ShieldCheck size={48} />
-            </div>
-          )}
-        </div>
-
-        <div className="mt-16">
-          <h2 className="text-2xl font-black text-slate-900 mb-2">
-            {status === 'login' ? 'Email Verified!' : status === 'success' ? 'Success' : status === 'error' ? 'Failed' : 'Verifying Email'}
-          </h2>
-          <p className="text-slate-500 font-medium mb-6">{message}</p>
-
-          {status === 'login' && (
-            <div className="space-y-4">
-              <input
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="w-full px-4 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-brand-primary font-bold text-sm"
-              />
-              <button
-                onClick={handleLogin}
-                disabled={loginLoading || !password}
-                className="w-full py-4 bg-brand-primary text-white rounded-2xl font-black hover:bg-brand-dark transition-all flex items-center justify-center gap-2"
+            <h2 className="text-2xl font-black text-slate-900 mb-2">Verification Failed</h2>
+            <p className="text-slate-500 font-medium mb-10 leading-relaxed">{message}</p>
+            
+            <div className="flex flex-col gap-4 w-full">
+              <Link
+                to="/employer/login"
+                className="w-full py-5 bg-brand-dark text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-brand-primary transition-all text-center flex items-center justify-center gap-2 shadow-xl shadow-brand-dark/10"
               >
-                {loginLoading ? <Loader2 className="animate-spin w-5 h-5" /> : 'Login'}
-              </button>
+                Back to Login
+              </Link>
+              <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+                Need help? Contact support@studirad.com
+              </p>
             </div>
-          )}
-
-          {status === 'error' && (
-            <Link
-              to="/employer/login"
-              className="w-full py-5 bg-brand-dark text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-brand-primary transition-all flex items-center justify-center gap-2 shadow-xl shadow-brand-dark/10"
-            >
-              Back to Login
-            </Link>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

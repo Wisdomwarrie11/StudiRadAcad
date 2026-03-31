@@ -113,11 +113,20 @@ export const registerEmployer = async (email: string, pass: string, data: Omit<E
       };
       await sendEmailVerification(cred.user, actionCodeSettings);
     } catch (err: any) {
-      console.error("Error sending verification email:", err);
-      emailSent = false;
-      emailError = err.message;
+      console.error("Error sending verification email with settings:", err);
       if (err.code === 'auth/unauthorized-continue-uri') {
-        emailError = "Domain not allowlisted. Please add " + window.location.origin + " to Authorized Domains in Firebase Console.";
+        // Fallback to default verification if domain is not allowlisted
+        try {
+          await sendEmailVerification(cred.user);
+          console.log("Verification email sent using default settings (fallback).");
+        } catch (fallbackErr: any) {
+          console.error("Fallback verification email failed:", fallbackErr);
+          emailSent = false;
+          emailError = fallbackErr.message;
+        }
+      } else {
+        emailSent = false;
+        emailError = err.message;
       }
     }
 
@@ -136,11 +145,20 @@ export const resendVerificationEmail = async () => {
     const user = auth.currentUser;
     if (!user) throw new Error("No user session found. Please try logging in again.");
     
-    const actionCodeSettings = {
-      url: `${window.location.origin}/#/employer/verify`,
-      handleCodeInApp: true,
-    };
-    await sendEmailVerification(user, actionCodeSettings);
+    try {
+      const actionCodeSettings = {
+        url: `${window.location.origin}/#/employer/verify`,
+        handleCodeInApp: true,
+      };
+      await sendEmailVerification(user, actionCodeSettings);
+    } catch (err: any) {
+      if (err.code === 'auth/unauthorized-continue-uri') {
+        // Fallback to default verification if domain is not allowlisted
+        await sendEmailVerification(user);
+      } else {
+        throw err;
+      }
+    }
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
