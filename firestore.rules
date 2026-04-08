@@ -1,0 +1,157 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - role: string (required, enum: ['admin', 'student'])
+    //   - displayName: string (optional)
+    //
+    // Collection: classes
+    // Fields:
+    //   - title: string (required)
+    //   - thumbnail: string (optional)
+    //   - category: string (required)
+    //   - duration: string (required)
+    //   - price: string (required)
+    //   - description: string (required)
+    //   - technologies: list (optional)
+    //   - minStudents: number (optional)
+    //   - maxStudents: number (optional)
+    //   - createdAt: timestamp (required)
+    //   - status: string (required, enum: ['published', 'draft'])
+    //
+    // Collection: courses
+    // Fields:
+    //   - title: string (required)
+    //   - thumbnail: string (optional)
+    //   - category: string (required)
+    //   - duration: string (required)
+    //   - price: string (required)
+    //   - description: string (required)
+    //   - modules: list (required)
+    //   - createdAt: timestamp (required)
+    //   - status: string (required, enum: ['published', 'draft'])
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "wisdomwarrie11@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.role in ['admin', 'student'];
+    }
+
+    function isValidClass(data) {
+      return data.keys().hasAll(['title', 'category', 'duration', 'price', 'description', 'status']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.category is string &&
+             data.duration is string &&
+             data.price is string &&
+             data.description is string && data.description.size() < 5000 &&
+             data.status in ['published', 'draft'];
+    }
+
+    function isValidCourse(data) {
+      return data.keys().hasAll(['title', 'category', 'duration', 'price', 'description', 'modules', 'status']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.category is string &&
+             data.duration is string &&
+             data.price is string &&
+             data.description is string && data.description.size() < 5000 &&
+             data.modules is list && data.modules.size() >= 3 && data.modules.size() <= 6 &&
+             data.status in ['published', 'draft'];
+    }
+
+    function isValidChallengeProfile(data) {
+      return data.keys().hasAll(['uid', 'email', 'displayName', 'level', 'currentDay']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.displayName is string &&
+             data.level in ['Basic', 'Advanced', 'Master'] &&
+             data.currentDay is number &&
+             (!('coins' in data) || data.coins is number) &&
+             (!('totalScore' in data) || data.totalScore is number);
+    }
+
+    function isValidEmployerProfile(data) {
+      return data.keys().hasAll(['uid', 'email', 'organizationName', 'fullName', 'verified']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.organizationName is string && data.organizationName.size() > 0 &&
+             data.fullName is string && data.fullName.size() > 0 &&
+             data.verified is bool;
+    }
+
+    function isValidVerificationCode(data) {
+      return data.keys().hasAll(['email', 'code', 'expiresAt']) &&
+             data.email is string &&
+             data.code is string && data.code.size() == 6 &&
+             data.expiresAt is string;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == 'student';
+      allow update: if isAdmin() || (isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == resource.data.role);
+    }
+
+    match /employer_profiles/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isOwner(userId) && isValidEmployerProfile(request.resource.data);
+      allow update: if isAdmin() || (isOwner(userId) && isValidEmployerProfile(request.resource.data));
+    }
+
+    match /verification_codes/{email} {
+      // Allow reading the code if you know the email (to verify)
+      allow get: if true; 
+      // Allow creating/updating codes for your own email
+      allow create, update: if isAuthenticated() && request.auth.token.email == email && isValidVerificationCode(request.resource.data);
+      // Allow deleting after verification
+      allow delete: if isAuthenticated() && request.auth.token.email == email;
+    }
+
+    match /challenge_profiles/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow list: if isAuthenticated(); // For leaderboard
+      allow create: if isAuthenticated() && isOwner(userId) && isValidChallengeProfile(request.resource.data);
+      allow update: if isOwner(userId) && isValidChallengeProfile(request.resource.data);
+    }
+
+    match /classes/{classId} {
+      allow read: if isAdmin() || resource.data.status == 'published';
+      allow write: if isAdmin() && isValidClass(request.resource.data);
+    }
+
+    match /courses/{courseId} {
+      allow read: if isAdmin() || resource.data.status == 'published';
+      allow write: if isAdmin() && isValidCourse(request.resource.data);
+    }
+  }
+}

@@ -48,20 +48,9 @@ const EmployerDashboard = () => {
       }
 
       // Verification check
-      if (!user.emailVerified && !data.isPreExisting) {
+      if (!data.verified && !data.isPreExisting) {
         navigate('/employer/login');
         return;
-      }
-
-      // Sync verification status to Firestore if needed
-      if (user.emailVerified && !data.verified && !data.isPreExisting) {
-        try {
-          await updateDoc(doc(db, 'employer_profiles', user.uid), {
-            verified: true
-          });
-        } catch (e) {
-          console.error("Error syncing verification status:", e);
-        }
       }
 
       setProfile(data);

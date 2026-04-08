@@ -1,9 +1,154 @@
 import { db, auth, adminDb } from '../firebase';
 import { EmployerProfile } from '../types';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from 'firebase/auth';
-import { collection, doc, setDoc, getDoc, addDoc, getDocs, query, where, updateDoc, deleteDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, deleteUser } from 'firebase/auth';
+import { collection, doc, setDoc, getDoc, addDoc, getDocs, query, where, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 
 const COLLECTION = 'employer_profiles';
+const VERIFICATION_COLLECTION = 'verification_codes';
+
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId: string | undefined;
+    email: string | null | undefined;
+    emailVerified: boolean | undefined;
+    isAnonymous: boolean | undefined;
+    tenantId: string | null | undefined;
+    providerInfo: {
+      providerId: string;
+      displayName: string | null;
+      email: string | null;
+      photoUrl: string | null;
+    }[];
+  }
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData.map(provider => ({
+        providerId: provider.providerId,
+        displayName: provider.displayName,
+        email: provider.email,
+        photoUrl: provider.photoURL
+      })) || []
+    },
+    operationType,
+    path
+  }
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(errInfo.error); // Throw the message for the UI, log the JSON for debugging
+}
+
+/**
+ * Generate a 6-digit OTP
+ */
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+/**
+ * Send OTP via Resend API
+ * Note: In a production app, this should be done server-side to protect the API key.
+ */
+export const sendOTPEmail = async (email: string, otp: string, organizationName: string) => {
+  try {
+    const response = await fetch('/api/send-otp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, otp, organizationName })
+    });
+
+    const data = await response.json();
+    if (response.ok && data.success) {
+      return { success: true };
+    } else {
+      console.error("Resend API Error:", data);
+      return { success: false, error: data.error || "Failed to send email" };
+    }
+  } catch (error: any) {
+    console.error("Error calling send-otp API:", error);
+    return { success: false, error: error.message || "Network error" };
+  }
+};
+
+/**
+ * Store OTP in Firestore
+ */
+export const storeOTP = async (email: string, otp: string) => {
+  const path = `${VERIFICATION_COLLECTION}/${email}`;
+  try {
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 10); // 10 minutes expiry
+
+    await setDoc(doc(db, VERIFICATION_COLLECTION, email), {
+      email,
+      code: otp,
+      expiresAt: expiresAt.toISOString(),
+      createdAt: serverTimestamp()
+    });
+    return { success: true };
+  } catch (error: any) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Verify OTP
+ */
+export const verifyOTP = async (email: string, code: string, uid: string) => {
+  try {
+    const docSnap = await getDoc(doc(db, VERIFICATION_COLLECTION, email));
+    
+    if (!docSnap.exists()) {
+      throw new Error("No verification code found. Please request a new one.");
+    }
+
+    const data = docSnap.data();
+    const now = new Date();
+    const expiry = new Date(data.expiresAt);
+
+    if (now > expiry) {
+      throw new Error("Verification code has expired. Please request a new one.");
+    }
+
+    if (data.code !== code) {
+      throw new Error("Invalid verification code. Please check and try again.");
+    }
+
+    // Update profile to verified
+    await updateDoc(doc(db, COLLECTION, uid), {
+      verified: true
+    });
+
+    // Delete the used code
+    await deleteDoc(doc(db, VERIFICATION_COLLECTION, email));
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+};
 
 /**
  * Get all registered employers (Admin only)
@@ -80,10 +225,20 @@ export const getOpportunityById = async (type: 'job' | 'internship' | 'scholarsh
 export const registerEmployer = async (email: string, pass: string, data: Omit<EmployerProfile, 'uid' | 'createdAt' | 'verified'>) => {
   try {
     // Check if organization name already exists before creating auth account
-    const q = query(collection(db, COLLECTION), where('organizationName', '==', data.organizationName));
-    const querySnapshot = await getDocs(q);
-    if (!querySnapshot.empty) {
-      throw new Error("An organization with this name is already registered. Please contact support if you believe this is an error.");
+    try {
+      console.log(`Checking organization name: ${data.organizationName}`);
+      const q = query(collection(db, COLLECTION), where('organizationName', '==', data.organizationName));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        throw new Error("An organization with this name is already registered. Please contact support if you believe this is an error.");
+      }
+      console.log("Organization name is available");
+    } catch (err) {
+      console.error("Organization name check failed:", err);
+      if (err instanceof Error && err.message.includes("permission")) {
+        handleFirestoreError(err, OperationType.LIST, COLLECTION);
+      }
+      throw err;
     }
 
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
@@ -101,36 +256,33 @@ export const registerEmployer = async (email: string, pass: string, data: Omit<E
     };
 
     // Profiles are kept in the primary db
-    await setDoc(doc(db, COLLECTION, uid), profile);
-
-    // Send email verification
-    let emailSent = true;
-    let emailError = null;
     try {
-      const actionCodeSettings = {
-        url: `${window.location.origin}/#/employer/verify`,
-        handleCodeInApp: true,
-      };
-      await sendEmailVerification(cred.user, actionCodeSettings);
+      console.log(`Attempting to create profile for UID: ${uid}. Auth CurrentUser UID: ${auth.currentUser?.uid}`);
+      await setDoc(doc(db, COLLECTION, uid), profile);
+      console.log("Profile created successfully");
     } catch (err: any) {
-      console.error("Error sending verification email with settings:", err);
-      if (err.code === 'auth/unauthorized-continue-uri') {
-        // Fallback to default verification if domain is not allowlisted
-        try {
-          await sendEmailVerification(cred.user);
-          console.log("Verification email sent using default settings (fallback).");
-        } catch (fallbackErr: any) {
-          console.error("Fallback verification email failed:", fallbackErr);
-          emailSent = false;
-          emailError = fallbackErr.message;
-        }
-      } else {
-        emailSent = false;
-        emailError = err.message;
-      }
+      console.error("Profile creation failed:", err);
+      // Ensure uid is available for the error handler
+      const errorPath = `${COLLECTION}/${uid}`;
+      handleFirestoreError(err, OperationType.WRITE, errorPath);
     }
 
-    return { success: true, profile, emailSent, emailError };
+    // Generate and send OTP
+    const otp = generateOTP();
+    const storeRes = await storeOTP(email, otp);
+    if (!storeRes.success) throw new Error(storeRes.error);
+
+    const emailRes = await sendOTPEmail(email, otp, data.organizationName);
+    
+    // If email failed, we still return success: true because the account was created,
+    // but we notify the UI so it can show a warning or automatically trigger a resend.
+    return { 
+      success: true, 
+      profile, 
+      emailSent: emailRes.success, 
+      emailError: emailRes.error,
+      uid 
+    };
   } catch (error: any) {
     console.error("Employer Reg Error:", error);
     return { success: false, error: error.message };
@@ -138,29 +290,19 @@ export const registerEmployer = async (email: string, pass: string, data: Omit<E
 };
 
 /**
- * Resend verification email to current user
+ * Resend OTP email
  */
-export const resendVerificationEmail = async () => {
+export const resendOTP = async (email: string, organizationName: string) => {
   try {
-    const user = auth.currentUser;
-    if (!user) throw new Error("No user session found. Please try logging in again.");
-    
-    try {
-      const actionCodeSettings = {
-        url: `${window.location.origin}/#/employer/verify`,
-        handleCodeInApp: true,
-      };
-      await sendEmailVerification(user, actionCodeSettings);
-    } catch (err: any) {
-      if (err.code === 'auth/unauthorized-continue-uri') {
-        // Fallback to default verification if domain is not allowlisted
-        await sendEmailVerification(user);
-      } else {
-        throw err;
-      }
-    }
-    return { success: true };
+    console.log(`Resending OTP for ${email} (${organizationName})`);
+    const otp = generateOTP();
+    const storeRes = await storeOTP(email, otp);
+    if (!storeRes.success) throw new Error(storeRes.error);
+
+    const emailRes = await sendOTPEmail(email, otp, organizationName);
+    return emailRes;
   } catch (error: any) {
+    console.error("resendOTP error:", error);
     return { success: false, error: error.message };
   }
 };
