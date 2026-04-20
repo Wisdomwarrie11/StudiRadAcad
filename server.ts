@@ -40,6 +40,16 @@ async function initializeAppServer() {
       if (fs.existsSync(distPath)) {
         app.use(express.static(distPath));
         app.use('/assets', express.static(distPath));
+
+        // Redirect clean verification URLs to Hash paths
+        app.get('/employer/login', (req, res) => {
+          const verified = req.query.verified;
+          if (verified === 'true') {
+            return res.redirect('/#/employer/login?verified=true');
+          }
+          res.redirect('/#/employer/login');
+        });
+
         app.get('*', (req, res, next) => {
           if (req.path.startsWith('/api') || req.path.includes('.')) {
             return next();

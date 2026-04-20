@@ -168,7 +168,7 @@ const DailyChallengeDashboard: React.FC = () => {
 
     // Construct a direct link to the challenge
     const baseUrl = window.location.origin;
-    const shareUrl = `${baseUrl}/challenge`;
+    const shareUrl = `${baseUrl}/#/challenge`;
     
     // Updated share message with "Nice!"
     const shareMessage = `StudiRad is Nice! 🚀\n\nI'm playing the Daily Radiography Challenge. Test your knowledge in Physics, MRI, CT, and more.\n\nUse my code *${profile.referralCode || 'RAD'}* to join!`;
@@ -239,7 +239,7 @@ const DailyChallengeDashboard: React.FC = () => {
     if (profile.coins < 2) {
       showAlert({
         title: 'Insufficient Coins',
-        message: 'You need 2 Coins (₦200) to unlock this day early.',
+        message: 'You need 2 Coins to unlock this day early.',
         type: 'warning',
         confirmText: 'Buy Coins',
         cancelText: 'Cancel',
