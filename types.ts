@@ -278,15 +278,16 @@ export enum BlogCategory {
 // employer type
 
 
+
 export interface EmployerProfile {
   uid: string;
   email: string;
   fullName: string;
   roleInOrg: string;
   organizationName: string;
+  address: string;
   phoneNumber: string;
   website: string;
-  verified: boolean;
-  isPreExisting?: boolean;
+  isVerified: boolean;
   createdAt: string;
 }

@@ -85,6 +85,10 @@ const PostOpportunity = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!profile?.isVerified) {
+       alert("Your facility profile is currently pending verification. You will be able to publish opportunities once an administrator has verified your organization.");
+       return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -286,13 +290,20 @@ const PostOpportunity = () => {
 
            {/* --- SUBMIT --- */}
            <div className="pt-10 border-t border-slate-50 flex flex-col md:flex-row gap-6 items-center">
-              <div className="flex-grow flex items-center gap-4 text-emerald-600 bg-emerald-50 px-6 py-4 rounded-[2rem] border border-emerald-100">
-                 <ShieldCheck size={24} />
-                 <p className="text-xs font-bold leading-tight">Your organization profile is attached to this post for verification.</p>
-              </div>
+              {!profile?.isVerified ? (
+                <div className="flex-grow flex items-center gap-4 text-amber-600 bg-amber-50 px-6 py-4 rounded-[2rem] border border-amber-100">
+                   <div className="p-2 bg-amber-100 rounded-xl"><Building2 size={24} /></div>
+                   <p className="text-xs font-bold leading-tight">Verification Pending: Your organization is currently being reviewed. Publishing will be enabled once verified.</p>
+                </div>
+              ) : (
+                <div className="flex-grow flex items-center gap-4 text-emerald-600 bg-emerald-50 px-6 py-4 rounded-[2rem] border border-emerald-100">
+                   <ShieldCheck size={24} />
+                   <p className="text-xs font-bold leading-tight">Your organization is verified. Your posting will be live immediately.</p>
+                </div>
+              )}
               <button 
                 type="submit"
-                disabled={isSubmitting || !formData.description || formData.requirements.length === 0}
+                disabled={isSubmitting || !formData.description || formData.requirements.length === 0 || !profile?.isVerified}
                 className="w-full md:w-auto px-12 py-5 bg-brand-primary text-white rounded-[2rem] font-black text-lg hover:bg-brand-dark transition-all shadow-2xl shadow-brand-primary/20 flex items-center justify-center gap-3 disabled:opacity-50"
               >
                 {isSubmitting ? <Loader2 className="animate-spin" /> : <CheckCircle size={22} />}

@@ -98,6 +98,18 @@ export const getAllEmployers = async (): Promise<EmployerProfile[]> => {
 };
 
 /**
+ * Verify or unverify an employer (Admin only)
+ */
+export const verifyEmployerProfile = async (uid: string, isVerified: boolean) => {
+  try {
+    await updateDoc(doc(db, COLLECTION, uid), { isVerified });
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+};
+
+/**
  * Delete an opportunity
  */
 export const deleteEmployerOpportunity = async (type: 'job' | 'internship' | 'scholarship', id: string) => {
@@ -187,6 +199,7 @@ export const registerEmployer = async (email: string, pass: string, data: Omit<E
       ...data,
       uid,
       email,
+      isVerified: false,
       createdAt: new Date().toISOString()
     };
 

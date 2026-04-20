@@ -302,7 +302,9 @@ const EmployerRegistration = () => {
 
                        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
                           <p className="text-xs text-slate-600 leading-relaxed font-medium text-center">
-                            Please check your inbox (and spam folder) and click the link to verify your account. Once verified, you'll be able to sign in and post opportunities.
+                            Please click the link in your email to verify your address. 
+                             <br/><br/>
+                             <strong>Verification Note:</strong> For security, all new facilities are manually reviewed by our team. After email verification, please allow up to 24 hours for us to verify your organization's credentials. You will receive a notification once you are cleared to post opportunities.
                           </p>
                        </div>
 
