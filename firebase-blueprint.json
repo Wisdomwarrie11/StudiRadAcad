@@ -1,0 +1,131 @@
+{
+  "entities": {
+    "Class": {
+      "title": "Class",
+      "description": "A live or cohort-based class",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Class title" },
+        "thumbnail": { "type": "string", "description": "Image URL or thumbnail" },
+        "category": { "type": "string", "description": "Category (e.g., X-ray, CT)" },
+        "duration": { "type": "string", "description": "Duration or schedule" },
+        "price": { "type": "string", "description": "Payment or price" },
+        "description": { "type": "string", "description": "Objectives or description" },
+        "technologies": { "type": "array", "items": { "type": "string" }, "description": "Technologies used (Google Meet, WhatsApp, etc.)" },
+        "minStudents": { "type": "number", "description": "Minimum students" },
+        "maxStudents": { "type": "number", "description": "Maximum students" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["published", "draft"] }
+      },
+      "required": ["title", "category", "duration", "price", "description"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "A pre-recorded course with modules",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Course title" },
+        "thumbnail": { "type": "string", "description": "Image URL or thumbnail" },
+        "category": { "type": "string", "description": "Category or subject" },
+        "duration": { "type": "string", "description": "Total duration" },
+        "price": { "type": "string", "description": "Price" },
+        "description": { "type": "string", "description": "Objectives or description" },
+        "modules": {
+          "type": "array",
+          "items": { "$ref": "Module" },
+          "description": "Course modules (3-6)"
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["published", "draft"] }
+      },
+      "required": ["title", "category", "duration", "price", "description", "modules"]
+    },
+    "Module": {
+      "title": "Module",
+      "description": "A single module within a course",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Module title" },
+        "videoUrl": { "type": "string", "description": "Google Drive video link" },
+        "pdfUrl": { "type": "string", "description": "Optional PDF/slides link" },
+        "quiz": { "type": "object", "description": "Optional quiz data" }
+      },
+      "required": ["title", "videoUrl"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A user of the platform",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "student"] },
+        "displayName": { "type": "string" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "UserChallengeProfile": {
+      "title": "UserChallengeProfile",
+      "description": "A user's profile for the daily challenge",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "level": { "type": "string", "enum": ["Basic", "Advanced", "Master"] },
+        "purpose": { "type": "string" },
+        "currentDay": { "type": "number" },
+        "lastPlayedDate": { "type": "string", "format": "date-time" },
+        "lastChallengeStartedAt": { "type": "string", "format": "date-time" },
+        "lastShareDate": { "type": "string", "format": "date-time" },
+        "referralCode": { "type": "string" },
+        "scores": { "type": "object" },
+        "totalScore": { "type": "number" },
+        "coins": { "type": "number" },
+        "unlockedDays": { "type": "array", "items": { "type": "number" } },
+        "completedLevels": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["uid", "email", "displayName", "level", "currentDay"]
+    },
+    "EmployerProfile": {
+      "title": "EmployerProfile",
+      "description": "A profile for an employer organization",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "organizationName": { "type": "string" },
+        "fullName": { "type": "string" },
+        "roleInOrg": { "type": "string" },
+        "address": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "website": { "type": "string" },
+        "verified": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "organizationName", "fullName", "verified"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/challenge_profiles/{userId}": {
+      "schema": "UserChallengeProfile",
+      "description": "Daily challenge user profiles"
+    },
+    "/employer_profiles/{userId}": {
+      "schema": "EmployerProfile",
+      "description": "Employer organization profiles"
+    },
+    "/classes": {
+      "schema": "Class",
+      "description": "Collection of live/cohort classes"
+    },
+    "/courses": {
+      "schema": "Course",
+      "description": "Collection of pre-recorded courses"
+    }
+  }
+}

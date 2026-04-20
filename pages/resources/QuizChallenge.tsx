@@ -1,0 +1,205 @@
+
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Calendar, ExternalLink, Flame, Timer, Building2, ShieldCheck, GraduationCap, CheckCircle2 } from "lucide-react";
+
+const QuizChallenge = () => {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [showOrientationModal, setShowOrientationModal] = useState(false);
+
+  useEffect(() => {
+    // Check if user is registered for the challenge
+    const user = sessionStorage.getItem("studiRad_challenge_email") || localStorage.getItem("studiRad_challenge_email");
+    setLoggedIn(!!user);
+  }, []);
+
+  const activities = [
+  
+    {
+      id: 4,
+      title: "Daily Radiography Challenge",
+      date: "Starts Daily",
+      description:
+        "A 6-day intensive challenge tailored to your level. Physics, Technique, MRI, CT and more. Compete for the top spot on the leaderboard!",
+      image: "Radstudent.jpg",
+      link: loggedIn ? "/challenge/dashboard" : "/challenge",
+      badge: loggedIn ? "In Progress" : "New Challenge",
+      isHot: false,
+      disabled: false,
+      buttonText: loggedIn ? "Go to Dashboard" : "Start Challenge"
+    },
+    {
+      id: 3,
+      title: "6 Weeks Locked-In Challenge",
+      date: "Registration Closing Soon",
+      description:
+        "6 weeks of intense studies and assessment designed to push your limits and master core concepts. Final slots available for the winter batch.",
+      image: "LockedIn.jpg",
+      link: "/locked-in",
+      badge: "Final Call",
+      isUrgent: true,
+      disabled: false,
+      buttonText: "Register Now"
+    },
+
+  ];
+
+  return (
+    <div className="bg-slate-50 min-h-screen py-20 mt-16">
+
+      <div className="container mx-auto px-4 max-w-6xl">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">
+            Quiz/Challenge Corner
+          </h2>
+          <p className="text-lg text-slate-600 font-medium">
+Prove to yourself that you got what it takes          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {activities.map((activity) => {
+            const isModal = activity.link === "open-modal";
+            const isInternal = !isModal && activity.link.startsWith("/");
+            const disabled = activity.disabled;
+
+            return (
+              <div
+                key={activity.id}
+                className={`flex flex-col bg-white rounded-3xl overflow-hidden shadow-lg border hover:shadow-2xl transition-all duration-500 relative group/card ${
+                  activity.isHot
+                    ? "border-amber-400 ring-4 ring-amber-100/50"
+                    : activity.isUrgent
+                    ? "border-rose-400 ring-4 ring-rose-100/50"
+                    : "border-slate-100"
+                }`}
+              >
+                {/* Status Ribbons */}
+                {activity.isHot && (
+                  <div className="absolute top-0 left-0 bg-amber-500 text-white text-[10px] font-black px-4 py-1.5 rounded-br-2xl z-20 flex items-center uppercase tracking-widest shadow-md">
+                    <Flame className="mr-1.5 animate-pulse" size={14} /> {activity.id === 6 ? "Essential" : "New"}
+                  </div>
+                )}
+                {activity.isUrgent && (
+                  <div className="absolute top-0 left-0 bg-rose-500 text-white text-[10px] font-black px-4 py-1.5 rounded-br-2xl z-20 flex items-center uppercase tracking-widest shadow-md">
+                    <Timer className="mr-1.5" size={14} /> Closing Soon
+                  </div>
+                )}
+
+                {/* Image Container with Responsive Aspect Ratio */}
+                <div className="relative aspect-[16/10] overflow-hidden bg-slate-200">
+                  <img
+                    src={activity.image}
+                    alt={activity.title}
+                    className="w-full h-full object-cover object-center transition-transform duration-700 group-hover/card:scale-110"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1170&q=80";
+                    }}
+                  />
+                  {/* Subtle Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent opacity-60"></div>
+                  
+                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black text-slate-800 shadow-sm uppercase tracking-widest z-10">
+                    {activity.badge}
+                  </div>
+                </div>
+
+                {/* Content Body */}
+                <div className="flex-1 p-8 flex flex-col">
+                  <div className={`flex items-center text-[10px] font-black mb-4 uppercase tracking-widest ${activity.isUrgent ? 'text-rose-600' : 'text-amber-600'}`}>
+                    <Calendar className="mr-2" size={14} />
+                    {activity.date}
+                  </div>
+
+                  <h3 className="text-xl font-black text-slate-900 mb-3 leading-snug group-hover/card:text-brand-primary transition-colors">
+                    {activity.title}
+                  </h3>
+
+                  <p className="text-slate-500 text-sm mb-8 flex-grow leading-relaxed font-medium line-clamp-3">
+                    {activity.description}
+                  </p>
+
+                  <div className="mt-auto">
+                    {isModal ? (
+                      <button
+                        onClick={() => setShowOrientationModal(true)}
+                        className="inline-flex items-center justify-center w-full px-6 py-4 font-black text-sm rounded-2xl transition-all group bg-amber-500 hover:bg-amber-600 text-white shadow-xl shadow-amber-500/20 active:scale-95"
+                      >
+                        {activity.buttonText}
+                        <ExternalLink
+                          className="ml-2 text-xs opacity-70 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform"
+                          size={14}
+                        />
+                      </button>
+                    ) : isInternal ? (
+                      <Link
+                        to={disabled ? "#" : activity.link}
+                        onClick={(e) => disabled && e.preventDefault()}
+                        className={`inline-flex items-center justify-center w-full px-6 py-4 font-black text-sm rounded-2xl transition-all group ${
+                          activity.isHot
+                            ? "bg-amber-500 hover:bg-amber-600 text-white shadow-xl shadow-amber-500/20"
+                            : activity.isUrgent
+                            ? "bg-rose-500 hover:bg-rose-600 text-white shadow-xl shadow-rose-500/20"
+                            : "bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-slate-900/10"
+                        } ${disabled ? "opacity-50 cursor-not-allowed grayscale" : "active:scale-95"}`}
+                      >
+                        {disabled ? "Past Event" : activity.buttonText}
+                        {!disabled && (
+                          <ExternalLink
+                            className="ml-2 text-xs opacity-70 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform"
+                            size={14}
+                          />
+                        )}
+                      </Link>
+                    ) : (
+                      <a
+                        href={activity.link}
+                        onClick={(e) => disabled && e.preventDefault()}
+                        className={`inline-flex items-center justify-center w-full px-6 py-4 font-black text-sm rounded-2xl transition-all group ${
+                          disabled 
+                          ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                          : "bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-slate-900/10 active:scale-95"
+                        }`}
+                      >
+                        {disabled ? "Archive Closed" : "Learn More"}
+                        {!disabled && (
+                          <ExternalLink
+                            className="ml-2 text-xs opacity-70 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform"
+                            size={14}
+                          />
+                        )}
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Bottom Banner */}
+        <div className="mt-20 p-10 bg-brand-dark rounded-[3rem] text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-accent/10 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
+                <div className="w-16 h-16 bg-white/10 rounded-3xl flex items-center justify-center text-brand-accent">
+                    <CheckCircle2 size={32} />
+                </div>
+                <div className="text-center md:text-left">
+                    <h4 className="text-xl font-black">Registered for a challenge?</h4>
+                    <p className="text-slate-400 font-medium">Log in to track your progress and compete on the leaderboard.</p>
+                </div>
+            </div>
+            <Link 
+              to="/challenge" 
+              className="relative z-10 bg-brand-accent text-brand-dark px-8 py-4 rounded-2xl font-black hover:scale-105 transition-all shadow-xl shadow-brand-accent/20 active:scale-95"
+            >
+                Access Dashboard
+            </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default QuizChallenge;
