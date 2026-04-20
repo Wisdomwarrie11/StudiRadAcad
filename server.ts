@@ -40,7 +40,10 @@ async function initializeAppServer() {
       if (fs.existsSync(distPath)) {
         app.use(express.static(distPath));
         app.use('/assets', express.static(distPath));
-        app.get('*', (req, res) => {
+        app.get('*', (req, res, next) => {
+          if (req.path.startsWith('/api') || req.path.includes('.')) {
+            return next();
+          }
           res.sendFile(path.join(distPath, 'index.html'));
         });
       } else {
