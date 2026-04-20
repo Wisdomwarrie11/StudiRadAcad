@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, Loader2, ArrowRight, ShieldCheck, AlertCircle, CheckCircle } from 'lucide-react';
 import { loginEmployer, resendVerificationEmail } from '../../services/employerService';
 import SEO from '../../components/SEO';
@@ -8,13 +8,21 @@ import { getFriendlyErrorMessage } from '../../src/lib/errorUtils';
 
 const EmployerLogin = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [resending, setResending] = useState(false);
   const [resendStatus, setResendStatus] = useState('');
+  const [justVerified, setJustVerified] = useState(false);
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    if (searchParams.get('verified') === 'true') {
+      setJustVerified(true);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +75,13 @@ const EmployerLogin = () => {
                 <h2 className="text-3xl font-black text-slate-900 mb-2">Employer Sign In</h2>
                 <p className="text-slate-500 font-medium">Manage your facility's opportunities.</p>
               </div>
+
+              {justVerified && !resendStatus && (
+                <div className="mb-6 p-4 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-2xl flex items-center gap-3 text-sm font-bold animate-in fade-in slide-in-from-top-2">
+                   <div className="p-1 bg-emerald-100 rounded-lg"><CheckCircle size={14} /></div>
+                   Email verified successfully! You can now sign in.
+                </div>
+              )}
 
               {resendStatus && (
                 <div className="mb-6 p-4 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-2xl flex items-center gap-3 text-sm font-bold animate-in fade-in slide-in-from-top-2">

@@ -16,7 +16,7 @@ export const sendVerificationEmail = async () => {
     // ActionCodeSettings allows us to specify where to redirect after clicking
     const actionCodeSettings = {
       // The URL to redirect back to. The domain must be whitelisted in Firebase Console.
-      url: window.location.origin + '/employer/login?verified=true',
+      url: window.location.origin + '/#/employer/login?verified=true',
       handleCodeInApp: true,
     };
 
