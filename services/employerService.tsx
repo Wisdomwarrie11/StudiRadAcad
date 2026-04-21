@@ -90,7 +90,7 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
 export const getAllEmployers = async (): Promise<EmployerProfile[]> => {
   try {
     const snapshot = await getDocs(collection(db, COLLECTION));
-    return snapshot.docs.map(doc => ({ ...doc.data() } as EmployerProfile));
+    return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as EmployerProfile));
   } catch (error) {
     console.error("Error fetching all employers:", error);
     return [];
