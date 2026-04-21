@@ -150,6 +150,17 @@ const ScholarshipsPage = () => {
             </div>
 
             <div className="p-10 space-y-12 overflow-y-auto custom-scrollbar">
+              {/* Disclaimer Alert */}
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex gap-4 items-start shadow-sm">
+                 <AlertCircle className="text-amber-600 shrink-0 mt-1" size={18} />
+                 <div>
+                    <h4 className="text-[10px] font-black text-amber-900 uppercase tracking-widest mb-1">Important Safety Notice</h4>
+                    <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                       Please verify the provider and details before applying or sharing personal information. StudiRad acts as a facilitator and will not be responsible for any disputes or issues that may arise. By applying, you agree to our <Link to="/terms" className="underline font-bold">Terms of Service</Link>.
+                    </p>
+                 </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <div className="flex items-center gap-5 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                   <div className="w-12 h-12 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">

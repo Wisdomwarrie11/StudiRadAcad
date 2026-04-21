@@ -312,6 +312,19 @@ const PostOpportunity = () => {
            </div>
 
         </form>
+
+        {/* Disclaimer for Employers */}
+        <div className="mt-12 bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm flex items-start gap-6">
+           <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 shrink-0">
+              <ShieldCheck size={24} />
+           </div>
+           <div>
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Employer Disclosure & Agreement</h4>
+              <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                 By publishing this opportunity, you agree to provide accurate information and honor the requirements listed. StudiRad manually verifies all facility registrations. We reserve the right to remove non-compliant listings. Both parties (Employer and Applicant) are expected to perform their own due diligence as StudiRad will not be responsible for any issues arising from interactions on the platform. Review our <Link to="/terms" className="text-brand-primary underline underline-offset-4">Terms & Conditions</Link>.
+              </p>
+           </div>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { db, auth, adminDb } from '../firebase';
 import { EmployerProfile } from '../types';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, sendEmailVerification, deleteUser } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, sendEmailVerification, deleteUser, updateProfile } from 'firebase/auth';
 import { collection, doc, setDoc, getDoc, addDoc, getDocs, query, where, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 
 const COLLECTION = 'employer_profiles';
@@ -191,6 +191,12 @@ export const registerEmployer = async (email: string, pass: string, data: Omit<E
     const uid = cred.user?.uid;
     
     if (!uid) throw new Error("Auth failed");
+
+    // Set the Display Name in Firebase Auth so the email template is personalized
+    // This helps prevent the email from being flagged as spam/broken on mobile
+    await updateProfile(cred.user, {
+      displayName: data.organizationName
+    });
 
     // Send verification email immediately
     await sendVerificationEmail();

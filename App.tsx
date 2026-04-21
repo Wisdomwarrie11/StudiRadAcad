@@ -9,6 +9,9 @@ import Home from './pages/Home';
 import AboutPage from './pages/AboutPage';
 import ActivitiesPage from './pages/ActivitiesPage';
 import FreshersPage from './pages/FreshersPage';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+
 // Resources
 import BlogPage from './pages/resources/BlogPage';
 import MaterialsPage from './pages/resources/MaterialsPage';
@@ -40,6 +43,7 @@ import EmployerDashboard from './pages/opportunities/EmployerDashboard';
 import PostOpportunity from './pages/opportunities/PostOpportunity';
 import EmployerVerify from './pages/opportunities/EmployerVerify';
 import EditOpportunity from './pages/opportunities/EditOpportunity';
+import EmployerForgotPassword from './pages/opportunities/EmployerForgotPassword';
 
 // Admin Imports
 import AdminLoginPage from './pages/admin/AdminLoginPage';
@@ -120,6 +124,9 @@ const App: React.FC = () => {
           <Route path="about" element={<AboutPage />} />
           <Route path="webinars" element={<ActivitiesPage />} />
           <Route path="freshers" element={<FreshersPage />} />
+          <Route path="terms" element={<TermsOfService />} />
+          <Route path="terms" element={<TermsOfService />} />
+
 
 
           {/* Resources */}
@@ -164,7 +171,7 @@ const App: React.FC = () => {
             {/* Employer Portal */}
             <Route path="employer/register" element={<EmployerRegistration />} />
           <Route path="employer/login" element={<EmployerLogin />} />
-          <Route path="employer/verify" element={<EmployerVerify />} />
+          <Route path="employer/forgot-password" element={<EmployerForgotPassword />} />
           <Route path="employer/dashboard" element={<EmployerDashboard />} />
           <Route path="employer/post" element={<PostOpportunity />} />
           <Route path="employer/edit/:type/:id" element={<EditOpportunity />} />
@@ -185,14 +192,17 @@ const App: React.FC = () => {
        
 
         {/* Admin Protected Routes */}
-        <Route path="admin" element={<AdminLayout />}>
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="materials" element={<AdminMaterialsPage />} />
-          <Route path="review" element={<AdminReviewPage />} />
-          <Route path="blog" element={<AdminBlogPage />} />
-          <Route path="blog" element={<AdminCreateCoursePage />} />
-          <Route path="post-opportunity" element={<AdminPostOpportunity />} />
-     </Route>
+        <Route path="admin/login" element={<AdminLoginPage />} />
+        <Route path="admin/dashboard" element={<AdminDashboard />} />
+        <Route path="admin/materials" element={<AdminMaterialsPage />} />
+        <Route path="admin/review" element={<AdminReviewPage />} />
+        <Route path="admin/blog" element={<AdminBlogPage />} />
+        <Route path="admin/post-opportunity" element={<AdminPostOpportunity />} />
+        <Route path="admin/classes" element={<AdminClassesPage />} />
+        <Route path="admin/create-class" element={<AdminCreateClassPage />} />
+        <Route path="admin/courses" element={<AdminCoursesPage />} />
+        <Route path="admin/create-course" element={<AdminCreateCoursePage />} />
+        <Route path="admin/employers-database" element={<AdminEmployerList />} />
       </Routes>
 
       {/* <InstallPWA /> */}

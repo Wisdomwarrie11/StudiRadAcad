@@ -17,7 +17,8 @@ import {
   Trash2,
   AlertCircle,
   Building2,
-  Edit2
+  Edit2,
+  Home
 } from 'lucide-react';
 import { getCurrentEmployer, getMyOpportunities, deleteEmployerOpportunity } from '../../services/employerService';
 import { EmployerProfile } from '../../types';
@@ -104,6 +105,27 @@ const EmployerDashboard = () => {
       
       <div className="container mx-auto px-4 max-w-6xl">
         
+        {/* Verification Status Banner */}
+        {!profile?.isVerified && (
+          <div className="mb-8 bg-amber-50 border-2 border-amber-200 rounded-[2rem] p-6 flex flex-col md:flex-row items-center gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600 shrink-0">
+               <Clock size={32} className="animate-pulse" />
+            </div>
+            <div className="text-center md:text-left flex-grow">
+               <h3 className="text-xl font-black text-amber-900 mb-1">Facility Verification Pending</h3>
+               <p className="text-sm text-amber-800 font-medium leading-relaxed">
+                  Your organization details are currently undergoing a **24-hour verification review** by our team. 
+                  You can browse the dashboard, but you will only be able to publish live opportunities once verification is complete.
+               </p>
+            </div>
+            <div className="shrink-0 w-full md:w-auto">
+               <div className="px-6 py-2 bg-amber-200/50 text-amber-900 rounded-xl text-[10px] font-black uppercase tracking-widest text-center">
+                  Status: Reviewing
+               </div>
+            </div>
+          </div>
+        )}
+
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
             <div>
@@ -124,6 +146,13 @@ const EmployerDashboard = () => {
             </div>
             
             <div className="flex gap-3">
+               <Link 
+                to="/" 
+                className="p-4 bg-white text-slate-400 hover:text-brand-primary rounded-2xl border border-slate-100 transition-colors shadow-sm"
+                title="Back to Home"
+               >
+                 <Home size={20} />
+               </Link>
                <Link 
                 to="/employer/post" 
                 className="bg-brand-primary text-white px-6 py-4 rounded-2xl font-black text-sm flex items-center gap-2 hover:bg-brand-dark transition-all shadow-xl shadow-brand-primary/10"

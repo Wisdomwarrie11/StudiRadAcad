@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Building2, User, Mail, Lock, Phone, Globe, ShieldCheck, Loader2, ArrowRight, AlertCircle, CheckCircle, Eye, EyeOff, MapPin } from 'lucide-react';
+import { Building2, User, Mail, Lock, Phone, Clock, Globe, ShieldCheck, Loader2, ArrowRight, AlertCircle, CheckCircle, Eye, EyeOff, MapPin } from 'lucide-react';
 import { registerEmployer } from '../../services/employerService';
 import SEO from '../../components/SEO';
 import { getFriendlyErrorMessage } from '../../src/lib/errorUtils';
@@ -254,16 +254,9 @@ const EmployerRegistration = () => {
                       </div>
 
                       <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100 flex items-start gap-3">
-                        <AlertCircle className="text-amber-600 shrink-0" size={18} />
+                        <Clock className="text-amber-600 shrink-0" size={18} />
                         <p className="text-[10px] text-amber-800 font-bold leading-relaxed uppercase tracking-tight">
-                          IMPORTANT: Use the email and password approved by your facility. Ensure you are authorized to use this contact information for registration.
-                        </p>
-                      </div>
-
-                      <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100 flex items-start gap-3">
-                        <AlertCircle className="text-amber-600 shrink-0" size={18} />
-                        <p className="text-[10px] text-amber-800 font-bold leading-relaxed uppercase tracking-tight">
-                          IMPORTANT: Use the email and password approved by your facility. Ensure you are authorized to use this contact information for registration.
+                          Verification Notice: After email verification, all new facilities undergo a mandatory **24-hour verification process** by our admin team before being allowed to post live opportunities.
                         </p>
                       </div>
 
