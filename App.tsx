@@ -68,7 +68,7 @@ import LocumLogin from './pages/opportunities/LocumLogin';
 import CommunitySection from './components/home/CommunitySection';
 import AdminCreateCoursePage from './pages/admin/AdminCreateCoursePage';
 import CoursesPage from './pages/classes/CoursesPage';
-import WebinarsPage from './pages/resources/webinarsPage';
+import WebinarsPage from './pages/resources/WebinarsPage';
 
 // Scroll Restoration Component
 const ScrollToTop = () => {
