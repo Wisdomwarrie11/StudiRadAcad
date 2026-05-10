@@ -25,7 +25,10 @@ import {
   Clock,
   User,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Sparkles,
+  CheckCircle2,
+  BookOpen
 } from "lucide-react";
 
 const MaterialsPage = () => {
@@ -47,9 +50,9 @@ const MaterialsPage = () => {
     "Pathology",
     "CT",
     "MRI",
-    "Ultrasound",
+    "USS",
     "Projects",
-    "Past Questions",
+    "Professional Exams PQ",
     "Others"
   ];
 
@@ -63,7 +66,7 @@ const MaterialsPage = () => {
     MRI: { main: "text-amber-600", light: "bg-amber-50", border: "border-amber-200" },
     USS: { main: "text-teal-600", light: "bg-teal-50", border: "border-teal-200" },
     Projects: { main: "text-indigo-600", light: "bg-indigo-50", border: "border-indigo-200" },
-    "Past Questions": { main: "text-slate-600", light: "bg-slate-100", border: "border-slate-200" },
+    "Professional Exams PQ": { main: "text-slate-600", light: "bg-slate-100", border: "border-slate-200" },
     Others: { main: "text-pink-600", light: "bg-pink-50", border: "border-pink-200" },
     All: { main: "text-brand-primary", light: "bg-slate-100", border: "border-slate-200" },
   };
@@ -98,17 +101,17 @@ const MaterialsPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // const handleShare = (title: string) => {
-  //   if (navigator.share) {
-  //     navigator.share({
-  //       title: `${title} | StudiRad Material`,
-  //       text: "Check out this radiography study material!",
-  //       url: window.location.href,
-  //     });
-  //   } else {
-  //     alert("Link copied to clipboard!");
-  //   }
-  // };
+  const handleShare = (title: string) => {
+    if (navigator.share) {
+      navigator.share({
+        title: `${title} | StudiRad Material`,
+        text: "Check out this radiography study material!",
+        url: window.location.href,
+      });
+    } else {
+      alert("Link copied to clipboard!");
+    }
+  };
 
   const formatDate = (date: any) => {
     if (!date) return "Recently";
@@ -132,7 +135,7 @@ const MaterialsPage = () => {
               <Book size={14} /> Academic Repository
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight mb-3">
-              Learning <span className="text-brand-primary">Resources</span>
+              Learning <span className="text-brand-primary">Materials</span>
             </h1>
             <p className="text-lg text-slate-500 font-medium leading-relaxed">
               Explore our curated library of radiography textbooks, lecture notes, and clinical guides contributed by experts.
@@ -153,6 +156,71 @@ const MaterialsPage = () => {
               <Plus size={18} /> Contribute
             </button>
           </div>
+        </div>
+
+        {/* --- STUDIFOCUS SHOWCASE --- */}
+        <div className="mb-16 relative overflow-hidden bg-brand-dark rounded-[3.5rem] p-10 md:p-16 text-white group">
+           {/* Background Accents */}
+           <div className="absolute top-0 right-0 w-80 h-80 bg-brand-accent/20 rounded-full blur-[80px] -mr-32 -mt-32 transition-transform group-hover:scale-110 duration-700"></div>
+           <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-primary/20 rounded-full blur-[60px] -ml-32 -mb-32"></div>
+
+           <div className="relative z-10 grid lg:grid-cols-2 items-center gap-12">
+              <div className="space-y-8">
+                 <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/10 rounded-full text-brand-accent border border-white/5">
+                    <Sparkles size={18} className="animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">New Product Launch</span>
+                 </div>
+                 
+                 <h2 className="text-4xl md:text-5xl font-black leading-tight tracking-tight">
+                    Introducing <span className="text-brand-accent italic">StudiFocus</span> <br />
+                    <span className="text-white/60 font-light">Your Personal Library Shell.</span>
+                 </h2>
+                 
+                 <p className="text-lg text-slate-300 font-medium leading-relaxed max-w-xl">
+                    StudiFocus is a library-micmicking environment designed to supercharge your focus. Organize your files, set study goals, and master your radiography modules in a real-library interface.
+                 </p>
+
+                 <div className="flex flex-wrap gap-6 pt-4">
+                    <div className="flex items-center gap-3">
+                       <CheckCircle2 size={24} className="text-brand-accent" />
+                       <span className="text-sm font-bold tracking-wide">Library-Mimicking UI</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                       <CheckCircle2 size={24} className="text-brand-accent" />
+                       <span className="text-sm font-bold tracking-wide">Focus Timer Tools</span>
+                    </div>
+                 </div>
+
+                 <a 
+                   href="https://studifocus.vercel.app" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   className="inline-flex items-center gap-3 bg-brand-accent text-brand-dark px-10 py-5 rounded-2xl font-black uppercase tracking-[0.2em] shadow-2xl shadow-brand-accent/20 hover:scale-105 active:scale-95 transition-all"
+                 >
+                   Access StudiFocus <ExternalLink size={18} />
+                 </a>
+              </div>
+
+              <div className="hidden lg:block relative">
+                 <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border border-white/10 transform -rotate-2 group-hover:rotate-0 transition-transform duration-700">
+                    <img 
+                      src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1200&q=80" 
+                      alt="StudiFocus Library Shell" 
+                      className="w-full aspect-[4/3] object-cover"
+                    />
+                    <div className="absolute inset-0 bg-brand-dark/20 flex items-center justify-center backdrop-blur-[2px]">
+                       <div className="p-8 bg-white/95 rounded-2xl text-brand-dark text-center shadow-2xl">
+                          <BookOpen size={40} className="mx-auto mb-2 text-brand-primary" />
+                          <h4 className="font-black text-xl">StudiFocus</h4>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Library Interface</p>
+                       </div>
+                    </div>
+                 </div>
+                 {/* Decorative background shapes */}
+                 <div className="absolute -inset-4 border border-white/5 rounded-[3rem] -z-10 transform rotate-1"></div>
+                 <div className="absolute -inset-8 border border-white/5 rounded-[3rem] -z-20 transform -rotate-1"></div>
+              </div>
+           </div>
         </div>
 
         {/* Search & Filter Bar */}
@@ -244,13 +312,13 @@ const MaterialsPage = () => {
                     <div className={`p-4 rounded-2xl ${config.light} ${config.main} shadow-inner`}>
                       {isLink ? <LinkIcon size={24} /> : <FileText size={24} />}
                     </div>
-                    {/* <button 
+                    <button 
                       onClick={() => handleShare(m.title)}
                       className="p-2 text-slate-300 hover:text-brand-primary hover:bg-brand-primary/5 rounded-xl transition-colors"
                       title="Share Material"
                     >
                       <Share2 size={18} />
-                    </button> */}
+                    </button>
                   </div>
 
                   <div className="flex-grow">
@@ -344,8 +412,8 @@ const MaterialsPage = () => {
       </div>
 
       <MaterialReaderModal
-        show={showReader}
-        onHide={() => setShowReader(false)}
+        isOpen={showReader}
+        onClose={() => setShowReader(false)}
         material={selectedMaterial}
       />
     </div>

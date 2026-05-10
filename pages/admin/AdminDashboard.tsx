@@ -90,8 +90,21 @@ const AdminDashboard = () => {
       icon: Users,
       path: '/admin/employers-database',
       color: 'bg-purple-50 text-purple-600'
-    }
-  
+    },
+    {
+      title: 'Webinars & Events',
+      description: 'Push upcoming webinars and manage session archives.',
+      icon: Calendar,
+      path: '/admin/events',
+      color: 'bg-amber-50 text-amber-600'
+    },
+    {
+      title: "Settings",
+      description: "Manage admin preferences and account details.",
+      icon: Settings,
+      path: "#",
+      color: "bg-gray-100 text-gray-600",
+    },
   ];
 
   return (

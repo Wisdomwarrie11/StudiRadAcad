@@ -68,6 +68,7 @@ import LocumLogin from './pages/opportunities/LocumLogin';
 import CommunitySection from './components/home/CommunitySection';
 import AdminCreateCoursePage from './pages/admin/AdminCreateCoursePage';
 import CoursesPage from './pages/classes/CoursesPage';
+import WebinarsPage from './pages/resources/webinarsPage';
 
 // Scroll Restoration Component
 const ScrollToTop = () => {
@@ -131,6 +132,7 @@ const App: React.FC = () => {
 
           {/* Resources */}
           <Route path="resources/blog" element={<BlogPage />} />
+          <Route path="resources/webinars" element={<WebinarsPage />} />
           <Route path="resources/news" element={<NewsPage />} />
           <Route path="resources/materials" element={<MaterialsPage />} />
           <Route path="resources/submit-material" element={<SubmitMaterialPage />} />
