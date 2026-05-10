@@ -47,7 +47,7 @@ const Header: React.FC = () => {
                 <Link to="/resources/materials" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Learning Resources</Link>
                 <Link to="/resources/QuizChallenge" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Radiography Quiz</Link>
                 <Link to="/classes" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Classes</Link>
-                <Link to="/webinars" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Webinars</Link>
+                <Link to="/resources/webinars" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Webinars</Link>
                 <Link to="/resources/blog" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Blog</Link>
 
                 </div>
