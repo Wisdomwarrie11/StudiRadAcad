@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
-const { useLocation, useNavigate } = ReactRouterDOM;
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaShoppingCart, 

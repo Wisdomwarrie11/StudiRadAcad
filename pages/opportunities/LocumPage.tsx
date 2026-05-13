@@ -1,8 +1,6 @@
 
 import React, { useState } from 'react';
-// Fix: Use type-safe module import workaround for missing useNavigate export
-import * as ReactRouterDOM from 'react-router-dom';
-const { useNavigate } = ReactRouterDOM as any;
+import { useNavigate } from 'react-router-dom';
 import { MapPin, Search, UserPlus, Stethoscope, Briefcase, Filter, Loader2, AlertCircle, Calendar } from 'lucide-react';
 import { NIGERIA_STATES_LGAS } from '../../data/nigerianData';
 import { searchLocums } from '../../services/locumService';

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, CheckCircle, AlertTriangle, Activity, Loader2, Calendar } from 'lucide-react';
@@ -93,6 +94,7 @@ const LocumRegistration = () => {
   };
 
   const handleRegister = async () => {
+    const nav = navigate;
     setIsSubmitting(true);
     try {
         const now = new Date();
@@ -118,7 +120,7 @@ const LocumRegistration = () => {
         if (success) {
             // Save simple auth to local storage for the dashboard
             localStorage.setItem('studiRad_locum_email', personalInfo.email);
-            navigate('/locum/dashboard');
+            nav('/locum/dashboard');
         } else {
             alert("Registration failed. Please contact support.");
         }

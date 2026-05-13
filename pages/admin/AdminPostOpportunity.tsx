@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Briefcase, 
@@ -12,10 +13,13 @@ import {
   Pencil,
   List,
   Search,
-  AlertCircle
+  AlertCircle,
+  X,
+  Save
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { adminDb } from '../../firebase';
+import { Link, useNavigate } from 'react-router-dom';
+import { adminDb, adminAuth } from '../../firebase';
+import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 
 type OpportunityType = 'job' | 'internship' | 'scholarship';
 type ViewMode = 'create' | 'manage';
@@ -42,73 +46,50 @@ const getField = (item: any, candidates: string[]) => {
   return '';
 };
 
-const parseCSV = (csvText: string) => {
-  const text = csvText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  const lines = text.split('\n').filter(l => l.trim());
-  if (lines.length < 2) return [];
-
-  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
-  const result = [];
-  
-  for(let i=1; i<lines.length; i++) {
-    const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-    if(currentLine.length > 0) {
-      const obj: any = {};
-      headers.forEach((header, index) => {
-         let val = currentLine[index]?.trim() || '';
-         if (val.startsWith('"') && val.endsWith('"')) {
-           val = val.slice(1, -1).replace(/""/g, '"');
-         }
-         obj[header] = val;
-      });
-      result.push(obj);
-    }
-  }
-  return result;
-};
-
 // Helper to calculate deadline status
 const getDeadlineStatus = (deadline: string | null | undefined) => {
   if (!deadline) return { label: 'Not specified', color: 'text-slate-500 bg-slate-100' };
   
   const deadlineDate = new Date(deadline);
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Compare dates only
+  today.setHours(0, 0, 0, 0); 
   
   if (isNaN(deadlineDate.getTime())) return { label: 'Invalid Date', color: 'text-slate-400 bg-slate-50' };
   
-  if (deadlineDate < today) return { label: 'Expired', color: 'text-red-600 bg-red-50 border border-red-100' };
+  if (deadlineDate < today) return { label: 'Expired', color: 'text-red-600 bg-red-50 border-red-100' };
   return { label: 'Active', color: 'text-emerald-600 bg-emerald-50 border border-emerald-100' };
 };
 
-export default function AdminPostOpportunity() {
+/* Fix: Implemented the full AdminPostOpportunity component to resolve return type errors */
+export function AdminPostOpportunity() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = adminAuth.onAuthStateChanged((user) => {
+      if (!user) {
+        navigate('/admin/login');
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
+
   const [activeType, setActiveType] = useState<OpportunityType>('job');
-  const [viewMode, setViewMode] = useState<ViewMode>('manage'); // Default to manage to see list first
+  const [viewMode, setViewMode] = useState<ViewMode>('manage'); 
   
-  const [isBatchMode, setIsBatchMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [scheduledDate, setScheduledDate] = useState('');
   
-  // Selection States
   const [selectedRole, setSelectedRole] = useState(ROLES[0]);
   const [customRole, setCustomRole] = useState('');
   
   const [selectedReq, setSelectedReq] = useState(REQUIREMENTS_OPTIONS[0]);
   const [customReq, setCustomReq] = useState('');
 
-  // Data & Edit State
   const [editingId, setEditingId] = useState<string | null>(null);
   const [existingPosts, setExistingPosts] = useState<any[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Batch Paste State
-  const [pastedText, setPastedText] = useState('');
-
-  // File Upload Ref
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Form State
   const [formData, setFormData] = useState({
     organization: '', 
     location: '',
@@ -122,30 +103,25 @@ export default function AdminPostOpportunity() {
     requirements: [] as string[]
   });
 
-  // --- Real-time Fetching ---
   useEffect(() => {
     setLoadingPosts(true);
     const collectionName = activeType === 'job' ? 'jobs' : activeType === 'internship' ? 'internships' : 'scholarships';
     
-    // Connect to Firestore using onSnapshot for Real-time updates
-    const unsubscribe = adminDb.collection(collectionName)
-      .orderBy('createdAt', 'desc')
-      .onSnapshot((snapshot: any) => {
-        const posts = snapshot.docs.map((doc: any) => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setExistingPosts(posts);
-        setLoadingPosts(false);
-      }, (err: any) => {
-        console.error("Error fetching posts:", err);
-        setLoadingPosts(false);
-      });
+    const q = query(collection(adminDb, collectionName), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const posts = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setExistingPosts(posts);
+      setLoadingPosts(false);
+    }, (err) => {
+      console.error("Error fetching posts:", err);
+      setLoadingPosts(false);
+    });
 
     return () => unsubscribe();
   }, [activeType]);
-
-  // --- Actions ---
 
   const addRequirement = () => {
     let reqToAdd = selectedReq;
@@ -181,10 +157,8 @@ export default function AdminPostOpportunity() {
     });
     setSelectedRole(ROLES[0]);
     setCustomRole('');
-    setPastedText('');
     setEditingId(null);
     setScheduledDate('');
-    setIsBatchMode(false);
     setViewMode(nextView);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -203,7 +177,6 @@ export default function AdminPostOpportunity() {
       requirements: post.requirements || []
     });
 
-    // Handle Title Mapping
     if (ROLES.includes(post.title)) {
       setSelectedRole(post.title);
       setCustomRole('');
@@ -214,16 +187,14 @@ export default function AdminPostOpportunity() {
 
     setScheduledDate(post.scheduledFor || '');
     setEditingId(post.id);
-    setIsBatchMode(false);
-    setViewMode('create'); // Switch to form view
+    setViewMode('create');
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to permanently delete this opportunity? It will be removed from the public page immediately.")) return;
-
+    if (!window.confirm("Are you sure you want to delete this opportunity?")) return;
     try {
       const collectionName = activeType === 'job' ? 'jobs' : activeType === 'internship' ? 'internships' : 'scholarships';
-      await adminDb.collection(collectionName).doc(id).delete();
+      await deleteDoc(doc(adminDb, collectionName, id));
     } catch (error) {
       console.error("Error deleting post:", error);
       alert("Failed to delete post.");
@@ -248,19 +219,19 @@ export default function AdminPostOpportunity() {
         ...formData,
         title,
         postedAt: new Date().toISOString(),
-        ...(editingId ? {} : { createdAt: new Date() }), // Keep original creation date on edit
+        createdAt: editingId ? undefined : new Date(),
         scheduledFor: scheduledDate || null,
         opportunityType: activeType
       };
 
       if (editingId) {
-        await adminDb.collection(collectionName).doc(editingId).update(payload);
-        alert("Updated successfully! Changes are live.");
-        resetForm('manage'); // Return to list
+        await updateDoc(doc(adminDb, collectionName, editingId), payload);
+        alert("Updated successfully!");
+        resetForm('manage');
       } else {
-        await adminDb.collection(collectionName).add(payload);
-        alert("Posted successfully! It is now visible to users.");
-        resetForm('manage'); // Return to list
+        await addDoc(collection(adminDb, collectionName), payload);
+        alert("Posted successfully!");
+        resetForm('manage');
       }
       
     } catch (error) {
@@ -271,534 +242,227 @@ export default function AdminPostOpportunity() {
     }
   };
 
-  // --- Batch Upload Logic ---
-  const uploadBatchData = async (data: any[]) => {
-    if (!Array.isArray(data) || data.length === 0) {
-      alert('Data is empty or incorrect format.');
-      setIsSubmitting(false);
-      return;
-    }
-
-    const collectionName = activeType === 'job' ? 'jobs' : activeType === 'internship' ? 'internships' : 'scholarships';
-    let successCount = 0;
-
-    try {
-      for (const item of data) {
-         const title = getField(item, ['title', 'role', 'position', 'job title']) || 'Untitled Opportunity';
-         const organization = getField(item, ['organization', 'company', 'provider', 'hospital', 'name']);
-         
-         if (!organization && !title) continue;
-
-         let requirements = getField(item, ['requirements', 'eligibility']) || [];
-         if (typeof requirements === 'string') {
-             requirements = requirements.split('|').map((s: string) => s.trim());
-         }
-
-         const payload = {
-           title,
-           organization: organization || 'Unknown Organization',
-           location: getField(item, ['location', 'city', 'address']) || '',
-           description: getField(item, ['description', 'desc', 'details']) || '',
-           deadline: getField(item, ['deadline', 'date', 'closing date']) || '',
-           contactInfo: getField(item, ['contactInfo', 'contact', 'email', 'phone', 'contact address']) || '',
-           link: getField(item, ['link', 'url', 'website', 'apply link']) || '',
-           salaryOrAmount: getField(item, ['salaryOrAmount', 'salary', 'amount', 'stipend', 'pay']) || '',
-           type: getField(item, ['type', 'employment type']) || 'Full-time',
-           duration: getField(item, ['duration', 'length', 'period']) || '',
-           requirements: Array.isArray(requirements) ? requirements : [],
-           
-           postedAt: new Date().toISOString(),
-           createdAt: new Date(),
-           scheduledFor: scheduledDate || null,
-           opportunityType: activeType
-         };
-
-         await adminDb.collection(collectionName).add(payload);
-         successCount++;
-      }
-      
-      alert(`Batch Upload Complete! Created ${successCount} entries.`);
-      resetForm('manage'); // Go to list to see new items
-      
-    } catch (error) {
-      console.error("Batch upload error:", error);
-      alert('Error processing batch upload.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setIsSubmitting(true);
-      file.text().then(text => {
-        let data: any[] = [];
-        if (file.name.toLowerCase().endsWith('.json')) data = JSON.parse(text);
-        else if (file.name.toLowerCase().endsWith('.csv')) data = parseCSV(text);
-        uploadBatchData(data);
-      }).catch(err => {
-        alert("Error reading file");
-        setIsSubmitting(false);
-      });
-    }
-  };
-
-  const handlePasteUpload = () => {
-    if (!pastedText.trim()) return;
-    setIsSubmitting(true);
-    try {
-      const text = pastedText.trim();
-      let data = text.startsWith('[') ? JSON.parse(text) : parseCSV(text);
-      uploadBatchData(data);
-    } catch (error) {
-      alert('Error parsing text.');
-      setIsSubmitting(false);
-    }
-  };
-
-  // Filtered Posts
-  const filteredPosts = existingPosts.filter(post => 
-    post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    post.organization.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPosts = existingPosts.filter(p => 
+    p.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    p.organization?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <div className="bg-brand-dark text-white pt-24 pb-12 px-6 shadow-lg rounded-b-[2rem]">
-        <div className="max-w-5xl mx-auto">
-          <Link to="/admin/dashboard" className="inline-flex items-center text-slate-300 hover:text-white mb-4 transition-colors">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
-          </Link>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-            <div>
-               <h1 className="text-3xl font-bold">Opportunities</h1>
-               <p className="text-slate-400">Post and Manage Jobs, Internships, and Grants.</p>
-            </div>
+    <div className="min-h-screen bg-slate-50 pt-28 pb-20 px-4">
+      <div className="container mx-auto max-w-5xl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h2 className="text-3xl font-black text-slate-900">Opportunity Manager</h2>
+            <p className="text-slate-500">Post and manage jobs, internships, and scholarships.</p>
           </div>
+          <Link to="/admin/dashboard" className="flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold">
+            <ArrowLeft size={18} /> Back to Dashboard
+          </Link>
         </div>
-      </div>
 
-      <div className="max-w-5xl mx-auto px-6 -mt-8">
-        
-        {/* Main Controls Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden mb-8">
-          
-          {/* Tabs */}
-          <div className="flex border-b border-slate-100">
-            {['job', 'internship', 'scholarship'].map((type) => (
+        {/* View Switcher & Type Tabs */}
+        <div className="flex flex-col md:flex-row justify-between gap-4 mb-8">
+          <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-200">
+            {(['manage', 'create'] as ViewMode[]).map(v => (
+              <button
+                key={v}
+                onClick={() => setViewMode(v)}
+                className={`px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${viewMode === v ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}
+              >
+                {v === 'manage' ? 'Manage Existing' : 'Post New'}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-200">
+            {(['job', 'internship', 'scholarship'] as OpportunityType[]).map(type => (
               <button
                 key={type}
-                onClick={() => { setActiveType(type as OpportunityType); resetForm('manage'); }}
-                className={`flex-1 py-4 text-center font-bold capitalize transition-all ${
-                  activeType === type 
-                    ? 'text-brand-primary border-b-4 border-brand-primary bg-slate-50' 
-                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-                }`}
+                onClick={() => { setActiveType(type); if(viewMode === 'manage') resetForm('manage'); }}
+                className={`px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${activeType === type ? 'bg-amber-500 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}
               >
                 {type}s
               </button>
             ))}
           </div>
+        </div>
 
-          {/* View Toggle */}
-          <div className="p-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center flex-wrap gap-4">
-            <div className="flex bg-white rounded-lg p-1 shadow-sm border border-slate-200">
-               <button
-                 onClick={() => resetForm('manage')}
-                 className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${
-                   viewMode === 'manage' ? 'bg-slate-800 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'
-                 }`}
-               >
-                 <List className="w-4 h-4" /> Manage Posted
-               </button>
-               <button
-                 onClick={() => resetForm('create')}
-                 className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${
-                   viewMode === 'create' ? 'bg-slate-800 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'
-                 }`}
-               >
-                 {editingId ? <Pencil className="w-4 h-4" /> : <Plus className="w-4 h-4" />} 
-                 {editingId ? 'Edit Post' : 'Post New'}
-               </button>
+        {viewMode === 'manage' ? (
+          <div className="space-y-6">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                type="text" 
+                placeholder={`Search ${activeType}s...`}
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 outline-none focus:border-amber-500 shadow-sm"
+              />
             </div>
-            
-            {viewMode === 'manage' && (
-              <div className="relative w-full md:w-64">
-                <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
-                <input 
-                  type="text" 
-                  placeholder="Search opportunities..." 
-                  className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-primary"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+
+            {loadingPosts ? (
+              <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-amber-500" /></div>
+            ) : filteredPosts.length === 0 ? (
+              <div className="py-20 text-center bg-white rounded-3xl border border-slate-200">
+                <AlertCircle className="mx-auto mb-4 text-slate-300" size={48} />
+                <p className="text-slate-500 font-bold">No {activeType}s found matching your search.</p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {filteredPosts.map(post => {
+                  const status = getDeadlineStatus(post.deadline);
+                  return (
+                    <div key={post.id} className="bg-white p-6 rounded-3xl border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 group hover:border-amber-300 transition-all">
+                      <div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <h3 className="font-black text-slate-900 text-lg">{post.title}</h3>
+                          <span className={`text-[9px] uppercase font-black px-2 py-0.5 rounded-full border ${status.color}`}>{status.label}</span>
+                        </div>
+                        <p className="text-slate-500 text-sm font-bold">{post.organization}</p>
+                        <div className="mt-2 flex items-center gap-4 text-[11px] text-slate-400 font-bold">
+                          <span className="flex items-center gap-1"><Clock size={12} /> {new Date(post.postedAt).toLocaleDateString()}</span>
+                          <span className="flex items-center gap-1"><Plus size={12} /> {post.location}</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <button onClick={() => handleEdit(post)} className="p-3 bg-slate-50 hover:bg-amber-50 text-slate-500 hover:text-amber-600 rounded-2xl transition-all border border-slate-100"><Pencil size={18} /></button>
+                        <button onClick={() => handleDelete(post.id)} className="p-3 bg-slate-50 hover:bg-red-50 text-slate-500 hover:text-red-600 rounded-2xl transition-all border border-slate-100"><Trash2 size={18} /></button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-200 space-y-8 animate-in fade-in slide-in-from-bottom-4">
+            <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+              {editingId ? <Pencil className="text-amber-500" /> : <Plus className="text-amber-500" />}
+              {editingId ? `Edit ${activeType}` : `Create New ${activeType}`}
+            </h3>
 
-          {/* --- CONTENT AREA --- */}
-          <div className="p-0">
-            
-            {/* 1. MANAGE LISTINGS VIEW */}
-            {viewMode === 'manage' && (
-              <div className="min-h-[400px]">
-                 {loadingPosts ? (
-                   <div className="flex flex-col items-center justify-center py-20">
-                     <Loader2 className="w-10 h-10 text-brand-primary animate-spin mb-4" />
-                     <p className="text-slate-500">Loading {activeType}s...</p>
-                   </div>
-                 ) : filteredPosts.length === 0 ? (
-                   <div className="text-center py-20 px-6">
-                     <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                       <AlertCircle className="w-8 h-8 text-slate-400" />
-                     </div>
-                     <h3 className="text-lg font-bold text-slate-700">No {activeType}s found</h3>
-                     <p className="text-slate-500 mb-6">You haven't posted any {activeType}s yet, or none match your search.</p>
-                     <button onClick={() => setViewMode('create')} className="text-brand-primary font-bold hover:underline">
-                        Create your first post
-                     </button>
-                   </div>
-                 ) : (
-                   <div className="divide-y divide-slate-100">
-                     {filteredPosts.map(post => {
-                       const status = getDeadlineStatus(post.deadline);
-                       return (
-                        <div key={post.id} className="p-6 hover:bg-slate-50 transition-colors group flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                           <div className="flex-grow">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h4 className="font-bold text-slate-800 text-lg group-hover:text-brand-primary transition-colors">
-                                  {post.title}
-                                </h4>
-                                <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded-full ${status.color}`}>
-                                  {status.label}
-                                </span>
-                                {post.scheduledFor && (
-                                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
-                                    <Clock className="w-3 h-3" /> Scheduled
-                                  </span>
-                                )}
-                              </div>
-                              
-                              <div className="text-sm text-slate-500 flex flex-wrap items-center gap-x-4 gap-y-1">
-                                 <span className="flex items-center gap-1">
-                                   {activeType === 'scholarship' ? <GraduationCap className="w-3 h-3"/> : <Briefcase className="w-3 h-3"/>}
-                                   {post.organization}
-                                 </span>
-                                 <span className="flex items-center gap-1">
-                                   <Clock className="w-3 h-3"/> Posted: {new Date(post.postedAt).toLocaleDateString()}
-                                 </span>
-                                 {post.salaryOrAmount && (
-                                   <span className="bg-slate-100 px-2 py-0.5 rounded text-xs text-slate-700 font-medium">
-                                     {post.salaryOrAmount}
-                                   </span>
-                                 )}
-                              </div>
-                           </div>
-
-                           <div className="flex items-center gap-2 shrink-0">
-                              <button 
-                                onClick={() => handleEdit(post)}
-                                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-brand-primary hover:text-white hover:border-brand-primary transition-colors flex items-center gap-2 shadow-sm"
-                              >
-                                 <Pencil className="w-3.5 h-3.5" /> Edit
-                              </button>
-                              <button 
-                                onClick={() => handleDelete(post.id)}
-                                className="px-3 py-2 bg-white border border-slate-200 text-red-500 rounded-lg hover:bg-red-50 hover:border-red-200 transition-colors shadow-sm"
-                                title="Delete"
-                              >
-                                 <Trash2 className="w-4 h-4" />
-                              </button>
-                           </div>
-                        </div>
-                       );
-                     })}
-                   </div>
-                 )}
-              </div>
-            )}
-
-            {/* 2. CREATE / EDIT VIEW */}
-            {viewMode === 'create' && (
+            <div className="grid md:grid-cols-2 gap-6">
               <div>
-                {/* Mode Toggle (Batch vs Single) - Hide during Edit */}
-                {!editingId && (
-                   <div className="bg-slate-50/50 p-4 border-b border-slate-100 flex justify-between items-center">
-                      <div className="flex gap-2">
-                         <button 
-                           onClick={() => setIsBatchMode(false)}
-                           className={`text-xs uppercase font-bold px-3 py-1.5 rounded ${!isBatchMode ? 'bg-slate-200 text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
-                         >
-                           Single Entry
-                         </button>
-                         <button 
-                           onClick={() => setIsBatchMode(true)}
-                           className={`text-xs uppercase font-bold px-3 py-1.5 rounded ${isBatchMode ? 'bg-slate-200 text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
-                         >
-                           Batch Upload
-                         </button>
-                      </div>
-                   </div>
-                )}
-
-                {editingId && (
-                  <div className="bg-amber-50 p-3 border-b border-amber-100 flex justify-between items-center px-6">
-                     <span className="text-amber-800 font-bold text-sm flex items-center gap-2">
-                       <Pencil className="w-4 h-4" /> You are editing an existing post
-                     </span>
-                     <button onClick={() => resetForm('manage')} className="text-xs font-bold text-amber-700 hover:underline">
-                       Cancel & Go Back
-                     </button>
-                  </div>
-                )}
-
-                <div className="p-8">
-                  {isBatchMode && !editingId ? (
-                    // --- BATCH UPLOAD UI ---
-                    <div className="space-y-6">
-                      <div 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 hover:bg-slate-100 py-12 text-center cursor-pointer transition-colors"
-                      >
-                        <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".csv,.json" />
-                        <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-                        <h4 className="font-bold text-slate-700">Upload JSON or CSV</h4>
-                        <p className="text-sm text-slate-500">Click to browse files</p>
-                      </div>
-                      
-                      <div className="relative">
-                         <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200"></div></div>
-                         <div className="relative flex justify-center"><span className="bg-white px-2 text-xs text-slate-400 font-bold uppercase">OR PASTE TEXT</span></div>
-                      </div>
-
-                      <textarea
-                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg font-mono text-xs h-32 focus:outline-none focus:border-brand-primary"
-                        placeholder="Paste JSON or CSV data here..."
-                        value={pastedText}
-                        onChange={(e) => setPastedText(e.target.value)}
-                      ></textarea>
-
-                      <div className="flex justify-end">
-                        <button
-                          onClick={handlePasteUpload}
-                          disabled={!pastedText.trim() || isSubmitting}
-                          className="px-6 py-2 bg-slate-800 text-white rounded-lg font-bold hover:bg-slate-900 disabled:opacity-50 flex items-center gap-2"
-                        >
-                            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin"/> : <Upload className="w-4 h-4"/>} Process
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    // --- SINGLE FORM UI ---
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                          <label className="block text-sm font-bold text-slate-700 mb-2">Title / Role</label>
-                          <div className="flex flex-col gap-2">
-                            <select 
-                              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
-                              value={selectedRole}
-                              onChange={(e) => setSelectedRole(e.target.value)}
-                            >
-                              {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                            </select>
-                            {selectedRole === 'Others' && (
-                              <input 
-                                type="text"
-                                placeholder="Specify Role"
-                                className="w-full p-3 bg-white border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
-                                value={customRole}
-                                onChange={(e) => setCustomRole(e.target.value)}
-                                required
-                              />
-                            )}
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-slate-700 mb-2">Organization / Company</label>
-                          <input 
-                            type="text" 
-                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
-                            value={formData.organization}
-                            onChange={e => setFormData({...formData, organization: e.target.value})}
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid md:grid-cols-2 gap-6">
-                         {activeType !== 'scholarship' && (
-                           <div>
-                             <label className="block text-sm font-bold text-slate-700 mb-2">Location</label>
-                             <input 
-                               type="text" 
-                               className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
-                               value={formData.location}
-                               onChange={e => setFormData({...formData, location: e.target.value})}
-                               required
-                             />
-                           </div>
-                         )}
-                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">
-                               {activeType === 'job' ? 'Salary' : activeType === 'scholarship' ? 'Grant Amount' : 'Stipend'}
-                            </label>
-                            <input 
-                              type="text" 
-                              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
-                              value={formData.salaryOrAmount}
-                              onChange={e => setFormData({...formData, salaryOrAmount: e.target.value})}
-                            />
-                         </div>
-                      </div>
-
-                      <div className="grid md:grid-cols-2 gap-6">
-                         <div>
-                           <label className="block text-sm font-bold text-slate-700 mb-2">Deadline (Optional)</label>
-                           <input 
-                              type="date" 
-                              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
-                              value={formData.deadline}
-                              onChange={e => setFormData({...formData, deadline: e.target.value})}
-                           />
-                         </div>
-                         {/* Dynamic Field based on Type */}
-                         {activeType === 'internship' && (
-                            <div>
-                               <label className="block text-sm font-bold text-slate-700 mb-2">Duration</label>
-                               <input 
-                                 type="text" 
-                                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
-                                 placeholder="e.g. 1 Year"
-                                 value={formData.duration}
-                                 onChange={e => setFormData({...formData, duration: e.target.value})}
-                               />
-                            </div>
-                         )}
-                         {activeType === 'job' && (
-                            <div>
-                               <label className="block text-sm font-bold text-slate-700 mb-2">Job Type</label>
-                               <select 
-                                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
-                                 value={formData.type}
-                                 onChange={e => setFormData({...formData, type: e.target.value})}
-                               >
-                                 <option>Full-time</option>
-                                 <option>Part-time</option>
-                                 <option>Contract</option>
-                               </select>
-                            </div>
-                         )}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Description (Optional)</label>
-                        <textarea 
-                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg h-32 outline-none focus:border-brand-primary"
-                          value={formData.description}
-                          onChange={e => setFormData({...formData, description: e.target.value})}
-                        ></textarea>
-                      </div>
-
-                      {/* Requirements Builder */}
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Requirements (Optional)</label>
-                        <div className="flex gap-2 mb-3">
-                           <select 
-                             className="flex-grow p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
-                             value={selectedReq}
-                             onChange={(e) => setSelectedReq(e.target.value)}
-                           >
-                             {REQUIREMENTS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                           </select>
-                           {selectedReq === 'Others' && (
-                             <input 
-                               type="text" 
-                               className="flex-grow p-3 bg-white border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
-                               placeholder="Type requirement..."
-                               value={customReq}
-                               onChange={(e) => setCustomReq(e.target.value)}
-                             />
-                           )}
-                           <button type="button" onClick={addRequirement} className="bg-slate-800 text-white p-3 rounded-lg hover:bg-slate-900">
-                             <Plus className="w-5 h-5" />
-                           </button>
-                        </div>
-                        <div className="space-y-2">
-                           {formData.requirements.map((req, idx) => (
-                             <div key={idx} className="flex justify-between items-center bg-white border border-slate-200 p-2 rounded px-4">
-                               <span className="text-sm text-slate-700">{req}</span>
-                               <button type="button" onClick={() => removeRequirement(idx)} className="text-red-400 hover:text-red-600">
-                                 <Trash2 className="w-4 h-4" />
-                               </button>
-                             </div>
-                           ))}
-                        </div>
-                      </div>
-
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                           <label className="block text-sm font-bold text-slate-700 mb-2">Contact Info</label>
-                           <input 
-                             type="text" 
-                             className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
-                             value={formData.contactInfo}
-                             onChange={e => setFormData({...formData, contactInfo: e.target.value})}
-                           />
-                        </div>
-                        <div>
-                           <label className="block text-sm font-bold text-slate-700 mb-2">Application Link (Optional)</label>
-                           <input 
-                             type="url" 
-                             className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
-                             value={formData.link}
-                             onChange={e => setFormData({...formData, link: e.target.value})}
-                           />
-                        </div>
-                      </div>
-                      
-                      {/* Schedule (Create Mode Only) */}
-                      {!editingId && (
-                        <div>
-                           <label className="block text-sm font-bold text-slate-700 mb-2">Schedule Post (Optional)</label>
-                           <input 
-                             type="datetime-local" 
-                             className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-brand-primary"
-                             value={scheduledDate}
-                             onChange={(e) => setScheduledDate(e.target.value)}
-                           />
-                        </div>
-                      )}
-
-                      <div className="pt-6 border-t border-slate-100 flex justify-end gap-4">
-                         <button 
-                           type="button" 
-                           onClick={() => resetForm('create')} 
-                           className="px-6 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-lg transition-colors"
-                         >
-                           Reset Form
-                         </button>
-                         <button 
-                           type="submit" 
-                           disabled={isSubmitting}
-                           className="px-8 py-3 bg-brand-dark text-white font-bold rounded-lg hover:bg-brand-primary shadow-lg transition-all flex items-center gap-2"
-                         >
-                           {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin"/> : <Check className="w-5 h-5"/>}
-                           {editingId ? 'Update Post' : 'Post Now'}
-                         </button>
-                      </div>
-
-                    </form>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Role / Title</label>
+                <div className="flex gap-2">
+                  <select 
+                    value={selectedRole}
+                    onChange={e => setSelectedRole(e.target.value)}
+                    className="flex-1 p-4 rounded-2xl border-2 border-slate-100 font-bold bg-slate-50"
+                  >
+                    {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                  {selectedRole === 'Others' && (
+                    <input 
+                      type="text" value={customRole}
+                      onChange={e => setCustomRole(e.target.value)}
+                      placeholder="Specify role..."
+                      className="flex-1 p-4 rounded-2xl border-2 border-slate-100 font-bold"
+                    />
                   )}
                 </div>
               </div>
-            )}
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Organization</label>
+                <input 
+                  type="text" value={formData.organization}
+                  onChange={e => setFormData({...formData, organization: e.target.value})}
+                  placeholder="e.g. Lagoon Hospital"
+                  className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Location</label>
+                <input 
+                  type="text" value={formData.location}
+                  onChange={e => setFormData({...formData, location: e.target.value})}
+                  placeholder="e.g. Lagos, Nigeria"
+                  className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Deadline</label>
+                <input 
+                  type="date" value={formData.deadline}
+                  onChange={e => setFormData({...formData, deadline: e.target.value})}
+                  className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold bg-slate-50"
+                />
+              </div>
+            </div>
 
-          </div>
-        </div>
+            <div>
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Description</label>
+              <textarea 
+                rows={5} value={formData.description}
+                onChange={e => setFormData({...formData, description: e.target.value})}
+                placeholder="Details about the opportunity..."
+                className="w-full p-6 rounded-[2rem] border-2 border-slate-100 font-medium"
+              />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Requirements</label>
+                <div className="flex gap-2 mb-4">
+                  <select 
+                    value={selectedReq}
+                    onChange={e => setSelectedReq(e.target.value)}
+                    className="flex-1 p-3 rounded-xl border border-slate-200 font-bold text-xs"
+                  >
+                    {REQUIREMENTS_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                  <button 
+                    type="button"
+                    onClick={() => { if(selectedReq) { setFormData({...formData, requirements: [...formData.requirements, selectedReq]}); } }}
+                    className="bg-slate-900 text-white px-4 rounded-xl font-black text-xs"
+                  >
+                    Add
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {formData.requirements.map((req, i) => (
+                    <span key={i} className="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2">
+                      {req}
+                      <X size={12} className="cursor-pointer hover:text-red-500" onClick={() => setFormData({...formData, requirements: formData.requirements.filter((_, idx) => idx !== i)})} />
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Application Link / Email</label>
+                <input 
+                  type="text" value={formData.link}
+                  onChange={e => setFormData({...formData, link: e.target.value})}
+                  placeholder="e.g. https://hospital.com/careers or hr@hospital.com"
+                  className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-4 pt-6">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 bg-amber-500 text-white py-5 rounded-2xl font-black text-lg shadow-xl hover:bg-amber-600 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+              >
+                {isSubmitting ? <Loader2 className="animate-spin" /> : editingId ? <><Save size={20} /> Update Opportunity</> : <><Plus size={20} /> Post Opportunity</>}
+              </button>
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={() => resetForm('manage')}
+                  className="px-8 bg-slate-100 text-slate-500 py-5 rounded-2xl font-black hover:bg-slate-200 transition-all"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default AdminPostOpportunity;

@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
-// Fix: Use type-safe module import workaround for missing useLocation export
-import * as ReactRouterDOM from 'react-router-dom';
-const { useLocation, Link } = ReactRouterDOM as any;
+import { useLocation, Link } from 'react-router-dom';
 import { FaStar, FaChevronDown, FaSearch, FaFilter } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
@@ -119,10 +117,10 @@ export default function ClassesPage() {
             Interactive Learning
           </span>
           <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl">
-            Live Radiography <span className="text-brand-primary">Classes</span>
+            Live Radiography <span className="text-brand-primary">Cohorts</span>
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-slate-300 md:text-xl font-medium">
-            Join expert-led live sessions, and get real-time feedback on your progress.
+            Join expert-led live sessions, participate in group discussions, and get real-time feedback on your progress.
           </p>
         </div>
       </div>

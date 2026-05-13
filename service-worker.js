@@ -39,15 +39,22 @@ self.addEventListener('fetch', (event) => {
             // Clone the response because it's a stream
             const responseToCache = response.clone();
 
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                // Dynamically cache visited pages
-                cache.put(event.request, responseToCache);
-              });
+            // Skip chrome-extension and other non-http schemes
+            if (event.request.url.startsWith('http')) {
+              caches.open(CACHE_NAME)
+                .then((cache) => {
+                  // Dynamically cache visited pages
+                  cache.put(event.request, responseToCache);
+                });
+            }
 
             return response;
           }
-        );
+        ).catch(() => {
+          // If fetch fails (offline or network error), and we don't have it in cache, 
+          // we could return a fallback here if we wanted.
+          // For now, just let it fail gracefully.
+        });
       })
   );
 });

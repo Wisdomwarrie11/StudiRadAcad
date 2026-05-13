@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Power, MapPin, Calendar, User, LogOut, CheckCircle2, Edit } from 'lucide-react';
@@ -12,8 +13,9 @@ const LocumDashboard = () => {
 
   useEffect(() => {
     const email = localStorage.getItem('studiRad_locum_email');
+    const nav = navigate;
     if (!email) {
-        navigate('/locum');
+        nav('/locum');
         return;
     }
 
@@ -22,7 +24,7 @@ const LocumDashboard = () => {
         if (data) {
             setProfile(data);
         } else {
-            navigate('/locum/register'); // Profile not found
+            nav('/locum/register'); // Profile not found
         }
         setLoading(false);
     };

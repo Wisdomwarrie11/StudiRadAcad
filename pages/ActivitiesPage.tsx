@@ -15,37 +15,61 @@ const ActivitiesPage = () => {
     setLoggedIn(!!user);
   }, []);
 
-  const webinars = [
+  const activities = [
     {
-      id: 1,
-      title: "Inside Radiography: Stepping into MRI - The roles. The reality. The rewards",
-      date: "17th February 2026",
+      id: 6,
+      title: "Welcome to Radiography Orientation",
+      date: "Feb 6, 2026 • 7:00 PM",
       description:
-        "An astute professional shares his journey from Nigeria to becoming a clinical leader in MRI in a well-known hospital in England. In this webinar, he shares roadmaps and advice for young radiographers and students",
-      image: "Episode 2.jpg",
-      link: "https://meeting.zoho.com/meeting/public/videoprv?recordingId=e12039b9018aa0c2709dfaa42214bb4606c2c8723052b050829ca64e516ef474&x-meeting-org=912113804",
-      badge: "Completed",
+        "An exclusive orientation for new-year radiography students and prospects. Get the roadmap to a successful radiography career and connect with mentors.",
+      image: "orientation.jpg",
+      link: "open-modal",
+      badge: "Registration Open",
+      isHot: true,
+      disabled: false,
+      buttonText: "Register for Orientation"
+    },
+    {
+      id: 5,
+      title: "Organization Portal Live!",
+      date: "New Feature",
+      description:
+        "Hospitals and medical imaging facilities can now register to post jobs, internships, and scholarships directly to our verified student pool.",
+      image: "colab.jpeg",
+      link: "/employer/register",
+      badge: "Employer Portal",
+      isHot: true,
+      disabled: false,
+      buttonText: "Register Facility"
+    },
+    {
+      id: 4,
+      title: "Daily Radiography Challenge",
+      date: "Starts Daily",
+      description:
+        "A 6-day intensive challenge tailored to your level. Physics, Technique, MRI, CT and more. Compete for the top spot on the leaderboard!",
+      image: "Radstudent.jpg",
+      link: loggedIn ? "/challenge/dashboard" : "/challenge",
+      badge: loggedIn ? "In Progress" : "New Challenge",
       isHot: false,
       disabled: false,
-      buttonText: "View Archive"
+      buttonText: loggedIn ? "Go to Dashboard" : "Start Challenge"
+    },
+    {
+      id: 3,
+      title: "6 Weeks Locked-In Challenge",
+      date: "Registration Closing Soon",
+      description:
+        "6 weeks of intense studies and assessment designed to push your limits and master core concepts. Final slots available for the winter batch.",
+      image: "LockedIn.jpg",
+      link: "/locked-in",
+      badge: "Final Call",
+      isUrgent: true,
+      disabled: false,
+      buttonText: "Register Now"
     },
     {
       id: 2,
-      title: "Welcome to Radiography Orientation",
-      date: "Past Event",
-      description:
-        "An exclusive orientation for new-year radiography students and prospects. Get the roadmap to a successful radiography career and connect with mentors.",
-      image: "WelcomeToRad.jpeg",
-      link: "https://meeting.zoho.com/meeting/public/videoprv?recordingId=d773f3a431c4b27afb901502197896b774f11af4e97e79853e5ccfc38974ccff&x-meeting-org=912113804",
-      badge: "Completed",
-      isHot: false,
-      disabled: false,
-      buttonText: "View Archive"
-    },
-
-
-    {
-      id: 3,
       title: "Inside Radiography: The NeuroImaging Experience",
       date: "Past Event",
       description:
@@ -57,7 +81,7 @@ const ActivitiesPage = () => {
       buttonText: "View Archive"
     },
     {
-      id: 4,
+      id: 1,
       title: "From Induction to Impact: Navigating the Journey",
       date: "Past Event",
       description:
@@ -85,15 +109,15 @@ const ActivitiesPage = () => {
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">
-            Our Webinars
+            Activities & Events
           </h2>
           <p className="text-lg text-slate-600 font-medium">
-            Stay ahead with our orientation programs, and specialized educational events.
+            Stay ahead with our community challenges, orientation programs, and specialized educational events.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {webinars.map((activity) => {
+          {activities.map((activity) => {
             const isModal = activity.link === "open-modal";
             const isInternal = !isModal && activity.link.startsWith("/");
             const disabled = activity.disabled;
@@ -215,7 +239,24 @@ const ActivitiesPage = () => {
         </div>
 
         {/* Bottom Banner */}
-       
+        <div className="mt-20 p-10 bg-brand-dark rounded-[3rem] text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-accent/10 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
+                <div className="w-16 h-16 bg-white/10 rounded-3xl flex items-center justify-center text-brand-accent">
+                    <CheckCircle2 size={32} />
+                </div>
+                <div className="text-center md:text-left">
+                    <h4 className="text-xl font-black">Registered for a challenge?</h4>
+                    <p className="text-slate-400 font-medium">Log in to track your progress and compete on the leaderboard.</p>
+                </div>
+            </div>
+            <Link 
+              to="/challenge" 
+              className="relative z-10 bg-brand-accent text-brand-dark px-8 py-4 rounded-2xl font-black hover:scale-105 transition-all shadow-xl shadow-brand-accent/20 active:scale-95"
+            >
+                Access Dashboard
+            </Link>
+        </div>
       </div>
     </div>
   );

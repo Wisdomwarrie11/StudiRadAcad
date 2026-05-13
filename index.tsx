@@ -1,12 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
-
-import { inject } from "@vercel/analytics";
-
-// Initialize Vercel Analytics
-inject();
-
+// import "./index.css";
 
 // Polyfill for navigator.language to prevent internal destructuring errors in some vendor scripts
 if (typeof window !== 'undefined' && !window.navigator.language) {
@@ -15,14 +10,13 @@ if (typeof window !== 'undefined' && !window.navigator.language) {
 }
 
 const container = document.getElementById("root");
-
 if (container) {
   const root = createRoot(container);
   root.render(<App />);
 }
 
-// src/index.tsx
-if ('serviceWorker' in navigator) {
+// Register service worker (only in production or if explicitly enabled)
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
       .then(registration => {
@@ -31,5 +25,12 @@ if ('serviceWorker' in navigator) {
       .catch(registrationError => {
         console.log('SW registration failed: ', registrationError);
       });
+  });
+} else if (!import.meta.env.PROD && 'serviceWorker' in navigator) {
+  // Explicitly unregister sw in development to prevent caching issues
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    for (const registration of registrations) {
+      registration.unregister();
+    }
   });
 }

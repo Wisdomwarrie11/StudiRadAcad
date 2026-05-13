@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import * as ReactRouterDOM from "react-router-dom";
-const { useNavigate } = ReactRouterDOM as any;
+import { useNavigate } from "react-router-dom";
 import { db } from "../../firebase";
 import MaterialReaderModal from "../../components/resources/MaterialReaderModal";
 import SEO from "../../components/SEO";
@@ -159,8 +158,7 @@ const MaterialsPage = () => {
         </div>
 
         {/* --- STUDIFOCUS SHOWCASE --- */}
-        <div className="mb-16 relative overflow-hidden bg-brand-dark rounded-[3.5rem] p-10 md:p-16 text-white group">
-           {/* Background Accents */}
+        {/* <div className="mb-16 relative overflow-hidden bg-brand-dark rounded-[3.5rem] p-10 md:p-16 text-white group">
            <div className="absolute top-0 right-0 w-80 h-80 bg-brand-accent/20 rounded-full blur-[80px] -mr-32 -mt-32 transition-transform group-hover:scale-110 duration-700"></div>
            <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-primary/20 rounded-full blur-[60px] -ml-32 -mb-32"></div>
 
@@ -216,12 +214,11 @@ const MaterialsPage = () => {
                        </div>
                     </div>
                  </div>
-                 {/* Decorative background shapes */}
                  <div className="absolute -inset-4 border border-white/5 rounded-[3rem] -z-10 transform rotate-1"></div>
                  <div className="absolute -inset-8 border border-white/5 rounded-[3rem] -z-20 transform -rotate-1"></div>
               </div>
            </div>
-        </div>
+        </div> */}
 
         {/* Search & Filter Bar */}
         <div className="bg-white p-6 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white mb-10">

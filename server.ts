@@ -1,9 +1,9 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
-import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
 import cors from "cors";
-import fs from "fs";
+import fs from "node:fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
