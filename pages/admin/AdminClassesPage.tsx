@@ -24,6 +24,13 @@ const AdminClassesPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
+  useEffect(() => {
+    const unsubscribeAuth = adminAuth.onAuthStateChanged((user) => {
+      if (!user) {
+        navigate('/admin/login');
+      }
+    });
+
     const q = query(collection(db, 'classes'), orderBy('createdAt', 'desc'));
     const unsubscribeClasses = onSnapshot(q, (snapshot) => {
       const classesData = snapshot.docs.map(doc => ({
@@ -37,6 +44,11 @@ const AdminClassesPage = () => {
       setLoading(false);
     });
 
+    return () => {
+      unsubscribeAuth();
+      unsubscribeClasses();
+    };
+  }, [navigate]);
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this class?')) {
@@ -169,9 +181,12 @@ const AdminClassesPage = () => {
                       </td>
                       <td className="px-8 py-6 text-right">
                         <div className="flex justify-end gap-2">
-                          <button className="p-2 text-slate-400 hover:text-brand-primary transition-colors">
+                          <Link 
+                            to={`/admin/edit-class/${c.id}`}
+                            className="p-2 text-slate-400 hover:text-brand-primary transition-colors"
+                          >
                             <Edit size={18} />
-                          </button>
+                          </Link>
                           <button 
                             onClick={() => handleDelete(c.id)}
                             className="p-2 text-slate-400 hover:text-red-500 transition-colors"

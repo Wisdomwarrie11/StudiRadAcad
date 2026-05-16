@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Save, 
@@ -19,7 +19,7 @@ import {
   Upload,
   X
 } from 'lucide-react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage, adminAuth } from '../../firebase';
 import SEO from '../../components/SEO';
@@ -33,7 +33,11 @@ interface Module {
 
 const AdminCreateCoursePage = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEdit = !!id;
+
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(isEdit);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -46,17 +50,66 @@ const AdminCreateCoursePage = () => {
     duration: '',
     price: '',
     description: '',
-    status: 'published'
+    status: 'ongoing',
+    level: 'Beginner',
+    registrationLink: '',
+    isPaid: false
   });
 
   const [modules, setModules] = useState<Module[]>([
-    { title: '', videoUrl: '', pdfUrl: '' },
-    { title: '', videoUrl: '', pdfUrl: '' },
     { title: '', videoUrl: '', pdfUrl: '' }
   ]);
 
   const [expandedModule, setExpandedModule] = useState<number | null>(0);
 
+  useEffect(() => {
+    const unsubscribeAuth = adminAuth.onAuthStateChanged((user) => {
+      if (!user) {
+        navigate('/admin/login');
+      }
+    });
+
+    if (isEdit) {
+      const fetchCourse = async () => {
+        try {
+          const docRef = doc(db, 'courses', id);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setFormData({
+              title: data.title || '',
+              thumbnail: data.thumbnail || '',
+              category: data.category || '',
+              duration: data.duration || '',
+              price: data.price || '',
+              description: data.description || '',
+              status: data.status || 'ongoing',
+              level: data.level || 'Beginner',
+              registrationLink: data.registrationLink || '',
+              isPaid: data.price !== 'Free'
+            });
+            if (data.modules && data.modules.length > 0) {
+              setModules(data.modules);
+            }
+            if (data.thumbnail) {
+              setImagePreview(data.thumbnail);
+            }
+          } else {
+            setError('Course not found');
+            navigate('/admin/courses');
+          }
+        } catch (err) {
+          console.error("Error fetching course:", err);
+          setError('Failed to load course details.');
+        } finally {
+          setFetching(false);
+        }
+      };
+      fetchCourse();
+    }
+
+    return () => unsubscribeAuth();
+  }, [navigate, id, isEdit]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -71,14 +124,14 @@ const AdminCreateCoursePage = () => {
   };
 
   const handleAddModule = () => {
-    if (modules.length < 6) {
+    if (modules.length < 10) {
       setModules([...modules, { title: '', videoUrl: '', pdfUrl: '' }]);
       setExpandedModule(modules.length);
     }
   };
 
   const handleRemoveModule = (index: number) => {
-    if (modules.length > 3) {
+    if (modules.length > 1) {
       const newModules = modules.filter((_, i) => i !== index);
       setModules(newModules);
       if (expandedModule === index) setExpandedModule(null);
@@ -97,17 +150,25 @@ const AdminCreateCoursePage = () => {
     setError('');
 
     // Validation
-    if (!formData.title || !formData.category || !formData.duration || !formData.price || !formData.description) {
+    if (!formData.title || !formData.category || !formData.duration || !formData.description) {
       setError('Please fill in all required course details.');
       setLoading(false);
       return;
     }
 
-    const invalidModules = modules.some(m => !m.title || !m.videoUrl);
-    if (invalidModules) {
-      setError('Each module must have a title and a video URL.');
+    if (formData.isPaid && !formData.price) {
+      setError('Please specify the price for paid courses.');
       setLoading(false);
       return;
+    }
+
+    if (formData.status === 'ongoing') {
+      const invalidModules = modules.some(m => !m.title || !m.videoUrl);
+      if (invalidModules) {
+        setError('Each module must have a title and a video URL for ongoing courses.');
+        setLoading(false);
+        return;
+      }
     }
 
     try {
@@ -137,23 +198,41 @@ const AdminCreateCoursePage = () => {
         thumbnailUrl = await getDownloadURL(uploadResult.ref);
       }
 
-      await addDoc(collection(db, 'courses'), {
+      const courseData = {
         ...formData,
+        price: formData.isPaid ? formData.price : 'Free',
         thumbnail: thumbnailUrl,
-        modules,
-        createdAt: serverTimestamp()
-      });
+        modules: formData.status === 'ongoing' ? modules : [],
+        updatedAt: serverTimestamp()
+      };
+
+      if (isEdit) {
+        await updateDoc(doc(db, 'courses', id), courseData);
+      } else {
+        await addDoc(collection(db, 'courses'), {
+          ...courseData,
+          createdAt: serverTimestamp()
+        });
+      }
 
       setSuccess(true);
       setTimeout(() => {
         navigate('/admin/courses');
       }, 2000);
     } catch (err) {
-      console.error("Error publishing course:", err);
-      setError('Failed to publish course. Please try again.');
+      console.error("Error saving course:", err);
+      setError(`Failed to ${isEdit ? 'update' : 'publish'} course. Please try again.`);
       setLoading(false);
     }
   };
+
+  if (fetching) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 pt-32 pb-20 px-4">
@@ -164,18 +243,18 @@ const AdminCreateCoursePage = () => {
           <Link to="/admin/courses" className="flex items-center gap-2 text-slate-500 hover:text-brand-primary transition-colors mb-4 font-bold text-sm uppercase tracking-widest">
             <ArrowLeft size={16} /> Back to Courses
           </Link>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">Publish New Course</h1>
-          <p className="text-slate-500 font-medium">Create a structured video course with 3-6 modules.</p>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight">{isEdit ? 'Edit' : 'Publish New'} Course</h1>
+          <p className="text-slate-500 font-medium tracking-tight">{isEdit ? 'Update existing' : 'Create a new'} course. Coming soon courses don't require modules initially.</p>
         </div>
 
         {error && (
-          <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-2xl flex items-center gap-3 text-sm font-bold">
+          <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl flex items-center gap-3 text-sm font-bold">
             <AlertCircle size={20} /> {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-8 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl flex items-center gap-3 text-sm font-bold">
+          <div className="mb-8 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-2xl flex items-center gap-3 text-sm font-bold">
             <CheckCircle2 size={20} /> Course published successfully! Redirecting...
           </div>
         )}
@@ -185,9 +264,27 @@ const AdminCreateCoursePage = () => {
             {/* Left Column: Course Details */}
             <div className="space-y-8">
               <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
-                <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
-                  <Layers size={20} className="text-brand-primary" /> Course Info
-                </h3>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                    <Layers size={20} className="text-brand-primary" /> Course Info
+                  </h3>
+                  <div className="flex bg-slate-100 p-1 rounded-xl">
+                    <button 
+                      type="button"
+                      onClick={() => setFormData({...formData, status: 'ongoing'})}
+                      className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${formData.status === 'ongoing' ? 'bg-white text-brand-primary shadow-sm' : 'text-slate-400'}`}
+                    >
+                      Ongoing
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setFormData({...formData, status: 'coming-soon'})}
+                      className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${formData.status === 'coming-soon' ? 'bg-white text-amber-500 shadow-sm' : 'text-slate-400'}`}
+                    >
+                      Soon
+                    </button>
+                  </div>
+                </div>
                 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Course Title *</label>
@@ -210,7 +307,7 @@ const AdminCreateCoursePage = () => {
                       onChange={e => setFormData({...formData, category: e.target.value})}
                       className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold transition-all appearance-none"
                     >
-                      <option value="">Select Category</option>
+                      <option value="">Select</option>
                       <option value="X-ray">X-ray</option>
                       <option value="CT">CT</option>
                       <option value="MRI">MRI</option>
@@ -219,23 +316,78 @@ const AdminCreateCoursePage = () => {
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Price *</label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                      <input 
-                        type="text"
-                        required
-                        placeholder="Free or ₦5,000"
-                        value={formData.price}
-                        onChange={e => setFormData({...formData, price: e.target.value})}
-                        className="w-full pl-10 pr-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold transition-all"
-                      />
-                    </div>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Level *</label>
+                    <select 
+                      required
+                      value={formData.level}
+                      onChange={e => setFormData({...formData, level: e.target.value})}
+                      className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold transition-all appearance-none"
+                    >
+                      <option value="Beginner">Beginner</option>
+                      <option value="Intermediate">Intermediate</option>
+                      <option value="Advanced">Advanced</option>
+                    </select>
                   </div>
                 </div>
 
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Pricing Model:</label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                          type="radio" 
+                          checked={!formData.isPaid}
+                          onChange={() => setFormData({...formData, isPaid: false, price: 'Free'})}
+                          className="w-4 h-4 text-brand-primary focus:ring-brand-primary"
+                        />
+                        <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Free</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                          type="radio" 
+                          checked={formData.isPaid}
+                          onChange={() => setFormData({...formData, isPaid: true, price: ''})}
+                          className="w-4 h-4 text-brand-primary focus:ring-brand-primary"
+                        />
+                        <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Paid</span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  {formData.isPaid && (
+                    <div className="space-y-2 mt-2 animate-in fade-in slide-in-from-top-2">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Amount (e.g. ₦15,000)</label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                        <input 
+                          type="text"
+                          required={formData.isPaid}
+                          placeholder="₦0,000"
+                          value={formData.price}
+                          onChange={e => setFormData({...formData, price: e.target.value})}
+                          className="w-full pl-10 pr-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold transition-all"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {formData.status === 'coming-soon' && (
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Registration/Notify Link (Optional)</label>
+                    <input 
+                      type="url"
+                      placeholder="https://..."
+                      value={formData.registrationLink}
+                      onChange={e => setFormData({...formData, registrationLink: e.target.value})}
+                      className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold transition-all"
+                    />
+                  </div>
+                )}
+
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Total Duration *</label>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Duration Info *</label>
                   <div className="relative">
                     <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                     <input 
@@ -270,8 +422,7 @@ const AdminCreateCoursePage = () => {
                             <div className="w-12 h-12 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center mx-auto mb-3">
                               <Upload size={20} />
                             </div>
-                            <p className="text-xs font-bold text-slate-400">Click to upload or drag and drop</p>
-                            <p className="text-[10px] text-slate-300 mt-1 uppercase tracking-widest">JPG, PNG up to 5MB</p>
+                            <p className="text-xs font-bold text-slate-400">Click to upload or drag</p>
                           </div>
                         )}
                         <input 
@@ -314,111 +465,122 @@ const AdminCreateCoursePage = () => {
               </div>
             </div>
 
-            {/* Right Column: Modules */}
+            {/* Right Column: Modules (Only if ongoing) */}
             <div className="space-y-8">
-              <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+              <div className={`bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6 transition-all duration-500 ${formData.status === 'coming-soon' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
                 <div className="flex justify-between items-center">
                   <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
                     <PlayCircle size={20} className="text-brand-primary" /> Course Modules
                   </h3>
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    {modules.length} / 6
+                    {modules.length} / 10
                   </span>
                 </div>
 
-                <div className="space-y-4">
-                  {modules.map((module, idx) => (
-                    <div key={idx} className="border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
+                {formData.status === 'coming-soon' ? (
+                  <div className="p-10 text-center space-y-4">
+                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-amber-500">
+                      <Clock size={32} />
+                    </div>
+                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Coming Soon Courses don't require modules yet.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-4">
+                      {modules.map((module, idx) => (
+                        <div key={idx} className="border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedModule(expandedModule === idx ? null : idx)}
+                            className="w-full flex items-center justify-between p-5 bg-slate-50/50 hover:bg-slate-50 transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center text-xs font-black">
+                                {idx + 1}
+                              </div>
+                              <span className="font-bold text-slate-700 truncate max-w-[180px]">
+                                {module.title || `Module ${idx + 1}`}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {modules.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveModule(idx);
+                                  }}
+                                  className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              )}
+                              {expandedModule === idx ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                            </div>
+                          </button>
+
+                          {expandedModule === idx && (
+                            <div className="p-6 bg-white space-y-4 border-t border-slate-50">
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Module Title *</label>
+                                <input 
+                                  type="text"
+                                  required
+                                  placeholder="e.g. Introduction to MRI"
+                                  value={module.title}
+                                  onChange={e => handleModuleChange(idx, 'title', e.target.value)}
+                                  className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold text-sm transition-all"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Video URL (Google Drive) *</label>
+                                <input 
+                                  type="url"
+                                  required
+                                  placeholder="https://drive.google.com/..."
+                                  value={module.videoUrl}
+                                  onChange={e => handleModuleChange(idx, 'videoUrl', e.target.value)}
+                                  className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold text-sm transition-all"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Supplemental Material (PDF/Slides)</label>
+                                <input 
+                                  type="url"
+                                  placeholder="https://drive.google.com/..."
+                                  value={module.pdfUrl}
+                                  onChange={e => handleModuleChange(idx, 'pdfUrl', e.target.value)}
+                                  className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold text-sm transition-all"
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {modules.length < 10 && (
                       <button
                         type="button"
-                        onClick={() => setExpandedModule(expandedModule === idx ? null : idx)}
-                        className="w-full flex items-center justify-between p-5 bg-slate-50/50 hover:bg-slate-50 transition-colors"
+                        onClick={handleAddModule}
+                        className="w-full py-4 border-2 border-dashed border-slate-200 rounded-3xl text-slate-400 font-bold hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-2"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center text-xs font-black">
-                            {idx + 1}
-                          </div>
-                          <span className="font-bold text-slate-700 truncate max-w-[180px]">
-                            {module.title || `Module ${idx + 1}`}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {modules.length > 3 && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRemoveModule(idx);
-                              }}
-                              className="p-2 text-slate-400 hover:text-red-500 transition-colors"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          )}
-                          {expandedModule === idx ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                        </div>
+                        <Plus size={18} /> Add Module
                       </button>
-
-                      {expandedModule === idx && (
-                        <div className="p-6 bg-white space-y-4 border-t border-slate-50">
-                          <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Module Title *</label>
-                            <input 
-                              type="text"
-                              required
-                              placeholder="e.g. Introduction to MRI"
-                              value={module.title}
-                              onChange={e => handleModuleChange(idx, 'title', e.target.value)}
-                              className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold text-sm transition-all"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Video URL (Google Drive) *</label>
-                            <input 
-                              type="url"
-                              required
-                              placeholder="https://drive.google.com/..."
-                              value={module.videoUrl}
-                              onChange={e => handleModuleChange(idx, 'videoUrl', e.target.value)}
-                              className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold text-sm transition-all"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Supplemental Material (PDF/Slides)</label>
-                            <input 
-                              type="url"
-                              placeholder="https://drive.google.com/..."
-                              value={module.pdfUrl}
-                              onChange={e => handleModuleChange(idx, 'pdfUrl', e.target.value)}
-                              className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold text-sm transition-all"
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {modules.length < 6 && (
-                  <button
-                    type="button"
-                    onClick={handleAddModule}
-                    className="w-full py-4 border-2 border-dashed border-slate-200 rounded-3xl text-slate-400 font-bold hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-2"
-                  >
-                    <Plus size={18} /> Add Module
-                  </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-8">
             <button 
               type="submit"
               disabled={loading}
               className="px-12 py-5 bg-brand-primary text-white rounded-2xl font-black flex items-center gap-3 hover:bg-brand-dark disabled:opacity-50 transition-all shadow-xl shadow-brand-primary/20"
             >
-              {loading ? <Loader2 className="animate-spin" /> : <><Save size={20} /> Publish Course</>}
+              {loading ? <Loader2 className="animate-spin" /> : <><Save size={20} /> {isEdit ? 'Update Course' : (formData.status === 'coming-soon' ? 'Announce Course' : 'Publish Course')}</>}
             </button>
           </div>
         </form>

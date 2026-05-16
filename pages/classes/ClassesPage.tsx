@@ -14,6 +14,35 @@ const MotionDiv = motion.div as any;
 
 const categories = ["X-ray", "Ultrasound", "MRI", "CT", "Nuclear Medicine"];
 
+const COMING_SOON_CLASSES = [
+  {
+    id: "cs-class-1",
+    title: "Chest X-ray Clinical Interpretation",
+    category: "X-ray",
+    level: "Beginner",
+    status: "coming-soon",
+    price: "₦5,000",
+    isPaid: true,
+    duration: "4 Weeks (Online)",
+    registrationLink: "https://docs.google.com/forms/...",
+    description: "A clinical masterclass on interpreting chest X-rays. Perfect for students and interns preparing for clinical rotations.",
+    technologies: ["Google Meet", "WhatsApp"]
+  },
+  {
+    id: "cs-class-2",
+    title: "Advanced Ultrasound Cohort: OB/GYN",
+    category: "Ultrasound",
+    level: "Advanced",
+    status: "coming-soon",
+    price: "₦25,000",
+    isPaid: true,
+    duration: "6 Weeks (Intensive)",
+    registrationLink: "https://docs.google.com/forms/...",
+    description: "Join our intensive cohort focused on advanced obstetric and gynecological ultrasound techniques.",
+    technologies: ["Zoom", "Google Classroom"]
+  }
+];
+
 export default function ClassesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -29,7 +58,6 @@ export default function ClassesPage() {
   useEffect(() => {
     const q = query(
       collection(db, 'classes'),
-      where('status', '==', 'published'),
       orderBy('createdAt', 'desc')
     );
 
@@ -38,10 +66,12 @@ export default function ClassesPage() {
         id: doc.id,
         ...doc.data()
       }));
-      setClasses(classesData);
+      // Merge with COMING_SOON_CLASSES
+      setClasses([...classesData, ...COMING_SOON_CLASSES]);
       setLoading(false);
     }, (error) => {
       console.error("Error fetching classes:", error);
+      setClasses(COMING_SOON_CLASSES);
       setLoading(false);
     });
 
@@ -87,7 +117,9 @@ export default function ClassesPage() {
   };
 
   const filteredClasses = classes.filter((c) => {
-    const matchesSearch = c.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const titleMatch = c.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const descMatch = c.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = titleMatch || descMatch;
     const matchesCategory = selectedCategory === "All" || c.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -258,7 +290,12 @@ export default function ClassesPage() {
                                     )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover/card:opacity-100"></div>
                                     
-                                    <div className="absolute top-4 right-4">
+                                    <div className="absolute top-4 right-4 flex gap-2">
+                                      {course.status === 'coming-soon' && (
+                                        <span className="inline-block rounded-lg px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-amber-500 text-white shadow-sm animate-pulse">
+                                          Soon
+                                        </span>
+                                      )}
                                       <span className="inline-block rounded-lg px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-white/90 backdrop-blur-sm text-slate-900 shadow-sm">
                                         {course.category}
                                       </span>
@@ -267,7 +304,7 @@ export default function ClassesPage() {
 
                                   {/* Content */}
                                   <div className="flex flex-1 flex-col p-6">
-                                    <h4 className="mb-3 text-xl font-black leading-tight text-slate-900 group-hover/card:text-brand-primary transition-colors">
+                                    <h4 className="mb-3 text-xl font-black leading-tight text-slate-900 group-hover/card:text-brand-primary transition-colors min-h-[3rem]">
                                       {course.title}
                                     </h4>
                                     
@@ -280,7 +317,7 @@ export default function ClassesPage() {
                                     </div>
 
                                     <div className="mt-auto flex items-center justify-between border-t border-slate-50 pt-5">
-                                      <span className="font-black text-slate-900 text-lg">
+                                      <span className={`font-black text-lg ${course.status === 'coming-soon' ? 'text-amber-500' : 'text-slate-900'}`}>
                                         {course.price}
                                       </span>
                                       <div className="flex items-center gap-1.5 text-slate-400">

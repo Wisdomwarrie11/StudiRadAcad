@@ -58,6 +58,7 @@ import AdminCreateClassPage from './pages/admin/AdminCreateClassPage';
 import AdminCoursesPage from './pages/admin/AdminCoursesPage';
 import AdminOpportunitiesSpreadsheet from './pages/admin/SpreadSheet';
 import AdminEmployerList from './pages/opportunities/AdminEmployerList';
+import AdminCreateCoursePage from './pages/admin/AdminCreateCoursePage';
 
 import LocumPage from "./pages/opportunities/LocumPage";
 import LocumRegistration from "./pages/opportunities/LocumRegistration";
@@ -66,9 +67,10 @@ import LocumPayment from "./pages/opportunities/LocumPayment";
 import LocumEditProfile from "./pages/opportunities/LocumEditProfile";
 import LocumLogin from './pages/opportunities/LocumLogin';
 import CommunitySection from './components/home/CommunitySection';
-import AdminCreateCoursePage from './pages/admin/AdminCreateCoursePage';
 import CoursesPage from './pages/classes/CoursesPage';
 import WebinarsPage from './pages/resources/WebinarsPage';
+
+
 
 // Scroll Restoration Component
 const ScrollToTop = () => {
@@ -126,8 +128,6 @@ const App: React.FC = () => {
           <Route path="webinars" element={<ActivitiesPage />} />
           <Route path="freshers" element={<FreshersPage />} />
           <Route path="terms" element={<TermsOfService />} />
-          <Route path="terms" element={<TermsOfService />} />
-
 
 
           {/* Resources */}

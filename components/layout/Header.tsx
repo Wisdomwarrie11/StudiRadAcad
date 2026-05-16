@@ -77,9 +77,7 @@ const Header: React.FC = () => {
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-brand-dark border-t border-gray-700 shadow-xl min-h-screen">
           <div className="flex flex-col p-6 gap-4">
-            <Link to="/freshers" onClick={() => setMobileMenuOpen(false)} className="text-amber-400 text-lg font-bold flex items-center gap-2">
-              <Sparkles size={20} /> For Freshers
-            </Link>
+           
             <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium">Home</Link>
             
             <div className="space-y-2">
@@ -90,7 +88,7 @@ const Header: React.FC = () => {
                 <div className="pl-4 space-y-2 border-l border-gray-700 ml-2">
                   <Link to="/resources/blog" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300">Blog</Link>
                   <Link to="/resources/materials" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300">Learning Materials</Link>
-                  <Link to="/resources/QuizChallenge" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Radiography Quiz</Link>
+                  <Link to="/resources/QuizChallenge" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300">Radiography Quiz</Link>
                   <Link to="/resources/webinars" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300">Webinars</Link>
                 </div>
               )}

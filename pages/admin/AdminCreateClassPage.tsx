@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Save, 
@@ -17,7 +17,7 @@ import {
   Upload,
   X
 } from 'lucide-react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage, adminAuth } from '../../firebase';
 import SEO from '../../components/SEO';
@@ -25,7 +25,11 @@ import imageCompression from 'browser-image-compression';
 
 const AdminCreateClassPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEdit = !!id;
+
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(isEdit);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -41,7 +45,10 @@ const AdminCreateClassPage = () => {
     technologies: [] as string[],
     minStudents: '',
     maxStudents: '',
-    status: 'published'
+    status: 'ongoing',
+    level: 'Beginner',
+    registrationLink: '',
+    isPaid: false
   });
 
   const techOptions = [
@@ -51,6 +58,54 @@ const AdminCreateClassPage = () => {
     { id: 'zoom', name: 'Zoom', icon: <Video size={16} /> }
   ];
 
+  useEffect(() => {
+    const unsubscribeAuth = adminAuth.onAuthStateChanged((user) => {
+      if (!user) {
+        navigate('/admin/login');
+      }
+    });
+
+    if (isEdit) {
+      const fetchClass = async () => {
+        try {
+          const docRef = doc(db, 'classes', id);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setFormData({
+              title: data.title || '',
+              thumbnail: data.thumbnail || '',
+              category: data.category || '',
+              duration: data.duration || '',
+              price: data.price || '',
+              description: data.description || '',
+              technologies: data.technologies || [],
+              minStudents: data.minStudents?.toString() || '',
+              maxStudents: data.maxStudents?.toString() || '',
+              status: data.status || 'ongoing',
+              level: data.level || 'Beginner',
+              registrationLink: data.registrationLink || '',
+              isPaid: data.price !== 'Free'
+            });
+            if (data.thumbnail) {
+              setImagePreview(data.thumbnail);
+            }
+          } else {
+            setError('Class not found');
+            navigate('/admin/classes');
+          }
+        } catch (err) {
+          console.error("Error fetching class:", err);
+          setError('Failed to load class details.');
+        } finally {
+          setFetching(false);
+        }
+      };
+      fetchClass();
+    }
+
+    return () => unsubscribeAuth();
+  }, [navigate, id, isEdit]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -78,8 +133,14 @@ const AdminCreateClassPage = () => {
     setLoading(true);
     setError('');
 
-    if (!formData.title || !formData.category || !formData.duration || !formData.price || !formData.description) {
+    if (!formData.title || !formData.category || !formData.duration || !formData.description) {
       setError('Please fill in all required fields.');
+      setLoading(false);
+      return;
+    }
+
+    if (formData.isPaid && !formData.price) {
+      setError('Please specify the price for paid classes.');
       setLoading(false);
       return;
     }
@@ -111,24 +172,42 @@ const AdminCreateClassPage = () => {
         thumbnailUrl = await getDownloadURL(uploadResult.ref);
       }
 
-      await addDoc(collection(db, 'classes'), {
+      const classData = {
         ...formData,
+        price: formData.isPaid ? formData.price : 'Free',
         thumbnail: thumbnailUrl,
         minStudents: formData.minStudents ? parseInt(formData.minStudents) : null,
         maxStudents: formData.maxStudents ? parseInt(formData.maxStudents) : null,
-        createdAt: serverTimestamp()
-      });
+        updatedAt: serverTimestamp()
+      };
+
+      if (isEdit) {
+        await updateDoc(doc(db, 'classes', id), classData);
+      } else {
+        await addDoc(collection(db, 'classes'), {
+          ...classData,
+          createdAt: serverTimestamp()
+        });
+      }
 
       setSuccess(true);
       setTimeout(() => {
         navigate('/admin/classes');
       }, 2000);
     } catch (err) {
-      console.error("Error publishing class:", err);
-      setError('Failed to publish class. Please try again.');
+      console.error("Error saving class:", err);
+      setError(`Failed to ${isEdit ? 'update' : 'publish'} class. Please try again.`);
       setLoading(false);
     }
   };
+
+  if (fetching) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 pt-32 pb-20 px-4">
@@ -139,18 +218,18 @@ const AdminCreateClassPage = () => {
           <Link to="/admin/classes" className="flex items-center gap-2 text-slate-500 hover:text-brand-primary transition-colors mb-4 font-bold text-sm uppercase tracking-widest">
             <ArrowLeft size={16} /> Back to Classes
           </Link>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">Publish New Class</h1>
-          <p className="text-slate-500 font-medium">Fill in the details below to list a new live or cohort-based class.</p>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight">{isEdit ? 'Edit' : 'Publish New'} Class</h1>
+          <p className="text-slate-500 font-medium tracking-tight">{isEdit ? 'Update existing' : 'Fill in the details below to list a new'} live or cohort-based class.</p>
         </div>
 
         {error && (
-          <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-2xl flex items-center gap-3 text-sm font-bold">
+          <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl flex items-center gap-3 text-sm font-bold">
             <AlertCircle size={20} /> {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-8 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl flex items-center gap-3 text-sm font-bold">
+          <div className="mb-8 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-2xl flex items-center gap-3 text-sm font-bold">
             <CheckCircle2 size={20} /> Class published successfully! Redirecting...
           </div>
         )}
@@ -160,9 +239,27 @@ const AdminCreateClassPage = () => {
             {/* Left Column */}
             <div className="space-y-8">
               <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
-                <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
-                  <Layers size={20} className="text-brand-primary" /> Basic Info
-                </h3>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                    <Layers size={20} className="text-brand-primary" /> Basic Info
+                  </h3>
+                  <div className="flex bg-slate-100 p-1 rounded-xl">
+                    <button 
+                      type="button"
+                      onClick={() => setFormData({...formData, status: 'ongoing'})}
+                      className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${formData.status === 'ongoing' ? 'bg-white text-brand-primary shadow-sm' : 'text-slate-400'}`}
+                    >
+                      Ongoing
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setFormData({...formData, status: 'coming-soon'})}
+                      className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${formData.status === 'coming-soon' ? 'bg-white text-amber-500 shadow-sm' : 'text-slate-400'}`}
+                    >
+                      Soon
+                    </button>
+                  </div>
+                </div>
                 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Class Title *</label>
@@ -185,7 +282,7 @@ const AdminCreateClassPage = () => {
                       onChange={e => setFormData({...formData, category: e.target.value})}
                       className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold transition-all appearance-none"
                     >
-                      <option value="">Select Category</option>
+                      <option value="">Select</option>
                       <option value="X-ray">X-ray</option>
                       <option value="CT">CT</option>
                       <option value="MRI">MRI</option>
@@ -194,20 +291,75 @@ const AdminCreateClassPage = () => {
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Price *</label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                      <input 
-                        type="text"
-                        required
-                        placeholder="Free or ₦5,000"
-                        value={formData.price}
-                        onChange={e => setFormData({...formData, price: e.target.value})}
-                        className="w-full pl-10 pr-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold transition-all"
-                      />
-                    </div>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Level *</label>
+                    <select 
+                      required
+                      value={formData.level}
+                      onChange={e => setFormData({...formData, level: e.target.value})}
+                      className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold transition-all appearance-none"
+                    >
+                      <option value="Beginner">Beginner</option>
+                      <option value="Intermediate">Intermediate</option>
+                      <option value="Advanced">Advanced</option>
+                    </select>
                   </div>
                 </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Pricing Model:</label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                          type="radio" 
+                          checked={!formData.isPaid}
+                          onChange={() => setFormData({...formData, isPaid: false, price: 'Free'})}
+                          className="w-4 h-4 text-brand-primary focus:ring-brand-primary"
+                        />
+                        <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Free</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                          type="radio" 
+                          checked={formData.isPaid}
+                          onChange={() => setFormData({...formData, isPaid: true, price: ''})}
+                          className="w-4 h-4 text-brand-primary focus:ring-brand-primary"
+                        />
+                        <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Paid</span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  {formData.isPaid && (
+                    <div className="space-y-2 mt-2 animate-in fade-in slide-in-from-top-2">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Amount (e.g. ₦15,000)</label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                        <input 
+                          type="text"
+                          required={formData.isPaid}
+                          placeholder="₦0,000"
+                          value={formData.price}
+                          onChange={e => setFormData({...formData, price: e.target.value})}
+                          className="w-full pl-10 pr-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold transition-all"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {formData.status === 'coming-soon' && (
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Registration Link (Optional)</label>
+                    <input 
+                      type="url"
+                      placeholder="https://..."
+                      value={formData.registrationLink}
+                      onChange={e => setFormData({...formData, registrationLink: e.target.value})}
+                      className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold transition-all"
+                    />
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Duration / Schedule *</label>
@@ -225,7 +377,7 @@ const AdminCreateClassPage = () => {
                 </div>
               </div>
 
-              <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+              <div className={`bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6 transition-all duration-500 ${formData.status === 'coming-soon' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
                 <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
                   <Monitor size={20} className="text-brand-primary" /> Technologies Used
                 </h3>
@@ -234,6 +386,7 @@ const AdminCreateClassPage = () => {
                     <button
                       key={tech.id}
                       type="button"
+                      disabled={formData.status === 'coming-soon'}
                       onClick={() => handleTechToggle(tech.name)}
                       className={`flex items-center gap-3 p-4 rounded-2xl border transition-all font-bold text-sm ${
                         formData.technologies.includes(tech.name)
@@ -276,8 +429,7 @@ const AdminCreateClassPage = () => {
                             <div className="w-12 h-12 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center mx-auto mb-3">
                               <Upload size={20} />
                             </div>
-                            <p className="text-xs font-bold text-slate-400">Click to upload or drag and drop</p>
-                            <p className="text-[10px] text-slate-300 mt-1 uppercase tracking-widest">JPG, PNG up to 5MB</p>
+                            <p className="text-xs font-bold text-slate-400">Click to upload or drag</p>
                           </div>
                         )}
                         <input 
@@ -317,7 +469,7 @@ const AdminCreateClassPage = () => {
                 </div>
               </div>
 
-              <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+              <div className={`bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6 transition-all duration-500 ${formData.status === 'coming-soon' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
                 <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
                   <Users size={20} className="text-brand-primary" /> Student Capacity
                 </h3>
@@ -347,13 +499,13 @@ const AdminCreateClassPage = () => {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-8">
             <button 
               type="submit"
               disabled={loading}
               className="px-12 py-5 bg-brand-primary text-white rounded-2xl font-black flex items-center gap-3 hover:bg-brand-dark disabled:opacity-50 transition-all shadow-xl shadow-brand-primary/20"
             >
-              {loading ? <Loader2 className="animate-spin" /> : <><Save size={20} /> Publish Class</>}
+              {loading ? <Loader2 className="animate-spin" /> : <><Save size={20} /> {isEdit ? 'Update Class' : (formData.status === 'coming-soon' ? 'Announce Class' : 'Publish Class')}</>}
             </button>
           </div>
         </form>

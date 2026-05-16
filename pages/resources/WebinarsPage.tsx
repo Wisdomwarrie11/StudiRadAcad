@@ -29,7 +29,7 @@ const WebinarsPage = () => {
       title: "Inside Radiography: Stepping into MRI - The roles. The reality. The rewards",
       date: "17th February 2026",
       description: "An astute professional shares his journey from Nigeria to becoming a clinical leader in MRI in a well-known hospital in England. In this webinar, he shares roadmaps and advice for young radiographers and students",
-      imageUrl: "Episode 2.jpg",
+      imageUrl: "/Episode 2.jpg",
       link: "#",
       status: 'past',
       type: 'webinar'
@@ -39,7 +39,7 @@ const WebinarsPage = () => {
       title: "Welcome to Radiography Orientation",
       date: "Past Event",
       description: "An exclusive orientation for new-year radiography students and prospects. Get the roadmap to a successful radiography career and connect with mentors.",
-      imageUrl: "WelcomeToRad.jpeg",
+      imageUrl: "/WelcomeToRad.jpeg",
       link: "#",
       status: 'past',
       type: 'webinar'
@@ -49,7 +49,7 @@ const WebinarsPage = () => {
       title: "Inside Radiography: The NeuroImaging Experience",
       date: "Past Event",
       description: "An educating session introducing Radiographers to neuroimaging and its role in modern medical Imaging and diagnosis.",
-      imageUrl: "Episode 1.jpg",
+      imageUrl: "/Episode 1.jpg",
       link: "#",
       status: 'past',
       type: 'webinar'
@@ -59,7 +59,7 @@ const WebinarsPage = () => {
       title: "From Induction to Impact: Navigating the Journey",
       date: "Past Event",
       description: "Four keynote speakers share insights on thriving during your induction period and navigating your long-term career path.",
-      imageUrl: "StudiRad.jpg",
+      imageUrl: "/StudiRad.jpg",
       link: "#",
       status: 'past',
       type: 'webinar'
@@ -161,6 +161,7 @@ const WebinarsPage = () => {
                       <div key={event.id} className="bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-xl group hover:border-brand-primary hover:shadow-2xl transition-all duration-500 flex flex-col">
                          <div className="relative aspect-video overflow-hidden">
                             <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                              onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1170&q=80"; }}
                             />
                             <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white scale-90 group-hover:scale-100 transition-all duration-500">
@@ -204,6 +205,7 @@ const WebinarsPage = () => {
                  </div>
                  <div>
                     <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Archive Sessions</h2>
+                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Watch & Learn</p>
                  </div>
               </div>
 
@@ -212,6 +214,7 @@ const WebinarsPage = () => {
                     <div key={event.id} className="group border-2 border-slate-100 bg-white rounded-[2.5rem] overflow-hidden hover:border-brand-primary hover:shadow-2xl transition-all duration-500 flex flex-col h-full shadow-sm">
                        <div className="relative aspect-[16/10] overflow-hidden">
                           <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                            onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1200&q=80"; }}
                           />
                           <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                              <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white scale-90 group-hover:scale-100 transition-all duration-500">
