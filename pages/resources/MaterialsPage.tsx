@@ -201,11 +201,6 @@ const MaterialsPage = () => {
 
               <div className="hidden lg:block relative">
                  <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border border-white/10 transform -rotate-2 group-hover:rotate-0 transition-transform duration-700">
-                    <img 
-                      src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1200&q=80" 
-                      alt="StudiFocus Library Shell" 
-                      className="w-full aspect-[4/3] object-cover"
-                    />
                     <div className="absolute inset-0 bg-brand-dark/20 flex items-center justify-center backdrop-blur-[2px]">
                        <div className="p-8 bg-white/95 rounded-2xl text-brand-dark text-center shadow-2xl">
                           <BookOpen size={40} className="mx-auto mb-2 text-brand-primary" />
@@ -293,76 +288,82 @@ const MaterialsPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-            {currentMaterials.map((m) => {
-              const config = courseColors[m.course] || courseColors.All;
-              const isLink = m.type === 'link';
+              {currentMaterials.map((m) => {
+                const config = courseColors[m.course] || courseColors.All;
+                const isExternal = m.type === 'link' || m.type === 'video';
 
-              return (
-                <div 
-                  key={m.id}
-                  className="group relative bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 flex flex-col"
-                >
-                  {/* Category Accent */}
-                  <div className={`absolute left-0 top-12 w-1.5 h-12 rounded-r-full ${config.main.replace('text-', 'bg-')} transition-transform group-hover:scale-y-125`}></div>
+                const handleCardClick = () => {
+                  if (isExternal) {
+                    window.open(m.link, "_blank");
+                  } else {
+                    setSelectedMaterial(m);
+                    setShowReader(true);
+                  }
+                };
 
-                  <div className="flex justify-between items-start mb-6">
-                    <div className={`p-4 rounded-2xl ${config.light} ${config.main} shadow-inner`}>
-                      {isLink ? <LinkIcon size={24} /> : <FileText size={24} />}
-                    </div>
-                    <button 
-                      onClick={() => handleShare(m.title)}
-                      className="p-2 text-slate-300 hover:text-brand-primary hover:bg-brand-primary/5 rounded-xl transition-colors"
-                      title="Share Material"
-                    >
-                      <Share2 size={18} />
-                    </button>
-                  </div>
+                return (
+                  <div 
+                    key={m.id}
+                    onClick={handleCardClick}
+                    className="group relative bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 flex flex-col cursor-pointer"
+                  >
+                    {/* Category Accent */}
+                    <div className={`absolute left-0 top-12 w-1.5 h-12 rounded-r-full ${config.main.replace('text-', 'bg-')} transition-transform group-hover:scale-y-125`}></div>
 
-                  <div className="flex-grow">
-                    <span className={`text-[10px] font-black uppercase tracking-widest ${config.main} mb-2 block`}>
-                      {m.course}
-                    </span>
-                    <h3 className="text-lg font-black text-slate-900 mb-4 line-clamp-2 leading-snug group-hover:text-brand-primary transition-colors">
-                      {m.title}
-                    </h3>
-                    
-                    <div className="space-y-2 mb-8">
-                       <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
-                          <User size={14} className="text-slate-300" />
-                          <span className="truncate">{m.uploader}</span>
-                       </div>
-                       <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
-                          <Clock size={14} className="text-slate-300" />
-                          <span>{formatDate(m.createdAt)}</span>
-                       </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-auto">
-                    {isLink ? (
-                      <a
-                        href={m.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`flex items-center justify-center gap-2 w-full py-4 rounded-2xl border-2 font-black text-xs uppercase tracking-widest transition-all ${config.main} ${config.border} hover:${config.main.replace('text-', 'bg-')} hover:text-white active:scale-95`}
-                      >
-                        Visit Link <ExternalLink size={14} />
-                      </a>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          setSelectedMaterial(m);
-                          setShowReader(true);
+                    <div className="flex justify-between items-start mb-6">
+                      <div className={`p-4 rounded-2xl ${config.light} ${config.main} shadow-inner`}>
+                        {isExternal ? (m.type === 'video' ? <Video size={24} /> : <LinkIcon size={24} />) : <FileText size={24} />}
+                      </div>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShare(m.title);
                         }}
-                        className={`flex items-center justify-center gap-2 w-full py-4 rounded-2xl border-2 font-black text-xs uppercase tracking-widest transition-all ${config.main} ${config.border} hover:${config.main.replace('text-', 'bg-')} hover:text-white active:scale-95`}
+                        className="p-2 text-slate-300 hover:text-brand-primary hover:bg-brand-primary/5 rounded-xl transition-colors"
+                        title="Share Material"
                       >
-                        Read Document <ChevronRight size={14} />
+                        <Share2 size={18} />
                       </button>
-                    )}
+                    </div>
+
+                    <div className="flex-grow">
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${config.main} mb-2 block`}>
+                        {m.course}
+                      </span>
+                      <h3 className="text-lg font-black text-slate-900 mb-4 line-clamp-2 leading-snug group-hover:text-brand-primary transition-colors">
+                        {m.title}
+                      </h3>
+                      
+                      <div className="space-y-2 mb-8">
+                         <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
+                            <User size={14} className="text-slate-300" />
+                            <span className="truncate">{m.uploader}</span>
+                         </div>
+                         <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
+                            <Clock size={14} className="text-slate-300" />
+                            <span>{formatDate(m.createdAt)}</span>
+                         </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-auto">
+                      {isExternal ? (
+                        <div
+                          className={`flex items-center justify-center gap-2 w-full py-4 rounded-2xl border-2 font-black text-xs uppercase tracking-widest transition-all ${config.main} ${config.border} group-hover:${config.main.replace('text-', 'bg-')} group-hover:text-white active:scale-95`}
+                        >
+                          Visit {m.type === 'video' ? 'Video' : 'Link'} <ExternalLink size={14} />
+                        </div>
+                      ) : (
+                        <div
+                          className={`flex items-center justify-center gap-2 w-full py-4 rounded-2xl border-2 font-black text-xs uppercase tracking-widest transition-all ${config.main} ${config.border} group-hover:${config.main.replace('text-', 'bg-')} group-hover:text-white active:scale-95`}
+                        >
+                          Read Document <ChevronRight size={14} />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         )}
 

@@ -1,76 +1,48 @@
+
 import React from 'react';
 import Modal from '../ui/Modal';
-import { Download, ExternalLink, FileText, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
 interface MaterialReaderModalProps {
-  show: boolean;
-  onHide: () => void;
+  isOpen: boolean;
+  onClose: () => void;
   material: any;
 }
 
-const MaterialReaderModal: React.FC<MaterialReaderModalProps> = ({ show, onHide, material }) => {
+const MaterialReaderModal: React.FC<MaterialReaderModalProps> = ({ isOpen, onClose, material }) => {
   if (!material) return null;
 
-  const isPDF = material.link?.toLowerCase().endsWith('.pdf');
-  const isImage = material.link?.match(/\.(jpeg|jpg|gif|png)$/i);
-  
-  // Google Drive Viewer/Preview logic
-  // If it's not PDF/Image, we try to embed it or show link
-  // If it's a google drive view link, convert to preview
-  const embedLink = material.link.includes('drive.google.com') && material.link.includes('/view')
-    ? material.link.replace('/view', '/preview')
-    : material.link;
-
   return (
-    <Modal isOpen={show} onClose={onHide} title={material.title} size="xl">
-      <div className="flex flex-col h-full min-h-[70vh]">
-        <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-brand-light p-4 rounded-xl border border-brand-primary/10">
-          <div>
-            <p className="text-sm text-gray-500">Uploaded by <span className="font-semibold text-brand-dark">{material.uploader}</span></p>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs font-bold px-2 py-0.5 bg-brand-primary/10 text-brand-primary rounded">{material.course}</span>
-            </div>
-          </div>
-          <a 
-            href={material.link} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-dark transition-colors text-sm font-medium shadow-sm"
-          >
-            <Download size={16} /> Download / Open Original
-          </a>
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div className="p-6">
+        <h2 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">{material.title}</h2>
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-400 mb-6 uppercase tracking-widest">
+          <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-500">{material.course}</span>
+          <span>•</span>
+          <span>By {material.uploader}</span>
+        </div>
+        
+        <div className="prose max-w-none mb-8">
+          <p className="text-slate-600 font-medium leading-relaxed">
+            {material.description || 'This resource was shared by a community member to help others in their radiography journey.'}
+          </p>
         </div>
 
-        <div className="flex-1 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 relative shadow-inner">
-          {isPDF ? (
-            <iframe
-              src={material.link}
-              className="w-full h-[700px]"
-              title="PDF Viewer"
-            />
-          ) : isImage ? (
-            <div className="flex items-center justify-center h-full bg-gray-900 overflow-auto">
-               <img src={material.link} alt={material.title} className="max-w-full max-h-[700px] object-contain p-4" />
-            </div>
-          ) : (
-            // Fallback for Docs/Slides/Drive Links
-            <iframe
-              src={embedLink}
-              className="w-full h-[700px]"
-              title="Document Viewer"
-              onError={(e) => {
-                 // Fallback if iframe fails (e.g. X-Frame-Options)
-                 console.log("Iframe load error", e);
-              }}
-            />
-          )}
-          
-          {/* Overlay hint for users if content doesn't load */}
-          {!isPDF && !isImage && (
-             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur px-4 py-2 rounded-full text-xs text-gray-500 shadow-sm border border-gray-200 flex items-center gap-2 pointer-events-none">
-                <AlertCircle size={12} /> If the document doesn't load, use the Download button above.
-             </div>
-          )}
+        <div className="space-y-3">
+          <a
+            href={material.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-4 bg-brand-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-brand-dark transition-all shadow-xl shadow-brand-primary/20"
+          >
+            Open Full Document <ExternalLink size={18} />
+          </a>
+          <button 
+            onClick={onClose}
+            className="w-full py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-200 transition-all"
+          >
+            Close
+          </button>
         </div>
       </div>
     </Modal>
