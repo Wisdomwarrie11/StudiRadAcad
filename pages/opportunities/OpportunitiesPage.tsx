@@ -57,24 +57,22 @@ const OpportunitiesPage = () => {
              animate={{ opacity: 1, x: 0 }}
              transition={{ duration: 0.8 }}
            >
-             <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-900 text-white rounded-md text-[9px] font-mono uppercase tracking-[0.3em] mb-8">
-               System.Career_Hub
-             </div>
+           
              <h1 className="text-4xl md:text-6xl font-serif italic font-light leading-tight mb-8">
                Career <br />
                <span className="font-sans font-black uppercase tracking-tighter text-brand-primary">Growth</span> <br />
                Pathways
              </h1>
              <p className="text-lg text-slate-600 max-w-md font-light leading-relaxed mb-10">
-               The premier destination for radiography professionals. Discover clinical internships, global jobs, and academic funding.
+               The premier destination for radiography professionals. Discover clinical internships, jobs, and scholarships.
              </p>
              <div className="flex flex-wrap gap-4">
                <a href="#opportunities" className="bg-slate-900 text-white px-8 py-4 rounded-lg font-bold text-xs uppercase tracking-widest hover:bg-brand-primary transition-all shadow-lg">
                  Explore Now
                </a>
-               <Link to="/employer/register" className="px-8 py-4 rounded-lg border border-slate-400 font-bold text-xs uppercase tracking-widest hover:bg-slate-300 transition-all">
+               {/* <Link to="/employer/register" className="px-8 py-4 rounded-lg border border-slate-400 font-bold text-xs uppercase tracking-widest hover:bg-slate-300 transition-all">
                  Post a Job
-               </Link>
+               </Link> */}
              </div>
            </motion.div>
         </div>
@@ -110,7 +108,7 @@ const OpportunitiesPage = () => {
       </section>
 
       {/* Organization Portal - High Contrast */}
-      <section className="grid lg:grid-cols-2 min-h-[60vh] border-b border-slate-300">
+      {/* <section className="grid lg:grid-cols-2 min-h-[60vh] border-b border-slate-300">
         <div className="p-8 md:p-20 bg-slate-900 text-white flex flex-col justify-center">
            <motion.div
              initial={{ opacity: 0, scale: 0.98 }}
@@ -160,21 +158,15 @@ const OpportunitiesPage = () => {
               </div>
            </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Opportunity Types Grid - Technical Cards */}
       <section id="opportunities" className="py-24 px-4 border-b border-slate-300">
         <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-6">
+          <div className="flex flex-col md:flex-row justify-between mb-20 gap-6">
             <h2 className="text-4xl md:text-6xl font-serif italic font-light tracking-tight leading-none">
               Explore <br /> <span className="font-sans font-black uppercase tracking-tighter text-brand-primary">Pathways</span>
             </h2>
-            <div className="text-right">
-              <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-slate-400 block mb-1">Status: Online</span>
-              <p className="text-slate-500 font-bold text-[10px] tracking-[0.2em] uppercase">
-                Select a category to begin.
-              </p>
-            </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -194,7 +186,6 @@ const OpportunitiesPage = () => {
                       <div className={`w-16 h-16 bg-white text-slate-900 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 border border-slate-200 shadow-sm`}>
                         <item.icon size={28} />
                       </div>
-                      <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">Cat_0{idx + 1}</span>
                     </div>
                     
                     <h3 className="text-2xl font-black text-slate-900 mb-4 uppercase tracking-tight">{item.title}</h3>

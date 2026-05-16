@@ -243,13 +243,15 @@ const LocumRegistration = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Phone Number</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">WhatsApp Number</label>
                             <input 
                                 type="tel" 
                                 className="w-full p-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none"
+                                placeholder="e.g. 08012345678"
                                 value={personalInfo.phone}
                                 onChange={(e) => setPersonalInfo({...personalInfo, phone: e.target.value})}
                             />
+                            <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold">Facilities will contact you via WhatsApp for locum offers</p>
                         </div>
                     </div>
                     

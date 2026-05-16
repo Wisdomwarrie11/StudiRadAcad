@@ -206,8 +206,13 @@ const LocumPage = () => {
                                     <a href={`tel:${locum.phone}`} className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-900 py-3 rounded-lg text-center text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm">
                                         Call
                                     </a>
-                                    <a href={`mailto:${locum.email}`} className="bg-slate-900 hover:bg-brand-primary text-white py-3 rounded-lg text-center text-[10px] font-bold uppercase tracking-widest transition-all shadow-xl shadow-slate-900/10">
-                                        Email
+                                    <a 
+                                        href={`https://wa.me/${locum.phone.replace(/\+/g, '').replace(/^0/, '234')}`} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg text-center text-[10px] font-bold uppercase tracking-widest transition-all shadow-xl shadow-emerald-600/10"
+                                    >
+                                        WhatsApp
                                     </a>
                                 </div>
                             </div>
