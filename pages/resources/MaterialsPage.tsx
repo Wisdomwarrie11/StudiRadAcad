@@ -158,7 +158,8 @@ const MaterialsPage = () => {
         </div>
 
         {/* --- STUDIFOCUS SHOWCASE --- */}
-        {/* <div className="mb-16 relative overflow-hidden bg-brand-dark rounded-[3.5rem] p-10 md:p-16 text-white group">
+        <div className="mb-16 relative overflow-hidden bg-brand-dark rounded-[3.5rem] p-10 md:p-16 text-white group">
+           {/* Background Accents */}
            <div className="absolute top-0 right-0 w-80 h-80 bg-brand-accent/20 rounded-full blur-[80px] -mr-32 -mt-32 transition-transform group-hover:scale-110 duration-700"></div>
            <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-primary/20 rounded-full blur-[60px] -ml-32 -mb-32"></div>
 
@@ -171,12 +172,9 @@ const MaterialsPage = () => {
                  
                  <h2 className="text-4xl md:text-5xl font-black leading-tight tracking-tight">
                     Introducing <span className="text-brand-accent italic">StudiFocus</span> <br />
-                    <span className="text-white/60 font-light">Your Personal Library Shell.</span>
+                    <span className="text-white/60 font-light">Your Personal Study Room</span>
                  </h2>
-                 
-                 <p className="text-lg text-slate-300 font-medium leading-relaxed max-w-xl">
-                    StudiFocus is a library-micmicking environment designed to supercharge your focus. Organize your files, set study goals, and master your radiography modules in a real-library interface.
-                 </p>
+            
 
                  <div className="flex flex-wrap gap-6 pt-4">
                     <div className="flex items-center gap-3">
@@ -200,20 +198,18 @@ const MaterialsPage = () => {
               </div>
 
               <div className="hidden lg:block relative">
-                 <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border border-white/10 transform -rotate-2 group-hover:rotate-0 transition-transform duration-700">
-                    <div className="absolute inset-0 bg-brand-dark/20 flex items-center justify-center backdrop-blur-[2px]">
-                       <div className="p-8 bg-white/95 rounded-2xl text-brand-dark text-center shadow-2xl">
-                          <BookOpen size={40} className="mx-auto mb-2 text-brand-primary" />
-                          <h4 className="font-black text-xl">StudiFocus</h4>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Library Interface</p>
-                       </div>
-                    </div>
+                 <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl transform -rotate-2 group-hover:rotate-0 transition-transform duration-700">
+                    <img 
+                      src="/Studifocus.jpeg" 
+                      alt="StudiFocus Library Shell" 
+                      className="aspect-[4/3] object-contain"
+                    />
+                   
                  </div>
-                 <div className="absolute -inset-4 border border-white/5 rounded-[3rem] -z-10 transform rotate-1"></div>
-                 <div className="absolute -inset-8 border border-white/5 rounded-[3rem] -z-20 transform -rotate-1"></div>
-              </div>
+                 {/* Decorative background shapes */}
+            </div>
            </div>
-        </div> */}
+        </div>
 
         {/* Search & Filter Bar */}
         <div className="bg-white p-6 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white mb-10">
