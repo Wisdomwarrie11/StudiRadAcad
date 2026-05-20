@@ -22,6 +22,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage, adminAuth } from '../../firebase';
 import SEO from '../../components/SEO';
 import imageCompression from 'browser-image-compression';
+import CustomRegistrationConfig from './CustomRegistrationConfig';
 
 const AdminCreateClassPage = () => {
   const navigate = useNavigate();
@@ -34,6 +35,12 @@ const AdminCreateClassPage = () => {
   const [success, setSuccess] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const [isPaid, setIsPaid] = useState(false); // standard UI support state
+  
+  const [hasCustomRegistration, setHasCustomRegistration] = useState(false);
+  const [customConfirmationMessage, setCustomConfirmationMessage] = useState('');
+  const [registrationFields, setRegistrationFields] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -87,6 +94,9 @@ const AdminCreateClassPage = () => {
               registrationLink: data.registrationLink || '',
               isPaid: data.price !== 'Free'
             });
+            setHasCustomRegistration(data.hasCustomRegistration || false);
+            setCustomConfirmationMessage(data.customConfirmationMessage || '');
+            setRegistrationFields(data.registrationFields || []);
             if (data.thumbnail) {
               setImagePreview(data.thumbnail);
             }
@@ -149,27 +159,52 @@ const AdminCreateClassPage = () => {
       let thumbnailUrl = formData.thumbnail;
 
       if (imageFile) {
-        let fileToUpload = imageFile;
-        
-        // Only attempt compression if the file is larger than 1MB to avoid library hangs on small files
-        if (imageFile.size > 1024 * 1024) {
-          const options = { 
-            maxSizeMB: 0.8, 
-            maxWidthOrHeight: 1200, 
-            useWebWorker: true,
-            initialQuality: 0.7 
-          };
-          try {
-            fileToUpload = await imageCompression(imageFile, options);
-          } catch (compError) {
-            console.warn("Image compression failed, proceeding with original file.", compError);
-            fileToUpload = imageFile;
+        try {
+          let fileToUpload = imageFile;
+          
+          // Only attempt compression if the file is larger than 1MB to avoid library hangs on small files
+          if (imageFile.size > 1024 * 1024) {
+            const options = { 
+              maxSizeMB: 0.8, 
+              maxWidthOrHeight: 1200, 
+              useWebWorker: true,
+              initialQuality: 0.7 
+            };
+            try {
+              fileToUpload = await imageCompression(imageFile, options);
+            } catch (compError) {
+              console.warn("Image compression failed, proceeding with original file.", compError);
+              fileToUpload = imageFile;
+            }
           }
-        }
 
-        const imageRef = ref(storage, `classThumbnails/${Date.now()}_${imageFile.name.replace(/\s+/g, '_')}`);
-        const uploadResult = await uploadBytes(imageRef, fileToUpload);
-        thumbnailUrl = await getDownloadURL(uploadResult.ref);
+          const imageRef = ref(storage, `classThumbnails/${Date.now()}_${imageFile.name.replace(/\s+/g, '_')}`);
+          const uploadResult = await uploadBytes(imageRef, fileToUpload);
+          thumbnailUrl = await getDownloadURL(uploadResult.ref);
+        } catch (storageError) {
+          console.warn("Firebase Storage upload failed (likely due to CORS or bucket limit/configuration). Falling back to database base64 embedding.", storageError);
+          
+          let b64TargetFile = imageFile;
+          try {
+            b64TargetFile = await imageCompression(imageFile, {
+              maxSizeMB: 0.04, // Strongly compress to fit comfortably inside 1MB Firestore limit
+              maxWidthOrHeight: 600,
+              useWebWorker: true
+            });
+          } catch (compressError) {
+            console.error("Base64 compression pre-step failed", compressError);
+          }
+
+          const convertToBase64 = (file: File): Promise<string> => {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.readAsDataURL(file);
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = error => reject(error);
+            });
+          };
+          thumbnailUrl = await convertToBase64(b64TargetFile);
+        }
       }
 
       const classData = {
@@ -178,6 +213,9 @@ const AdminCreateClassPage = () => {
         thumbnail: thumbnailUrl,
         minStudents: formData.minStudents ? parseInt(formData.minStudents) : null,
         maxStudents: formData.maxStudents ? parseInt(formData.maxStudents) : null,
+        hasCustomRegistration,
+        customConfirmationMessage,
+        registrationFields,
         updatedAt: serverTimestamp()
       };
 
@@ -497,6 +535,18 @@ const AdminCreateClassPage = () => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Custom Registration Configuration */}
+          <div className="mt-8">
+            <CustomRegistrationConfig 
+              hasCustomRegistration={hasCustomRegistration}
+              setHasCustomRegistration={setHasCustomRegistration}
+              customConfirmationMessage={customConfirmationMessage}
+              setCustomConfirmationMessage={setCustomConfirmationMessage}
+              registrationFields={registrationFields}
+              setRegistrationFields={setRegistrationFields}
+            />
           </div>
 
           <div className="flex justify-end pt-8">

@@ -92,6 +92,13 @@ const AdminDashboard = () => {
       color: 'bg-purple-50 text-purple-600'
     },
     {
+      title: 'Class Registrants',
+      description: 'View customized registration forms submissions & attendee logs.',
+      icon: Users,
+      path: '/admin/registrations',
+      color: 'bg-emerald-50 text-emerald-600'
+    },
+    {
       title: 'Webinars & Events',
       description: 'Push upcoming webinars and manage session archives.',
       icon: Calendar,

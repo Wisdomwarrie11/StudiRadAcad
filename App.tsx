@@ -69,6 +69,7 @@ import LocumLogin from './pages/opportunities/LocumLogin';
 import CommunitySection from './components/home/CommunitySection';
 import CoursesPage from './pages/classes/CoursesPage';
 import WebinarsPage from './pages/resources/WebinarsPage';
+import AdminRegistrationsPage from './pages/admin/AdminRegistrationPage';
 
 
 
@@ -205,6 +206,7 @@ const App: React.FC = () => {
         <Route path="admin/courses" element={<AdminCoursesPage />} />
         <Route path="admin/create-course" element={<AdminCreateCoursePage />} />
         <Route path="admin/employers-database" element={<AdminEmployerList />} />
+        <Route path="admin/registrations" element={<AdminRegistrationsPage />} />
       </Routes>
 
       {/* <InstallPWA /> */}
