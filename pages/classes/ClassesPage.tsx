@@ -52,7 +52,7 @@ const COMING_SOON_CLASSES = [
     level: "Beginner",
     status: "coming-soon",
     price: "FREE",
-    thumbnail: "skull.jpg",
+    // thumbnail: "skull.jpg",
     isPaid: false,
     duration: "4 Weeks (Online)",
     registrationLink: "#",
