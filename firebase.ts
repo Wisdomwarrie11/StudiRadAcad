@@ -19,9 +19,6 @@ const app = firebase.apps.length === 0 ? firebase.initializeApp(firebaseConfig) 
 export const db = firebase.firestore(app) as any;
 export const auth = firebase.auth(app) as any;
 export const storage = firebase.storage(app) as any;
-storage.maxUploadRetryTime = 3000; // 3 seconds instead of default 120s
-storage.maxOperationRetryTime = 3000; // 3 seconds
-
 
 // Admin App Configuration
 const adminFirebaseConfig = {

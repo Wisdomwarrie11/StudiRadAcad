@@ -161,7 +161,7 @@ export default function AdminRegistrationsPage() {
       <div className="container mx-auto max-w-6xl">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
           <div>
-            <Link to="/admin" className="flex items-center gap-2 text-slate-500 hover:text-brand-primary transition-colors mb-4 font-black text-xs uppercase tracking-widest">
+            <Link to="/admin/dashboard" className="flex items-center gap-2 text-slate-500 hover:text-brand-primary transition-colors mb-4 font-black text-xs uppercase tracking-widest">
               <ArrowLeft size={16} /> Back to Dashboard
             </Link>
             <div className="flex items-center gap-2">
