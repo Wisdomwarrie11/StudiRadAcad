@@ -15,6 +15,7 @@ import {
   ArrowLeft,
   Sparkles,
   ChevronRight,
+  ChevronDown,
   AlertCircle,
   Loader2
 } from 'lucide-react';
@@ -84,22 +85,37 @@ const CourseModal: React.FC<CourseModalProps> = ({ isOpen, onClose, course }) =>
   const defaultFields = [
     { id: 'fullname', label: 'Full Name', type: 'text', required: true },
     { id: 'email', label: 'Email Address', type: 'email', required: true },
-    { id: 'whatsapp', label: 'WhatsApp Number', type: 'tel', required: true }
+    { id: 'whatsapp', label: 'WhatsApp Number', type: 'tel', required: true },
+    { 
+      id: 'qualification', 
+      label: 'Qualification', 
+      type: 'select', 
+      required: true, 
+      options: 'Student, Pre-intern, Intern, Radiographer' 
+    }
   ];
 
-  const fields = course.registrationFields && course.registrationFields.length > 0
+  const baseFields = course.registrationFields && course.registrationFields.length > 0
     ? course.registrationFields
     : defaultFields;
 
+  // Dynamically ensure qualification is ALWAYS present for registration
+  const hasQualification = baseFields.some((f: any) => f.id === 'qualification' || f.label?.toLowerCase() === 'qualification');
+  const fields = hasQualification 
+    ? baseFields 
+    : [
+        ...baseFields,
+        { 
+          id: 'qualification', 
+          label: 'Qualification', 
+          type: 'select', 
+          required: true, 
+          options: 'Student, Pre-intern, Intern, Radiographer' 
+        }
+      ];
+
   const handleActionClick = () => {
-    if (course.hasCustomRegistration) {
-      setShowRegistration(true);
-    } else if (isComingSoon && course.registrationLink) {
-      window.open(course.registrationLink, '_blank');
-    } else if (!isComingSoon) {
-      // Default fallback
-      setShowRegistration(true);
-    }
+    setShowRegistration(true);
   };
 
   const handleInputChange = (fieldId: string, value: string) => {
@@ -159,22 +175,23 @@ const CourseModal: React.FC<CourseModalProps> = ({ isOpen, onClose, course }) =>
               <CheckCircle2 size={40} />
             </div>
 
-            <div className="space-y-2">
+             <div className="space-y-2">
               <div className="inline-flex items-center gap-1 bg-brand-primary/10 text-brand-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
-                <Sparkles size={12} className="animate-pulse" /> Successful Registration
+                <Sparkles size={12} className="text-brand-primary animate-pulse" /> Successful Registration
               </div>
               <h2 className="text-3xl font-black text-slate-900 tracking-tight">Registration Complete!</h2>
               <p className="text-sm font-semibold text-slate-400">Thank you for registering for {course.title}</p>
             </div>
 
-            {renderFormattedMessage(
-              course.customConfirmationMessage || 
-              "Congratulations! Your registration is complete. To successfully join the class, please click this link to access our Google Classroom: https://classroom.google.com/c/ODY1MjQ3MzU5MzI0?cjc=g5bxu3tn"
-            )}
+            {/* Render the custom message or fallback */}
+            <div className="text-slate-600 font-medium leading-relaxed whitespace-pre-line text-sm max-w-lg mx-auto">
+              {course.customConfirmationMessage || 
+                "Congratulations! Your enrollment request has been received. Our team will contact you via email and WhatsApp with your access credentials and getting-started guide shortly."}
+            </div>
 
             <button 
               onClick={onClose}
-              className="mt-4 px-10 py-4 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95"
+              className="mt-6 px-10 py-4 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95"
             >
               Close Window
             </button>
@@ -230,18 +247,23 @@ const CourseModal: React.FC<CourseModalProps> = ({ isOpen, onClose, course }) =>
                         className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold text-sm transition-all resize-none"
                       />
                     ) : field.type === 'select' ? (
-                      <select
-                        required={isRequired}
-                        value={value}
-                        onChange={(e) => handleInputChange(field.id, e.target.value)}
-                        className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold text-sm transition-all appearance-none"
-                      >
-                        <option value="">Select option</option>
-                        {field.options && field.options.split(',').map((opt: string) => {
-                          const o = opt.trim();
-                          return <option key={o} value={o}>{o}</option>;
-                        })}
-                      </select>
+                      <div className="relative">
+                        <select
+                          required={isRequired}
+                          value={value}
+                          onChange={(e) => handleInputChange(field.id, e.target.value)}
+                          className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold text-sm transition-all appearance-none pr-12 text-slate-800"
+                        >
+                          <option value="">Select option</option>
+                          {field.options && field.options.split(',').map((opt: string) => {
+                            const o = opt.trim();
+                            return <option key={o} value={o}>{o}</option>;
+                          })}
+                        </select>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                          <ChevronDown size={18} />
+                        </div>
+                      </div>
                     ) : (
                       <input
                         type={field.type}
@@ -269,9 +291,12 @@ const CourseModal: React.FC<CourseModalProps> = ({ isOpen, onClose, course }) =>
           /* Standard Details page */
           <>
             {/* Header Image */}
-            <div className="relative h-64 w-full">
+            <div className="relative h-64 w-full overflow-hidden bg-slate-950">
               {course.thumbnail ? (
-                <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+                <>
+                  <img src={course.thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover filter blur-lg opacity-40 scale-110 pointer-events-none" />
+                  <img src={course.thumbnail} alt={course.title} className="relative w-full h-full object-contain" />
+                </>
               ) : (
                 <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-300">
                   {isComingSoon ? <Bell size={64} className="animate-pulse" /> : (isLiveClass ? <Video size={64} /> : <PlayCircle size={64} />)}
@@ -342,6 +367,40 @@ const CourseModal: React.FC<CourseModalProps> = ({ isOpen, onClose, course }) =>
                 </p>
               </div>
 
+              {/* Features (if present) */}
+              {course.features && course.features.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-2 text-slate-900">
+                    <Sparkles className="text-brand-primary" size={18} /> Featuring
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {course.features.map((feature: string, idx: number) => (
+                      <div key={idx} className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-4 rounded-2xl transition-all hover:bg-slate-100/50">
+                        <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
+                        <span className="font-bold text-slate-700 text-sm">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* What You Will Learn (if present) */}
+              {course.whatYouWillLearn && course.whatYouWillLearn.length > 0 && (
+                <div className="space-y-4 bg-brand-primary/[0.01] border border-brand-primary/5 p-6 rounded-3xl">
+                  <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">What You Will Learn</h3>
+                  <div className="space-y-3">
+                    {course.whatYouWillLearn.map((item: string, idx: number) => (
+                      <div key={idx} className="flex gap-3">
+                        <div className="w-5 h-5 rounded-full bg-brand-primary/10 flex items-center justify-center font-bold text-brand-primary text-[10px] shrink-0 mt-0.5">
+                          {idx + 1}
+                        </div>
+                        <p className="text-slate-600 font-medium text-sm leading-relaxed">{item}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Registration Info for Coming Soon */}
               {isComingSoon && (
                 <div className="p-6 bg-amber-50 rounded-2xl border border-amber-100 space-y-2">
@@ -396,11 +455,11 @@ const CourseModal: React.FC<CourseModalProps> = ({ isOpen, onClose, course }) =>
                 onClick={handleActionClick}
                 className={`w-full py-5 rounded-2xl font-black flex items-center justify-center gap-3 transition-all shadow-xl ${
                   isComingSoon 
-                    ? (course.registrationLink || course.hasCustomRegistration ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20' : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none')
-                    : 'bg-brand-primary text-white hover:bg-brand-dark shadow-brand-primary/20'
+                    ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20 active:scale-95'
+                    : 'bg-brand-primary text-white hover:bg-brand-dark shadow-brand-primary/20 active:scale-[0.98]'
                 }`}
               >
-                {isComingSoon ? (course.registrationLink || course.hasCustomRegistration ? 'Register Interest' : 'Coming Soon') : 'Enroll Now'} <ArrowRight size={20} />
+                {isComingSoon ? 'Register Interest' : 'Enroll Now'} <ArrowRight size={20} />
               </button>
             </div>
           </>

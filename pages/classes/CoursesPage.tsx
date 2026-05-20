@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SEO from '../../components/SEO';
+import CourseModal from '../../components/classes/CourseModal';
 
 const MotionDiv = motion.div as any;
 
@@ -20,6 +21,8 @@ const CoursesPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCourse, setSelectedCourse] = useState<any | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   const categories = ["X-ray", "Ultrasound", "MRI", "CT", "Nuclear Medicine"];
 
@@ -32,6 +35,7 @@ const CoursesPage = () => {
       price: "Coming Soon",
       duration: "15 Hours",
       status: "coming-soon",
+      thumbnail: "cardiacmri.jpeg",
       description: "Deep dive into cardiac MRI protocols, pathologies, and advanced post-processing techniques.",
       modules: []
     },
@@ -43,6 +47,7 @@ const CoursesPage = () => {
       price: "Coming Soon",
       duration: "8 Hours",
       status: "coming-soon",
+      thumbnail: "RN.jpeg",
       description: "Learn specialized techniques for imaging neonates and children while maintaining radiation safety.",
       modules: []
     },
@@ -54,6 +59,7 @@ const CoursesPage = () => {
       price: "Coming Soon",
       duration: "10 Hours",
       status: "coming-soon",
+      thumbnail: "CTemer.jpeg",
       description: "Master the art of rapid CT interpretation and protocol optimization for emergency trauma cases.",
       modules: []
     }
@@ -77,6 +83,16 @@ const CoursesPage = () => {
 
     return () => unsubscribe();
   }, []);
+
+  const openModal = (course: any) => {
+    setSelectedCourse(course);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setSelectedCourse(null);
+    setShowModal(false);
+  };
 
   const filteredCourses = courses.filter(c => {
     const titleMatch = c.title.toLowerCase().includes(searchTerm.toLowerCase());
@@ -184,11 +200,25 @@ const CoursesPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="group bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all overflow-hidden flex flex-col"
+                onClick={() => openModal(course)}
+                className="group bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all overflow-hidden flex flex-col cursor-pointer"
               >
-                <div className="relative aspect-video overflow-hidden">
+                <div className="relative aspect-video overflow-hidden bg-slate-950">
                   {course.thumbnail ? (
-                    <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <>
+                      {/* Blurred backdrop to fill the aspect wrapper */}
+                      <img
+                        src={course.thumbnail}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover filter blur-lg opacity-40 scale-110 pointer-events-none"
+                      />
+                      {/* Crisp foreground image */}
+                      <img
+                        src={course.thumbnail}
+                        alt={course.title}
+                        className="relative h-full w-full object-contain transition-all duration-700 group-hover:scale-[1.03]"
+                      />
+                    </>
                   ) : (
                     <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-300">
                       <PlayCircle size={48} />
@@ -241,6 +271,7 @@ const CoursesPage = () => {
                     </div>
                     <button 
                       disabled={course.status === 'coming-soon'}
+                      onClick={(e) => { e.stopPropagation(); openModal(course); }}
                       className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg ${
                         course.status === 'coming-soon'
                           ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
@@ -256,6 +287,7 @@ const CoursesPage = () => {
           </div>
         )}
       </div>
+      <CourseModal isOpen={showModal} onClose={closeModal} course={selectedCourse} />
     </div>
   );
 };

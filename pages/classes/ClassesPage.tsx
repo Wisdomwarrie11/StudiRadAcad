@@ -4,8 +4,7 @@ import { FaStar, FaChevronDown, FaSearch, FaFilter } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase';
-import CourseModal from '../../components/classes/CourseModal';
-// import CourseInfoExtras from '../../components/classes/CourseInfoExtras';
+import ClassModal from './ClassModal';
 import SEO from '../../components/SEO';
 import { Calendar, Clock, Video, ArrowRight } from 'lucide-react';
 
@@ -14,17 +13,49 @@ const MotionDiv = motion.div as any;
 
 const categories = ["X-ray", "Ultrasound", "MRI", "CT", "Nuclear Medicine"];
 
+const ACTIVE_CLASSES = [
+  {
+    id: "chest-critique-2026",
+    title: "Radiographic Image Critique: Systematic Evaluation of Chest Radiographs",
+    category: "X-ray",
+    level: "All Levels",
+    status: "active",
+    price: "FREE",
+    isPaid: false,
+    duration: "5 Days (22nd – 26th June 2026)",
+    time: "8PM Daily",
+    venue: "StudiRad Google Classroom",
+    thumbnail: "/Critiquing.jpeg",
+    hasCustomRegistration: true,
+    customConfirmationMessage: "Congratulations! Your registration is complete. To successfully join the class, please use the secure Google Classroom invitation link below.",
+    description: "Master the art and science of chest radiograph interpretation. This intensive five-day cohort is designed for radiography students, pre-interns, interns, and practicing radiographers who want to perfect their systematic approach to chest X-ray quality evaluation and pattern recognition.",
+    features: [
+      "Live Classes",
+      "Case-Based Sessions",
+      "Guided Image Critique"
+    ],
+    whatYouWillLearn: [
+      "Systematic assessment of chest radiograph image quality",
+      "Recognition of major chest radiographic patterns",
+      "Identification of common chest pathologies",
+      "And more…"
+    ],
+    technologies: ["Google Classroom", "Google Meet"]
+  }
+];
+
 const COMING_SOON_CLASSES = [
   {
     id: "cs-class-1",
-    title: "Chest X-ray Clinical Interpretation",
+    title: "Systematic Evaluation of Skull Radiographs",
     category: "X-ray",
     level: "Beginner",
     status: "coming-soon",
-    price: "₦5,000",
-    isPaid: true,
+    price: "FREE",
+    thumbnail: "skull.jpg",
+    isPaid: false,
     duration: "4 Weeks (Online)",
-    registrationLink: "https://docs.google.com/forms/...",
+    registrationLink: "#",
     description: "A clinical masterclass on interpreting chest X-rays. Perfect for students and interns preparing for clinical rotations.",
     technologies: ["Google Meet", "WhatsApp"]
   },
@@ -34,10 +65,10 @@ const COMING_SOON_CLASSES = [
     category: "Ultrasound",
     level: "Advanced",
     status: "coming-soon",
-    price: "₦25,000",
-    isPaid: true,
-    duration: "6 Weeks (Intensive)",
-    registrationLink: "https://docs.google.com/forms/...",
+    price: "₦10,000",
+    isPaid: false,
+    duration: "1 Week (Intensive)",
+    registrationLink: "#",
     description: "Join our intensive cohort focused on advanced obstetric and gynecological ultrasound techniques.",
     technologies: ["Zoom", "Google Classroom"]
   }
@@ -66,12 +97,12 @@ export default function ClassesPage() {
         id: doc.id,
         ...doc.data()
       }));
-      // Merge with COMING_SOON_CLASSES
-      setClasses([...classesData, ...COMING_SOON_CLASSES]);
+      // Merge with ACTIVE_CLASSES and COMING_SOON_CLASSES
+      setClasses([...ACTIVE_CLASSES, ...classesData, ...COMING_SOON_CLASSES]);
       setLoading(false);
     }, (error) => {
       console.error("Error fetching classes:", error);
-      setClasses(COMING_SOON_CLASSES);
+      setClasses([...ACTIVE_CLASSES, ...COMING_SOON_CLASSES]);
       setLoading(false);
     });
 
@@ -276,13 +307,22 @@ export default function ClassesPage() {
                                   className="group/card relative flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                                 >
                                   {/* Image */}
-                                  <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                                  <div className="relative aspect-[4/3] overflow-hidden bg-slate-950">
                                     {course.thumbnail ? (
-                                      <img
-                                        src={course.thumbnail}
-                                        alt={course.title}
-                                        className="h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-110"
-                                      />
+                                      <>
+                                        {/* Blurred backdrop to fill the aspect wrapper */}
+                                        <img
+                                          src={course.thumbnail}
+                                          alt=""
+                                          className="absolute inset-0 h-full w-full object-cover filter blur-lg opacity-40 scale-110 pointer-events-none"
+                                        />
+                                        {/* Crisp foreground image */}
+                                        <img
+                                          src={course.thumbnail}
+                                          alt={course.title}
+                                          className="relative h-full w-full object-contain transition-all duration-500 group-hover/card:scale-[1.03]"
+                                        />
+                                      </>
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center text-slate-300">
                                         <Video size={40} />
@@ -353,8 +393,7 @@ export default function ClassesPage() {
         )}
       </div>
 
-      {/* <CourseInfoExtras /> */}
-      <CourseModal isOpen={showModal} onClose={closeModal} course={selectedCourse} />
+      <ClassModal isOpen={showModal} onClose={closeModal} classItem={selectedCourse} />
     </div>
   );
 }

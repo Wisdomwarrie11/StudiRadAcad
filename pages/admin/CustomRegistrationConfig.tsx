@@ -24,7 +24,15 @@ const DEFAULT_MESSAGE = "Congratulations! Your registration is complete. To succ
 const DEFAULT_SYSTEM_FIELDS: RegistrationField[] = [
   { id: 'fullname', label: 'Full Name', type: 'text', required: true, isSystem: true },
   { id: 'email', label: 'Email Address', type: 'email', required: true, isSystem: true },
-  { id: 'whatsapp', label: 'WhatsApp Number', type: 'tel', required: true, isSystem: true }
+  { id: 'whatsapp', label: 'WhatsApp Number', type: 'tel', required: true, isSystem: true },
+  { 
+    id: 'qualification', 
+    label: 'Qualification', 
+    type: 'select', 
+    required: true, 
+    options: 'Student, Pre-intern, Intern, Radiographer', 
+    isSystem: true 
+  }
 ];
 
 export default function CustomRegistrationConfig({
