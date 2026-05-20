@@ -272,6 +272,29 @@ const ClassModal: React.FC<ClassModalProps> = ({ isOpen, onClose, classItem }) =
                 </div>
               </div>
 
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                how did you hear about this? <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <select
+                    required
+                    value={formValues.qualification}
+                    onChange={(e) => handleInputChange('qualification', e.target.value)}
+                    className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold text-sm transition-all appearance-none pr-12 text-slate-800"
+                  >
+                    <option value="">Select option</option>
+                    <option value="Student">WhatsApp</option>
+                    <option value="Pre-intern">Facebook</option>
+                    <option value="Intern">LinkedIn</option>
+                    <option value="Radiographer">StudiRad website</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                    <ChevronDown size={18} />
+                  </div>
+                </div>
+              </div>
+
               <button 
                 type="submit"
                 disabled={submitting}
