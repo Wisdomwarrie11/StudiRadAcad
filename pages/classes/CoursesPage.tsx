@@ -65,6 +65,7 @@ const CoursesPage = () => {
     }
   ];
 
+
   useEffect(() => {
     const q = query(collection(db, 'courses'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -270,15 +271,14 @@ const CoursesPage = () => {
                       {course.price}
                     </div>
                     <button 
-                      disabled={course.status === 'coming-soon'}
                       onClick={(e) => { e.stopPropagation(); openModal(course); }}
                       className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg ${
                         course.status === 'coming-soon'
-                          ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
+                          ? 'bg-amber-500/10 text-amber-600 hover:bg-amber-500 hover:text-white shadow-none'
                           : 'bg-slate-900 text-white hover:bg-brand-primary shadow-slate-900/10'
                       }`}
                     >
-                      {course.status === 'coming-soon' ? 'Coming Soon' : 'Enroll'} <ArrowRight size={14} />
+                      {course.status === 'coming-soon' ? 'Coming Soon' : 'Enroll Now'} <ArrowRight size={14} />
                     </button>
                   </div>
                 </div>

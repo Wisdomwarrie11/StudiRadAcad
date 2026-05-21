@@ -23,7 +23,7 @@ const ACTIVE_CLASSES = [
     price: "FREE",
     isPaid: false,
     duration: "5 Days (22nd – 26th June 2026)",
-    time: "8PM Daily",
+    time: "8:30 PM Daily",
     venue: "StudiRad Google Classroom",
     thumbnail: "/Critiquing.jpeg",
     hasCustomRegistration: true,
@@ -47,15 +47,14 @@ const ACTIVE_CLASSES = [
 const COMING_SOON_CLASSES = [
   {
     id: "cs-class-1",
-    title: "Systematic Evaluation of Skull Radiographs",
+    title: "Chest X-ray Clinical Interpretation",
     category: "X-ray",
     level: "Beginner",
     status: "coming-soon",
-    price: "FREE",
-    // thumbnail: "skull.jpg",
-    isPaid: false,
+    price: "₦5,000",
+    isPaid: true,
     duration: "4 Weeks (Online)",
-    registrationLink: "#",
+    registrationLink: "https://docs.google.com/forms/...",
     description: "A clinical masterclass on interpreting chest X-rays. Perfect for students and interns preparing for clinical rotations.",
     technologies: ["Google Meet", "WhatsApp"]
   },
@@ -65,10 +64,10 @@ const COMING_SOON_CLASSES = [
     category: "Ultrasound",
     level: "Advanced",
     status: "coming-soon",
-    price: "₦10,000",
-    isPaid: false,
-    duration: "1 Week (Intensive)",
-    registrationLink: "#",
+    price: "₦25,000",
+    isPaid: true,
+    duration: "6 Weeks (Intensive)",
+    registrationLink: "https://docs.google.com/forms/...",
     description: "Join our intensive cohort focused on advanced obstetric and gynecological ultrasound techniques.",
     technologies: ["Zoom", "Google Classroom"]
   }
@@ -356,13 +355,25 @@ export default function ClassesPage() {
                                       ))}
                                     </div>
 
-                                    <div className="mt-auto flex items-center justify-between border-t border-slate-50 pt-5">
-                                      <span className={`font-black text-lg ${course.status === 'coming-soon' ? 'text-amber-500' : 'text-slate-900'}`}>
-                                        {course.price}
-                                      </span>
-                                      <div className="flex items-center gap-1.5 text-slate-400">
-                                        <Clock size={14} />
-                                        <span className="text-[10px] font-bold uppercase tracking-widest">{course.duration}</span>
+                                    <div className="mt-auto space-y-4 border-t border-slate-100 pt-5">
+                                      <div className="flex items-center justify-between">
+                                        <span className={`font-black text-lg ${course.status === 'coming-soon' ? 'text-amber-500' : 'text-slate-900'}`}>
+                                          {course.price}
+                                        </span>
+                                        <div className="flex items-center gap-1.5 text-slate-400">
+                                          <Clock size={14} />
+                                          <span className="text-[10px] font-bold uppercase tracking-widest">{course.duration}</span>
+                                        </div>
+                                      </div>
+
+                                      <div 
+                                        className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-md pointer-events-none ${
+                                          course.status === 'coming-soon'
+                                            ? 'bg-amber-500/10 text-amber-600 group-hover/card:bg-amber-500 group-hover/card:text-white shadow-none'
+                                            : 'bg-brand-primary text-white group-hover/card:bg-brand-dark shadow-brand-primary/10'
+                                        }`}
+                                      >
+                                        {course.status === 'coming-soon' ? 'Coming Soon' : 'Register Now'} <ArrowRight size={14} />
                                       </div>
                                     </div>
                                   </div>
