@@ -60,6 +60,15 @@ const getDeadlineStatus = (deadline: string | null | undefined) => {
   return { label: 'Active', color: 'text-emerald-600 bg-emerald-50 border border-emerald-100' };
 };
 
+// Safe date parser for Firestore Timestamps and ISO strings
+const getSafeDate = (val: any): Date => {
+  if (!val) return new Date(0);
+  if (typeof val.toDate === 'function') return val.toDate();
+  if (val.seconds) return new Date(val.seconds * 1000);
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? new Date(0) : d;
+};
+
 /* Fix: Implemented the full AdminPostOpportunity component to resolve return type errors */
 export function AdminPostOpportunity() {
   const navigate = useNavigate();
@@ -107,12 +116,20 @@ export function AdminPostOpportunity() {
     setLoadingPosts(true);
     const collectionName = activeType === 'job' ? 'jobs' : activeType === 'internship' ? 'internships' : 'scholarships';
     
-    const q = query(collection(adminDb, collectionName), orderBy('createdAt', 'desc'));
+    // Query without orderBy to avoid index requirement issues, then sort in memory
+    const q = collection(adminDb, collectionName);
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const posts = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data()
       }));
+      
+      posts.sort((a: any, b: any) => {
+        const dateA = getSafeDate(a.createdAt || a.postedAt);
+        const dateB = getSafeDate(b.createdAt || b.postedAt);
+        return dateB.getTime() - dateA.getTime();
+      });
+
       setExistingPosts(posts);
       setLoadingPosts(false);
     }, (err) => {
@@ -215,14 +232,17 @@ export function AdminPostOpportunity() {
 
       const collectionName = activeType === 'job' ? 'jobs' : activeType === 'internship' ? 'internships' : 'scholarships';
 
-      const payload = {
+      const payload: any = {
         ...formData,
         title,
         postedAt: new Date().toISOString(),
-        createdAt: editingId ? undefined : new Date(),
         scheduledFor: scheduledDate || null,
         opportunityType: activeType
       };
+
+      if (!editingId) {
+        payload.createdAt = new Date();
+      }
 
       if (editingId) {
         await updateDoc(doc(adminDb, collectionName, editingId), payload);
@@ -319,9 +339,24 @@ export function AdminPostOpportunity() {
                           <span className={`text-[9px] uppercase font-black px-2 py-0.5 rounded-full border ${status.color}`}>{status.label}</span>
                         </div>
                         <p className="text-slate-500 text-sm font-bold">{post.organization}</p>
-                        <div className="mt-2 flex items-center gap-4 text-[11px] text-slate-400 font-bold">
-                          <span className="flex items-center gap-1"><Clock size={12} /> {new Date(post.postedAt).toLocaleDateString()}</span>
+                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-slate-400 font-bold">
+                          <span className="flex items-center gap-1"><Clock size={12} /> {getSafeDate(post.postedAt || post.createdAt).toLocaleDateString()}</span>
                           <span className="flex items-center gap-1"><Plus size={12} /> {post.location}</span>
+                          {post.salaryOrAmount && (
+                            <span className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                              💰 {post.salaryOrAmount}
+                            </span>
+                          )}
+                          {activeType === 'job' && post.type && (
+                            <span className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
+                              ⚡ {post.type}
+                            </span>
+                          )}
+                          {activeType === 'internship' && post.duration && (
+                            <span className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
+                              📅 {post.duration}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="flex gap-2 shrink-0">
@@ -341,14 +376,14 @@ export function AdminPostOpportunity() {
               {editingId ? `Edit ${activeType}` : `Create New ${activeType}`}
             </h3>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-6 md:gap-x-8 md:gap-y-6">
               <div>
                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Role / Title</label>
-                <div className="flex gap-2">
+                <div className="space-y-3">
                   <select 
                     value={selectedRole}
                     onChange={e => setSelectedRole(e.target.value)}
-                    className="flex-1 p-4 rounded-2xl border-2 border-slate-100 font-bold bg-slate-50"
+                    className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold bg-slate-50 outline-none focus:border-amber-500 transition-all"
                   >
                     {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                   </select>
@@ -357,7 +392,7 @@ export function AdminPostOpportunity() {
                       type="text" value={customRole}
                       onChange={e => setCustomRole(e.target.value)}
                       placeholder="Specify role..."
-                      className="flex-1 p-4 rounded-2xl border-2 border-slate-100 font-bold"
+                      className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold outline-none focus:border-amber-500 transition-all animate-in fade-in"
                     />
                   )}
                 </div>
@@ -368,7 +403,7 @@ export function AdminPostOpportunity() {
                   type="text" value={formData.organization}
                   onChange={e => setFormData({...formData, organization: e.target.value})}
                   placeholder="e.g. Lagoon Hospital"
-                  className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold"
+                  className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold outline-none focus:border-amber-500 transition-all"
                 />
               </div>
               <div>
@@ -377,7 +412,7 @@ export function AdminPostOpportunity() {
                   type="text" value={formData.location}
                   onChange={e => setFormData({...formData, location: e.target.value})}
                   placeholder="e.g. Lagos, Nigeria"
-                  className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold"
+                  className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold outline-none focus:border-amber-500 transition-all"
                 />
               </div>
               <div>
@@ -385,7 +420,47 @@ export function AdminPostOpportunity() {
                 <input 
                   type="date" value={formData.deadline}
                   onChange={e => setFormData({...formData, deadline: e.target.value})}
-                  className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold bg-slate-50"
+                  className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold bg-slate-50 outline-none focus:border-amber-500 transition-all"
+                />
+              </div>
+
+              {activeType === 'job' && (
+                <div>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Job Type</label>
+                  <select 
+                    value={formData.type}
+                    onChange={e => setFormData({...formData, type: e.target.value})}
+                    className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold bg-slate-50 outline-none focus:border-amber-500 transition-all"
+                  >
+                    <option>Full-time</option>
+                    <option>Part-time</option>
+                    <option>Contract</option>
+                    <option>Remote</option>
+                  </select>
+                </div>
+              )}
+
+              {activeType === 'internship' && (
+                <div>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Duration</label>
+                  <input 
+                    type="text" value={formData.duration}
+                    onChange={e => setFormData({...formData, duration: e.target.value})}
+                    placeholder="e.g. 6 Months"
+                    className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold outline-none focus:border-amber-500 transition-all"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                  {activeType === 'job' ? 'Salary / Remuneration (Optional)' : activeType === 'internship' ? 'Stipend / Remuneration (Optional)' : 'Scholarship Amount / Value (Optional)'}
+                </label>
+                <input 
+                  type="text" value={formData.salaryOrAmount}
+                  onChange={e => setFormData({...formData, salaryOrAmount: e.target.value})}
+                  placeholder={activeType === 'job' ? "e.g. ₦150,000/month or Negotiable" : activeType === 'internship' ? "e.g. ₦50,000/month" : "e.g. Full Tuition or ₦1,000,000"}
+                  className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold outline-none focus:border-amber-500 transition-all"
                 />
               </div>
             </div>
@@ -400,43 +475,68 @@ export function AdminPostOpportunity() {
               />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
+             <div className="grid md:grid-cols-2 gap-8">
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Requirements</label>
-                <div className="flex gap-2 mb-4">
-                  <select 
-                    value={selectedReq}
-                    onChange={e => setSelectedReq(e.target.value)}
-                    className="flex-1 p-3 rounded-xl border border-slate-200 font-bold text-xs"
-                  >
-                    {REQUIREMENTS_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                  <button 
-                    type="button"
-                    onClick={() => { if(selectedReq) { setFormData({...formData, requirements: [...formData.requirements, selectedReq]}); } }}
-                    className="bg-slate-900 text-white px-4 rounded-xl font-black text-xs"
-                  >
-                    Add
-                  </button>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Requirements</label>
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <select 
+                      value={selectedReq}
+                      onChange={e => setSelectedReq(e.target.value)}
+                      className="flex-1 p-3 rounded-xl border border-slate-200 font-bold text-xs bg-slate-50 outline-none focus:border-amber-500"
+                    >
+                      {REQUIREMENTS_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                    <button 
+                      type="button"
+                      onClick={addRequirement}
+                      className="bg-slate-900 hover:bg-slate-800 text-white px-4 rounded-xl font-black text-xs shrink-0 transition-colors"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  {selectedReq === 'Others' && (
+                    <input 
+                      type="text"
+                      placeholder="Specify requirement..."
+                      value={customReq}
+                      onChange={e => setCustomReq(e.target.value)}
+                      className="w-full p-3 rounded-xl border border-slate-200 font-medium text-xs outline-none focus:border-amber-500 animate-in fade-in duration-200 mt-2"
+                    />
+                  )}
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mt-4 min-h-[46px] p-2 bg-slate-50 rounded-2xl border border-slate-100">
                   {formData.requirements.map((req, i) => (
-                    <span key={i} className="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2">
+                    <span key={i} className="bg-white text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 shadow-sm border border-slate-100">
                       {req}
-                      <X size={12} className="cursor-pointer hover:text-red-500" onClick={() => setFormData({...formData, requirements: formData.requirements.filter((_, idx) => idx !== i)})} />
+                      <X size={12} className="cursor-pointer hover:text-red-500 text-slate-400" onClick={() => setFormData({...formData, requirements: formData.requirements.filter((_, idx) => idx !== i)})} />
                     </span>
                   ))}
+                  {formData.requirements.length === 0 && (
+                    <span className="text-[11px] text-slate-400 font-bold italic p-1.5 flex items-center">No requirements added yet.</span>
+                  )}
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Application Link / Email</label>
-                <input 
-                  type="text" value={formData.link}
-                  onChange={e => setFormData({...formData, link: e.target.value})}
-                  placeholder="e.g. https://hospital.com/careers or hr@hospital.com"
-                  className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold"
-                />
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Application Contact Info</label>
+                  <input 
+                    type="text" value={formData.contactInfo}
+                    onChange={e => setFormData({...formData, contactInfo: e.target.value})}
+                    placeholder="e.g. Send CV to hr@hospital.com or WhatsApp number"
+                    className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold outline-none focus:border-amber-500 bg-slate-50 focus:bg-white transition-all text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Direct Apply Link/Email (Optional)</label>
+                  <input 
+                    type="text" value={formData.link}
+                    onChange={e => setFormData({...formData, link: e.target.value})}
+                    placeholder="e.g. https://hospital.com/careers"
+                    className="w-full p-4 rounded-2xl border-2 border-slate-100 font-bold outline-none focus:border-amber-500 bg-slate-50 focus:bg-white transition-all text-sm"
+                  />
+                </div>
               </div>
             </div>
 

@@ -73,7 +73,6 @@ const LocumPage = () => {
       <div className="container mx-auto max-w-6xl relative z-10">
         
         <div className="text-center mb-16">
-            <span className="text-[9px] font-mono uppercase tracking-[0.4em] text-slate-400 block mb-2">System.Service: Locum_Network</span>
             <h1 className="text-4xl md:text-5xl font-serif italic font-light text-slate-900 tracking-tight leading-none mb-4">
               Locum <span className="font-sans font-black uppercase tracking-tighter text-brand-primary">Finder</span>
             </h1>
@@ -135,7 +134,7 @@ const LocumPage = () => {
                                 disabled={loading}
                                 className="w-full bg-slate-900 text-white p-4 rounded-lg font-bold text-xs uppercase tracking-[0.2em] hover:bg-brand-primary transition-all flex justify-center items-center h-[50px] shadow-xl shadow-slate-900/10 active:scale-95"
                             >
-                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Execute Search'}
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
                             </button>
                         </div>
                     </form>
