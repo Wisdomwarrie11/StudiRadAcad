@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MessageCircle, Facebook, Users, ArrowRight } from 'lucide-react';
+import { MessageCircle, Facebook, Users, ArrowRight, Linkedin } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const CommunitySection: React.FC = () => {
@@ -45,6 +45,7 @@ const CommunitySection: React.FC = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+         
           {/* WhatsApp Card */}
           <motion.a
             href="https://chat.whatsapp.com/LIV2MPAaxgfHF0NsXLzlaf" // Placeholder
@@ -92,7 +93,33 @@ const CommunitySection: React.FC = () => {
               Join Facebook Group <ArrowRight size={18} />
             </div>
           </motion.a>
+
+           {/* WhatsApp Card */}
+           <motion.a
+            href="https://chat.whatsapp.com/LIV2MPAaxgfHF0NsXLzlaf" // Placeholder
+            target="_blank"
+            rel="noopener noreferrer"
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            whileHover={{ y: -5 }}
+            className="group bg-white p-8 rounded-3xl shadow-xl shadow-brand-dark/5 border border-gray-100 flex flex-col items-center text-center transition-all hover:border-green-500/30"
+          >
+            <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <Linkedin size={40} fill="currentColor" className="opacity-20 absolute" />
+              <Linkedin size={40} className="relative z-10" />
+            </div>
+            <h3 className="text-2xl font-bold text-brand-dark mb-3">LinkedIn Page</h3>
+            <p className="text-gray-600 mb-8">
+              Get instant updates, daily challenge reminders, and quick tips directly on your phone.
+            </p>
+            <div className="mt-auto flex items-center gap-2 font-bold text-green-600 group-hover:gap-4 transition-all">
+              Follow LinkedIn Page <ArrowRight size={18} />
+            </div>
+          </motion.a>
         </div>
+
+        
 
         {/* Community Stats */}
         <motion.div 
@@ -110,7 +137,7 @@ const CommunitySection: React.FC = () => {
             <div className="text-sm text-gray-500 uppercase tracking-wider font-semibold">States</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-brand-primary">Daily</div>
+            <div className="text-3xl font-bold text-brand-primary">Weekly</div>
             <div className="text-sm text-gray-500 uppercase tracking-wider font-semibold">Discussions</div>
           </div>
         </motion.div>

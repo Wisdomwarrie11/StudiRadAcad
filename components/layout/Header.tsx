@@ -8,6 +8,7 @@ const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const [academyOpen, setAcademyOpen] = useState(false);
+
   const location = useLocation();
 
   useEffect(() => {
@@ -65,6 +66,8 @@ const Header: React.FC = () => {
             </div>
 
             <Link to="/opportunities" className="text-sm font-medium hover:text-brand-accent transition-colors">Opportunities</Link>
+            <Link to="/community" className="text-sm font-medium hover:text-brand-accent transition-colors">Our community</Link>
+
             <Link to="/about" className="text-sm font-medium hover:text-brand-accent transition-colors">About</Link>
           </nav>
 
@@ -112,6 +115,8 @@ const Header: React.FC = () => {
             </div>
 
             <Link to="/opportunities" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium">Opportunities</Link>
+            <Link to="/opportunities" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium">Our Community</Link>
+
             <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium">About Us</Link>
 
           </div>

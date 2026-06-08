@@ -50,7 +50,7 @@ const OpportunitiesPage = () => {
       />
 
       {/* Hero Section - Technical Split */}
-      <section className="grid lg:grid-cols-2 min-h-[80vh] border-b border-slate-300">
+      <section className="grid lg:grid-cols-2 min-h-[100vh] border-b border-slate-300">
         <div className="p-8 md:p-20 flex flex-col justify-center border-r border-slate-300 bg-slate-100/50 backdrop-blur-sm">
            <motion.div
              initial={{ opacity: 0, x: -30 }}
@@ -58,7 +58,7 @@ const OpportunitiesPage = () => {
              transition={{ duration: 0.8 }}
            >
            
-             <h1 className="text-4xl md:text-6xl font-serif italic font-light leading-tight mb-8">
+             <h1 className="text-4xl md:text-6xl font-serif italic font-light leading-tight mb-8 mt-12">
                Career <br />
                <span className="font-sans font-black uppercase tracking-tighter text-brand-primary">Growth</span> <br />
                Pathways
