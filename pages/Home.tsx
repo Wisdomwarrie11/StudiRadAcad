@@ -18,8 +18,8 @@ const Home: React.FC = () => {
       <Hero />
       <Stats />
       <TargetAudience />
-      <Features />
-      {/* <ClassesPreview /> */}
+      {/* <Features /> */}
+      <ClassesPreview />
       <TargetAudienceNew />
       <Testimonials />
       <OpportunitiesPreview />
