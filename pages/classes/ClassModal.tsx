@@ -133,11 +133,6 @@ const ClassModal: React.FC<ClassModalProps> = ({ isOpen, onClose, classItem }) =
                 <Sparkles size={12} className="text-brand-primary animate-pulse" /> Successful Registration
               </div>
               <h2 className="text-3xl font-black text-slate-900 tracking-tight">Registration Complete!</h2>
-              <p className="text-sm font-semibold text-slate-400">Thank you for registering for {classItem.title}</p>
-            </div>
-
-            <div className="text-slate-600 font-medium leading-relaxed whitespace-pre-line text-sm max-w-lg mx-auto">
-              Congratulations! Your registration is complete. To successfully join the class, please use the secure Google Classroom invitation link below.
             </div>
 
             {/* Google Classroom access card */}

@@ -23,7 +23,7 @@ const ACTIVE_CLASSES = [
     price: "FREE",
     isPaid: false,
     duration: "5 Days (22nd – 26th June 2026)",
-    time: "8:30 PM Daily",
+    time: "8PM Daily",
     venue: "StudiRad Google Classroom",
     thumbnail: "/Critiquing.jpeg",
     hasCustomRegistration: true,
