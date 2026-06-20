@@ -47,15 +47,15 @@ const ACTIVE_CLASSES = [
 const COMING_SOON_CLASSES = [
   {
     id: "cs-class-1",
-    title: "Chest X-ray Clinical Interpretation",
+    title: "Introduction to skull radiograph critique",
     category: "X-ray",
     level: "Beginner",
     status: "coming-soon",
-    price: "₦5,000",
-    isPaid: true,
+    price: "FREE",
+    isPaid: false,
     duration: "4 Weeks (Online)",
     registrationLink: "https://docs.google.com/forms/...",
-    description: "A clinical masterclass on interpreting chest X-rays. Perfect for students and interns preparing for clinical rotations.",
+    description: "A clinical masterclass on interpreting skull X-rays. Perfect for students and interns.",
     technologies: ["Google Meet", "WhatsApp"]
   },
   {
@@ -64,9 +64,9 @@ const COMING_SOON_CLASSES = [
     category: "Ultrasound",
     level: "Advanced",
     status: "coming-soon",
-    price: "₦25,000",
+    price: "₦5,000",
     isPaid: true,
-    duration: "6 Weeks (Intensive)",
+    duration: "1 Week (Intensive)",
     registrationLink: "https://docs.google.com/forms/...",
     description: "Join our intensive cohort focused on advanced obstetric and gynecological ultrasound techniques.",
     technologies: ["Zoom", "Google Classroom"]
