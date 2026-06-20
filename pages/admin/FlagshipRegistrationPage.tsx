@@ -24,7 +24,9 @@ import {
   Unlock,
   AlertCircle,
   Sparkles,
-  School
+  School,
+  Send,
+  X
 } from "lucide-react";
 
 // Firestore Error Types as required by firebase-integration skill
@@ -77,6 +79,35 @@ export default function FlagshipRegistrationsPage() {
   const [authorized, setAuthorized] = useState(false);
   const [passcodeInput, setPasscodeInput] = useState("");
   const [passcodeError, setPasscodeError] = useState("");
+  const [selectedRecipient, setSelectedRecipient] = useState<any | null>(null);
+  const [customMessage, setCustomMessage] = useState("");
+  const [targetPhone, setTargetPhone] = useState("");
+  const [activeChannel, setActiveChannel] = useState<"whatsapp" | "email">("whatsapp");
+  const [targetEmail, setTargetEmail] = useState("");
+  const [emailSubject, setEmailSubject] = useState("Urgent Reminder: StudiRad Flagship Class Onboarding Sessions");
+
+  const getDynamicMessage = (fullName: string): string => {
+    const greetingName = fullName && fullName !== "—" ? fullName.trim() : "Colleagues";
+    const greetingSalutation = greetingName === "Colleagues" ? "Dear Colleagues" : `Dear ${greetingName}`;
+    return `${greetingSalutation},
+This is to formally remind you that the StudiRad flagship Class is scheduled to commence on *Monday, 22 June 2026.* We are delighted to welcome you to this advanced educational initiative.
+
+Please find the opening session schedule below:
+*7:45 PM:* Welcome & Onboarding Session
+*8:00 PM:* Commencement of the Core Lecture.
+
+The link to the onboarding session and live class has been sent to your email. To maximize your experience, we kindly request that you adjust your schedule accordingly and ensure you are logged in promptly before the onboarding session. 
+
+We look forward to your active participation.`;
+  };
+
+  const cleanPhoneNumber = (num: string): string => {
+    let cleaned = num.replace(/[^0-9]/g, "");
+    if (cleaned.startsWith("0") && cleaned.length === 11) {
+      cleaned = "234" + cleaned.substring(1);
+    }
+    return cleaned;
+  };
 
   // Check auth or URL passcode params on load
   useEffect(() => {
@@ -103,7 +134,7 @@ export default function FlagshipRegistrationsPage() {
 
     setLoading(true);
     const collectionPath = "registrations";
-    const q = query(collection(db, collectionPath));
+    const q = query(collection(db, collectionPath), where("itemType", "==", "class"));
 
     const unsubscribeData = onSnapshot(q, (snapshot) => {
       try {
@@ -355,6 +386,7 @@ export default function FlagshipRegistrationsPage() {
                     <th className="py-4.5 px-6">Contact & Phone</th>
                     <th className="py-4.5 px-6">Qualification</th>
                     <th className="py-4.5 px-6">Register Date</th>
+                    <th className="py-4.5 px-6 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -393,6 +425,21 @@ export default function FlagshipRegistrationsPage() {
                         <td className="py-5 px-6 font-mono text-xs text-slate-400 font-semibold">
                           {dateString}
                         </td>
+                        <td className="py-5 px-6 text-right">
+                          <button
+                            onClick={() => {
+                              setSelectedRecipient(reg);
+                              setCustomMessage(getDynamicMessage(info.name));
+                              setTargetPhone(cleanPhoneNumber(info.whatsapp));
+                              setTargetEmail(info.email);
+                              setEmailSubject("Urgent Reminder: StudiRad Flagship Class Starts Monday, 22 June 2026");
+                              setActiveChannel("whatsapp");
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-100 rounded-xl text-xs font-extrabold transition-colors shadow-sm"
+                          >
+                            <Send size={11} className="text-emerald-600" /> Send Reminder
+                          </button>
+                        </td>
                       </tr>
                     );
                   })}
@@ -411,6 +458,182 @@ export default function FlagshipRegistrationsPage() {
             </div>
           </div>
         )}
+
+        {/* Elegant Preview & Send Modal */}
+        {selectedRecipient && (() => {
+          const info = getStudentInfo(selectedRecipient);
+          return (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-[2.5rem] border border-slate-100 max-w-xl w-full shadow-2xl p-8 space-y-6">
+                
+                {/* Modal Header */}
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest block bg-brand-primary/5 px-2.5 py-1 rounded-md w-fit border border-brand-primary/10 mb-1">
+                      Multi-Channel Broadcast Reminder
+                    </span>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Preview & Send Message</h3>
+                    <p className="text-xs font-semibold text-slate-400">Review notification channel and details for <strong className="text-slate-700 font-bold">{info.name}</strong></p>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedRecipient(null)}
+                    className="p-2 hover:bg-slate-50 text-slate-400 hover:text-slate-600 rounded-full transition-all"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Channel Switcher */}
+                <div className="flex bg-slate-100 p-1 rounded-2xl">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveChannel("whatsapp");
+                      // Convert / load template with WhatsApp formatting (asterisks)
+                      setCustomMessage(getDynamicMessage(info.name));
+                    }}
+                    className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                      activeChannel === "whatsapp" 
+                        ? "bg-white text-emerald-700 shadow-sm" 
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    <Phone size={13} className="text-emerald-500" /> WhatsApp
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveChannel("email");
+                      // Convert / load template for Email formatting (plain text, strip asterisks)
+                      setCustomMessage(getDynamicMessage(info.name).replace(/\*/g, ""));
+                    }}
+                    className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                      activeChannel === "email" 
+                        ? "bg-white text-indigo-700 shadow-sm" 
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    <Mail size={13} className="text-indigo-500" /> Email Form
+                  </button>
+                </div>
+
+                {/* Dynamic input verification */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Recipient Name</label>
+                      <input 
+                        type="text" 
+                        disabled
+                        value={info.name}
+                        className="w-full px-4 py-3 bg-slate-50 text-slate-500 rounded-xl font-bold text-xs border border-transparent cursor-not-allowed"
+                      />
+                    </div>
+                    {activeChannel === "whatsapp" ? (
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1">Designated WhatsApp Phone</label>
+                        <input 
+                          type="text" 
+                          value={targetPhone}
+                          onChange={(e) => setTargetPhone(e.target.value)}
+                          placeholder="e.g. 2348031234567"
+                          className="w-full px-4 py-3 bg-slate-50 border border-emerald-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500/20 font-bold text-xs transition-all"
+                        />
+                        <span className="text-[9px] text-slate-400 font-semibold block ml-1">Include international country code (e.g. 234 for Nigeria)</span>
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1">Recipient Email Address</label>
+                        <input 
+                          type="text" 
+                          value={targetEmail}
+                          onChange={(e) => setTargetEmail(e.target.value)}
+                          placeholder="e.g. doctor@gmail.com"
+                          className="w-full px-4 py-3 bg-slate-50 border border-indigo-100 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 font-bold text-xs transition-all"
+                        />
+                        <span className="text-[9px] text-slate-400 font-semibold block ml-1">Confirm correct destination email address</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {activeChannel === "email" && (
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest ml-1">Email Subject Line</label>
+                      <input 
+                        type="text" 
+                        value={emailSubject}
+                        onChange={(e) => setEmailSubject(e.target.value)}
+                        placeholder="Subject of the email"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 font-bold text-xs transition-all"
+                      />
+                    </div>
+                  )}
+
+                  {/* Message Preview Text Area */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center px-1">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Message Content</label>
+                      <span className="text-[10px] font-mono text-slate-400 font-bold">{customMessage.length} characters</span>
+                    </div>
+                    <textarea
+                      rows={8}
+                      value={customMessage}
+                      onChange={(e) => setCustomMessage(e.target.value)}
+                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] outline-none focus:ring-2 focus:ring-brand-primary/20 font-semibold text-xs leading-relaxed transition-all resize-none font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-slate-100">
+                  <div className="text-[10px] font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100/50">
+                    {activeChannel === "whatsapp" 
+                      ? "⚠️ Opens WhatsApp Web/App with pre-filled reminder." 
+                      : "⚠️ Opens your system's default email sender app."}
+                  </div>
+                  <div className="flex items-center gap-3 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRecipient(null)}
+                      className="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-all uppercase tracking-wider"
+                    >
+                      Cancel
+                    </button>
+                    {activeChannel === "whatsapp" ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const encodedMsg = encodeURIComponent(customMessage);
+                          const waUrl = `https://wa.me/${targetPhone}?text=${encodedMsg}`;
+                          window.open(waUrl, "_blank", "noopener,noreferrer");
+                          setSelectedRecipient(null);
+                        }}
+                        className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-lg shadow-emerald-600/10 uppercase tracking-wider"
+                      >
+                        <Send size={12} /> Send on WhatsApp
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const encodedSubject = encodeURIComponent(emailSubject);
+                          const encodedBody = encodeURIComponent(customMessage);
+                          const mailtoUrl = `mailto:${targetEmail}?subject=${encodedSubject}&body=${encodedBody}`;
+                          window.location.href = mailtoUrl;
+                          setSelectedRecipient(null);
+                        }}
+                        className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-lg shadow-indigo-600/10 uppercase tracking-wider"
+                      >
+                        <Mail size={12} /> Send Email Remind
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
