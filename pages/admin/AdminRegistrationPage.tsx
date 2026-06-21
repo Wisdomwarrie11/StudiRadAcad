@@ -46,18 +46,26 @@ export default function AdminRegistrationsPage() {
   const [targetPhone, setTargetPhone] = useState("");
 
   const getDynamicMessage = (fullName: string): string => {
-    const greetingName = fullName && fullName !== "—" ? fullName.trim() : "Colleagues";
-    const greetingSalutation = greetingName === "Colleagues" ? "Dear Colleagues" : `Dear ${greetingName}`;
+    const greetingName = fullName && fullName !== "—" ? fullName.trim() : "Colleague";
+    const greetingSalutation = greetingName === "Colleague" ? "Dear Colleague" : `Hello ${greetingName}`;
     return `${greetingSalutation},
-This is to formally remind you that the StudiRad flagship Class is scheduled to commence on *Monday, 22 June 2026.* We are delighted to welcome you to this advanced educational initiative.
+We are delighted to have you join StudiRad flagship class.
 
 Please find the opening session schedule below:
 *7:45 PM:* Welcome & Onboarding Session
 *8:00 PM:* Commencement of the Core Lecture.
 
-The link to the onboarding session and live class has been sent to your email. To maximize your experience, we kindly request that you adjust your schedule accordingly and ensure you are logged in promptly before the onboarding session. 
 
-We look forward to your active participation.`;
+*Link :* https://meet.google.com/xgn-etgn-zyf (Admittance into the class will be open by 7:45 PM)
+To maximize your experience, we kindly request that you adjust your schedule accordingly and ensure you are logged in promptly before the onboarding session. 
+
+If you are yet to join the Google Classroom, please click on this link to join: https://classroom.google.com/c/ODY1MjQ3MzU5MzI0?cjc=g5bxu3tn
+
+We look forward to your active participation.
+
+
+Best Regards,
+StudiRad Team`;
   };
 
   const cleanPhoneNumber = (num: string): string => {
@@ -405,7 +413,7 @@ We look forward to your active participation.`;
                 {filteredRegistrations.length} Total
               </span>
             </div>
-            <p className="text-slate-500 font-medium tracking-tight mt-1">Review dynamic form response cards submitted across various active channels and live classes.</p>
+            <p className="text-slate-500 font-medium tracking-tight mt-1">Review form response cards submitted across various active channels and live classes.</p>
           </div>
 
           <div className="flex gap-3 shrink-0">
