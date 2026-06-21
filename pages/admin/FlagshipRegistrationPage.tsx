@@ -85,20 +85,33 @@ export default function FlagshipRegistrationsPage() {
   const [activeChannel, setActiveChannel] = useState<"whatsapp" | "email">("whatsapp");
   const [targetEmail, setTargetEmail] = useState("");
   const [emailSubject, setEmailSubject] = useState("Urgent Reminder: StudiRad Flagship Class Onboarding Sessions");
+  
+  // Anti-spam Delay & Cooldown state logic
+  const [cooldowns, setCooldowns] = useState<Record<string, number>>({});
+  const [pacingCountdown, setPacingCountdown] = useState<number | null>(null);
+  const [isPacingActive, setIsPacingActive] = useState(false);
 
   const getDynamicMessage = (fullName: string): string => {
-    const greetingName = fullName && fullName !== "—" ? fullName.trim() : "Colleagues";
-    const greetingSalutation = greetingName === "Colleagues" ? "Dear Colleagues" : `Dear ${greetingName}`;
-    return `${greetingSalutation},
-This is to formally remind you that the StudiRad flagship Class is scheduled to commence on *Monday, 22 June 2026.* We are delighted to welcome you to this advanced educational initiative.
+    const greetingName = fullName && fullName !== "—" ? fullName.trim() : "Colleague";
+    return `Hello ${greetingName},
+We are delighted to have you join StudiRad flagship class.
 
 Please find the opening session schedule below:
 *7:45 PM:* Welcome & Onboarding Session
 *8:00 PM:* Commencement of the Core Lecture.
 
-The link to the onboarding session and live class has been sent to your email. To maximize your experience, we kindly request that you adjust your schedule accordingly and ensure you are logged in promptly before the onboarding session. 
 
-We look forward to your active participation.`;
+*Link :* https://meet.google.com/xgn-etgn-zyf (Admittance into the class will be open by 7:45 PM)
+
+To maximize your experience, we kindly request that you adjust your schedule accordingly and ensure you are logged in promptly before the onboarding session. 
+
+If you are yet to join the Google Classroom, please click on this link to join: https://classroom.google.com/c/ODY1MjQ3MzU5MzI0?cjc=g5bxu3tn
+
+We look forward to your active participation.
+
+
+Best Regards,
+StudiRad Team`;
   };
 
   const cleanPhoneNumber = (num: string): string => {
@@ -107,6 +120,66 @@ We look forward to your active participation.`;
       cleaned = "234" + cleaned.substring(1);
     }
     return cleaned;
+  };
+
+  // Cooldowns countdown global decrement
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCooldowns((prev) => {
+        const next = { ...prev };
+        let changed = false;
+        for (const key in next) {
+          if (next[key] > 0) {
+            next[key] -= 1;
+            changed = true;
+          } else {
+            delete next[key];
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Handle anti-spam secure paced dispatch logic
+  const triggerPacedSend = (recipientId: string, channel: "whatsapp" | "email") => {
+    if (isPacingActive) return;
+    
+    setIsPacingActive(true);
+    setPacingCountdown(3); // 3 seconds safety buffer pacing
+
+    let currentCount = 3;
+    const interval = setInterval(() => {
+      currentCount -= 1;
+      if (currentCount <= 0) {
+        clearInterval(interval);
+        
+        // Execute real native communication dispatch
+        if (channel === "whatsapp") {
+          const encodedMsg = encodeURIComponent(customMessage);
+          const waUrl = `https://wa.me/${targetPhone}?text=${encodedMsg}`;
+          window.open(waUrl, "_blank", "noopener,noreferrer");
+        } else {
+          const encodedSubject = encodeURIComponent(emailSubject);
+          const encodedBody = encodeURIComponent(customMessage);
+          const mailtoUrl = `mailto:${targetEmail}?subject=${encodedSubject}&body=${encodedBody}`;
+          window.location.href = mailtoUrl;
+        }
+
+        // Set persistent cooldown anti-spam lockout for 20 seconds
+        const cooldownKey = `${recipientId}_${channel}`;
+        setCooldowns((prev) => ({ ...prev, [cooldownKey]: 20 }));
+
+        // Reset pacing flags and close modal
+        setIsPacingActive(false);
+        setPacingCountdown(null);
+        setSelectedRecipient(null);
+      } else {
+        setPacingCountdown(currentCount);
+      }
+    }, 1000);
   };
 
   // Check auth or URL passcode params on load
@@ -426,19 +499,49 @@ We look forward to your active participation.`;
                           {dateString}
                         </td>
                         <td className="py-5 px-6 text-right">
-                          <button
-                            onClick={() => {
-                              setSelectedRecipient(reg);
-                              setCustomMessage(getDynamicMessage(info.name));
-                              setTargetPhone(cleanPhoneNumber(info.whatsapp));
-                              setTargetEmail(info.email);
-                              setEmailSubject("Urgent Reminder: StudiRad Flagship Class Starts Monday, 22 June 2026");
-                              setActiveChannel("whatsapp");
-                            }}
-                            className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-100 rounded-xl text-xs font-extrabold transition-colors shadow-sm"
-                          >
-                            <Send size={11} className="text-emerald-600" /> Send Reminder
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            {/* WhatsApp Button */}
+                            <button
+                              onClick={() => {
+                                setSelectedRecipient(reg);
+                                setCustomMessage(getDynamicMessage(info.name));
+                                setTargetPhone(cleanPhoneNumber(info.whatsapp));
+                                setTargetEmail(info.email);
+                                setEmailSubject("Urgent Reminder: StudiRad Flagship Class Starts Monday, 22 June 2026");
+                                setActiveChannel("whatsapp");
+                              }}
+                              disabled={!!cooldowns[`${reg.id}_whatsapp`]}
+                              className={`inline-flex items-center gap-1.5 px-3 py-2 border rounded-xl text-[11px] font-black tracking-tight transition-all shadow-sm ${
+                                cooldowns[`${reg.id}_whatsapp`]
+                                  ? "bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed"
+                                  : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-100"
+                              }`}
+                            >
+                              <Phone size={11} className={cooldowns[`${reg.id}_whatsapp`] ? "text-slate-300" : "text-emerald-500"} />
+                              {cooldowns[`${reg.id}_whatsapp`] ? `Wait ${cooldowns[`${reg.id}_whatsapp`]}s` : "WhatsApp"}
+                            </button>
+
+                            {/* Email Button */}
+                            <button
+                              onClick={() => {
+                                setSelectedRecipient(reg);
+                                setCustomMessage(getDynamicMessage(info.name).replace(/\*/g, ""));
+                                setTargetPhone(cleanPhoneNumber(info.whatsapp));
+                                setTargetEmail(info.email);
+                                setEmailSubject("Urgent Reminder: StudiRad Flagship Class Starts Monday, 22 June 2026");
+                                setActiveChannel("email");
+                              }}
+                              disabled={!!cooldowns[`${reg.id}_email`]}
+                              className={`inline-flex items-center gap-1.5 px-3 py-2 border rounded-xl text-[11px] font-black tracking-tight transition-all shadow-sm ${
+                                cooldowns[`${reg.id}_email`]
+                                  ? "bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed"
+                                  : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-100"
+                              }`}
+                            >
+                              <Mail size={11} className={cooldowns[`${reg.id}_email`] ? "text-slate-300" : "text-indigo-500"} />
+                              {cooldowns[`${reg.id}_email`] ? `Wait ${cooldowns[`${reg.id}_email`]}s` : "Email"}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -464,7 +567,7 @@ We look forward to your active participation.`;
           const info = getStudentInfo(selectedRecipient);
           return (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-[2.5rem] border border-slate-100 max-w-xl w-full shadow-2xl p-8 space-y-6">
+              <div className="bg-white rounded-[2.5rem] border border-slate-100 max-w-xl w-full shadow-2xl p-8 space-y-6 max-h-[90vh] overflow-y-auto flex flex-col">
                 
                 {/* Modal Header */}
                 <div className="flex items-start justify-between">
@@ -578,55 +681,67 @@ We look forward to your active participation.`;
                     <textarea
                       rows={8}
                       value={customMessage}
+                      disabled={isPacingActive}
                       onChange={(e) => setCustomMessage(e.target.value)}
-                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] outline-none focus:ring-2 focus:ring-brand-primary/20 font-semibold text-xs leading-relaxed transition-all resize-none font-mono"
+                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] outline-none focus:ring-2 focus:ring-brand-primary/20 font-semibold text-xs leading-relaxed transition-all resize-none font-mono text-slate-800"
                     />
                   </div>
+
+                  {/* Delay Indicator / Status Warning */}
+                  {isPacingActive && (
+                    <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl text-amber-800 text-xs font-bold space-y-1 animate-pulse">
+                      <p className="flex items-center gap-2">
+                        <span>🔒</span> 
+                        <span>Anti-Spam Safety Buffer Active: Pacing delivery in {pacingCountdown}s...</span>
+                      </p>
+                      <p className="text-[10px] text-amber-600 font-normal ml-6">
+                        This brief pacing delay prevents consecutive action triggers to safeguard accounts from flagging.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-slate-100">
                   <div className="text-[10px] font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100/50">
                     {activeChannel === "whatsapp" 
-                      ? "⚠️ Opens WhatsApp Web/App with pre-filled reminder." 
-                      : "⚠️ Opens your system's default email sender app."}
+                      ? "⚠️ Launches WhatsApp Web/App with pre-filled, rate-paced markdown text." 
+                      : "⚠️ Launches your system's default email agent (e.g. Outlook/Mail)."}
                   </div>
-                  <div className="flex items-center gap-3 justify-end">
+                  <div className="flex items-center gap-3 justify-end flex-wrap">
                     <button
                       type="button"
+                      disabled={isPacingActive}
                       onClick={() => setSelectedRecipient(null)}
-                      className="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-all uppercase tracking-wider"
+                      className="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-all uppercase tracking-wider disabled:opacity-50"
                     >
                       Cancel
                     </button>
-                    {activeChannel === "whatsapp" ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const encodedMsg = encodeURIComponent(customMessage);
-                          const waUrl = `https://wa.me/${targetPhone}?text=${encodedMsg}`;
-                          window.open(waUrl, "_blank", "noopener,noreferrer");
-                          setSelectedRecipient(null);
-                        }}
-                        className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-lg shadow-emerald-600/10 uppercase tracking-wider"
-                      >
-                        <Send size={12} /> Send on WhatsApp
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const encodedSubject = encodeURIComponent(emailSubject);
-                          const encodedBody = encodeURIComponent(customMessage);
-                          const mailtoUrl = `mailto:${targetEmail}?subject=${encodedSubject}&body=${encodedBody}`;
-                          window.location.href = mailtoUrl;
-                          setSelectedRecipient(null);
-                        }}
-                        className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-lg shadow-indigo-600/10 uppercase tracking-wider"
-                      >
-                        <Mail size={12} /> Send Email Remind
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      disabled={isPacingActive}
+                      onClick={() => triggerPacedSend(selectedRecipient.id, activeChannel)}
+                      className={`px-6 py-3 text-white rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-lg uppercase tracking-wider disabled:opacity-50 ${
+                        activeChannel === "whatsapp"
+                          ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/10"
+                          : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10"
+                      }`}
+                    >
+                      {isPacingActive ? (
+                        <>
+                          <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Sending in {pacingCountdown}s...
+                        </>
+                      ) : activeChannel === "whatsapp" ? (
+                        <>
+                          <Send size={12} /> Send on WhatsApp
+                        </>
+                      ) : (
+                        <>
+                          <Mail size={12} /> Send Email Remind
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
 
