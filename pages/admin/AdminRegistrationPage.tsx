@@ -56,11 +56,14 @@ export default function AdminRegistrationsPage() {
   const getDynamicMessage = (fullName: string): string => {
     const greetingName = fullName && fullName !== "—" ? fullName.trim() : "Colleague";
     return `Hello ${greetingName},
-We are delighted to have you join StudiRad flagship class.
+We are delighted to have you join StudiRad flagship class. 
+
+Date: Monday,22nd June 2026.
 
 Please find the opening session schedule below:
 *7:45 PM:* Welcome & Onboarding Session
 *8:00 PM:* Commencement of the Core Lecture.
+
 
 
 *Link :* https://meet.google.com/xgn-etgn-zyf (Admittance into the class will be open by 7:45 PM)
