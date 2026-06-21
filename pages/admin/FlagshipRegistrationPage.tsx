@@ -455,6 +455,7 @@ StudiRad Team`;
               <table className="w-full border-collapse text-left">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase font-black text-slate-400 tracking-wider">
+                    <th className="py-4.5 px-6 w-12 text-center">#</th>
                     <th className="py-4.5 px-6">Participant Details</th>
                     <th className="py-4.5 px-6">Contact & Phone</th>
                     <th className="py-4.5 px-6">Qualification</th>
@@ -463,7 +464,7 @@ StudiRad Team`;
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {filteredRegistrations.map((reg) => {
+                  {filteredRegistrations.map((reg, index) => {
                     const info = getStudentInfo(reg);
                     const registerDate = reg.registeredAt || reg.timestamp || reg.createdAt;
                     const dateString = registerDate?.toDate 
@@ -474,6 +475,9 @@ StudiRad Team`;
 
                     return (
                       <tr key={reg.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="py-5 px-6 w-12 text-center font-mono text-xs text-slate-400 font-bold bg-slate-50/30">
+                          {index + 1}
+                        </td>
                         <td className="py-5 px-6">
                           <div className="space-y-1">
                             <span className="font-extrabold text-slate-800 text-sm block tracking-tight">{info.name}</span>

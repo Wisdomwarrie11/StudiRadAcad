@@ -612,7 +612,7 @@ StudiRad Team`;
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredRegistrations.map((reg) => {
+            {filteredRegistrations.map((reg, index) => {
               const registerDate = reg.registeredAt || reg.timestamp || reg.createdAt;
               const dateString = registerDate?.toDate 
                 ? registerDate.toDate().toLocaleString() 
@@ -635,11 +635,16 @@ StudiRad Team`;
                       {/* Header */}
                       <div className="flex items-start justify-between">
                         <div className="space-y-1">
-                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
-                            isClass ? 'bg-rose-50 text-rose-600' : 'bg-indigo-50 text-indigo-600'
-                          }`}>
-                            <BookOpen size={10} /> {isClass ? 'Cohort Class' : 'Pre-recorded Course'}
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                              #{index + 1}
+                            </span>
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
+                              isClass ? 'bg-rose-50 text-rose-600' : 'bg-indigo-50 text-indigo-600'
+                            }`}>
+                              <BookOpen size={10} /> {isClass ? 'Cohort Class' : 'Pre-recorded Course'}
+                            </span>
+                          </div>
                           <h4 className="text-base font-black text-slate-800 tracking-tight leading-snug line-clamp-2 pr-6 mt-1">{regTitle}</h4>
                         </div>
                         
@@ -748,9 +753,14 @@ StudiRad Team`;
                       {/* Header */}
                       <div className="flex items-start justify-between">
                         <div className="space-y-1">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-violet-100 text-violet-700">
-                            <SlidersHorizontal size={10} /> Private Tutoring Enrollment
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                              #{index + 1}
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-violet-100 text-violet-700">
+                              <SlidersHorizontal size={10} /> Private Tutoring Enrollment
+                            </span>
+                          </div>
                           <h4 className="text-lg font-black text-slate-800 tracking-tight leading-snug pr-6 mt-1">{reg.name || "Unnamed Student"}</h4>
                         </div>
                         
@@ -870,9 +880,14 @@ StudiRad Team`;
                       {/* Header */}
                       <div className="flex items-start justify-between">
                         <div className="space-y-1">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-600">
-                            <Video size={10} /> Webinar Orientation Signup
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                              #{index + 1}
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-600">
+                              <Video size={10} /> Webinar Orientation Signup
+                            </span>
+                          </div>
                           <h4 className="text-lg font-black text-slate-800 tracking-tight leading-snug pr-6 mt-1">{reg.name || "Unnamed Student"}</h4>
                         </div>
                         
