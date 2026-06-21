@@ -57,8 +57,8 @@ export default function AdminRegistrationsPage() {
     const greetingName = fullName && fullName !== "—" ? fullName.trim() : "Colleague";
     return `Hello ${greetingName},
 We are delighted to have you join StudiRad flagship class. Please take note of the following details;
-Date: Monday,22nd June 2026.
 
+Date: Monday,22nd June 2026.
 *7:45 PM:* Welcome & Onboarding Session
 *8:00 PM:* Commencement of the Core Lecture.
 *Link :* https://meet.google.com/xgn-etgn-zyf (Admittance into the class will be open by 7:45 PM)
