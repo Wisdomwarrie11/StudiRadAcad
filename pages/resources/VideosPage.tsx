@@ -17,7 +17,7 @@ const VideosPage = () => {
 
   const courses = [
     "All", "Anatomy", "Physiology", "Rad Tech", "Rad Equipment", 
-    "Pathology", "CT", "MRI", "USS", "Projects", "Others"
+    "Pathology", "CT", "MRI", "Ultrasound", "Projects", "Others"
   ];
 
   useEffect(() => {
