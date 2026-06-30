@@ -133,6 +133,11 @@ const ClassModal: React.FC<ClassModalProps> = ({ isOpen, onClose, classItem }) =
                 <Sparkles size={12} className="text-brand-primary animate-pulse" /> Successful Registration
               </div>
               <h2 className="text-3xl font-black text-slate-900 tracking-tight">Registration Complete!</h2>
+              <p className="text-sm font-semibold text-slate-400">Thank you for registering for {classItem.title}</p>
+            </div>
+
+            <div className="text-slate-600 font-medium leading-relaxed whitespace-pre-line text-sm max-w-lg mx-auto">
+              Congratulations! Your registration is complete. To successfully join the class, please use the secure Google Classroom invitation link below.
             </div>
 
             {/* Google Classroom access card */}
@@ -267,29 +272,6 @@ const ClassModal: React.FC<ClassModalProps> = ({ isOpen, onClose, classItem }) =
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
-                how did you hear about this? <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <select
-                    required
-                    value={formValues.qualification}
-                    onChange={(e) => handleInputChange('qualification', e.target.value)}
-                    className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-brand-primary/20 font-bold text-sm transition-all appearance-none pr-12 text-slate-800"
-                  >
-                    <option value="">Select option</option>
-                    <option value="Student">WhatsApp</option>
-                    <option value="Pre-intern">Facebook</option>
-                    <option value="Intern">LinkedIn</option>
-                    <option value="Radiographer">StudiRad website</option>
-                  </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                    <ChevronDown size={18} />
-                  </div>
-                </div>
-              </div>
-
               <button 
                 type="submit"
                 disabled={submitting}
@@ -331,6 +313,11 @@ const ClassModal: React.FC<ClassModalProps> = ({ isOpen, onClose, classItem }) =
                       Coming Soon
                     </span>
                   )}
+                  {classItem.status === 'completed' && (
+                    <span className="px-3 py-1 bg-rose-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest">
+                      Class Completed
+                    </span>
+                  )}
                   {classItem.level && (
                     <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-lg text-[10px] font-black uppercase tracking-widest">
                       {classItem.level}
@@ -362,7 +349,11 @@ const ClassModal: React.FC<ClassModalProps> = ({ isOpen, onClose, classItem }) =
                 <div className="bg-slate-50 p-4 rounded-2xl text-center">
                   <CheckCircle2 className="mx-auto mb-2 text-brand-primary" size={20} />
                   <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Registration</span>
-                  <span className="font-black text-slate-900 text-xs leading-tight block mt-1 text-emerald-600 uppercase tracking-wider">{classItem.price || 'FREE'}</span>
+                  <span className={`font-black text-xs leading-tight block mt-1 uppercase tracking-wider ${
+                    classItem.status === 'completed' ? 'text-rose-600' : 'text-emerald-600'
+                  }`}>
+                    {classItem.status === 'completed' ? 'CLOSED' : (classItem.price || 'FREE')}
+                  </span>
                 </div>
               </div>
 
@@ -432,6 +423,13 @@ const ClassModal: React.FC<ClassModalProps> = ({ isOpen, onClose, classItem }) =
                   className="w-full py-5 rounded-2xl font-black flex items-center justify-center gap-3 bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
                 >
                   Coming Soon (Not Scheduled Yet)
+                </button>
+              ) : classItem.status === 'completed' ? (
+                <button 
+                  disabled
+                  className="w-full py-5 rounded-2xl font-black flex items-center justify-center gap-3 bg-slate-100 text-slate-400 border border-slate-200/60 cursor-not-allowed shadow-none"
+                >
+                  Registration Closed (Class Completed)
                 </button>
               ) : (
                 <button 

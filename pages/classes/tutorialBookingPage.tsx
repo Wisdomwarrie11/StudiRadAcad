@@ -72,8 +72,8 @@ const SUBSCRIPTION_PACKAGES: SubscriptionPackage[] = [
     duration: '3 Months',
     price: 124700,
     originalPrice: 146700,
-    features: ['Max 5 Courses', '3 Sessions / Week', '1hr Per Course Limit', 'Weekly Tests', 'Prof. Exam Revision', 'Evening Classes'],
-    maxCourses: 5
+    features: ['Max 3 Courses', '3 Sessions / Week', '1hr Per Course Limit', 'Weekly Tests', 'Prof. Exam Revision', 'Evening Classes'],
+    maxCourses: 3
   }
 ];
 
@@ -144,6 +144,10 @@ const TutoringBookingPage: React.FC = () => {
 
   const handleAddCustomInstant = () => {
     if (!customInstantTopic.trim()) return;
+    if (cart.length >= 3) {
+        alert("You can only request a maximum of 3 areas/courses.");
+        return;
+    }
     if (cart.some(i => i.name.toLowerCase() === customInstantTopic.toLowerCase())) {
         alert("This topic is already in your cart.");
         return;
@@ -448,10 +452,10 @@ const TutoringBookingPage: React.FC = () => {
                                     <div className="flex items-center gap-2 text-amber-400 font-black mb-2 uppercase tracking-widest text-[10px]">
                                         <FaGem size={14} /> Custom Tier
                                     </div>
-                                    <h4 className="text-2xl font-black mb-2">Need More Than 5 Courses?</h4>
-                                    <p className="text-slate-400 text-sm max-w-lg leading-relaxed">For students needing specialized modality mastery or custom research support.</p>
+                                    <h4 className="text-2xl font-black mb-2">Need a Custom Schedule?</h4>
+                                    <p className="text-slate-400 text-sm max-w-lg leading-relaxed">For students needing highly tailored study periods, intensive exam revisions, or custom timelines.</p>
                                 </div>
-                                <button onClick={() => window.open(`https://wa.me/2347041197027?text=${encodeURIComponent("Hello StudiRad, I'm interested in the Diamond Custom Package.")}`, '_blank')} className="relative z-10 bg-amber-500 text-slate-950 px-10 py-5 rounded-[2rem] font-black text-lg shadow-xl hover:scale-105 transition-all">Talk to Lead</button>
+                                <button onClick={() => window.open(`https://wa.me/2347041197027?text=${encodeURIComponent("Hello StudiRad, I'm interested in a custom tutoring package or custom schedule.")}`, '_blank')} className="relative z-10 bg-amber-500 text-slate-950 px-10 py-5 rounded-[2rem] font-black text-lg shadow-xl hover:scale-105 transition-all">Talk to Lead</button>
                             </div>
                         </motion.div>
                     ) : (
@@ -468,7 +472,14 @@ const TutoringBookingPage: React.FC = () => {
                             {PRESET_COURSES.map(course => (
                                 <button
                                 key={course}
-                                onClick={() => { if(!cart.some(i => i.name === course)) setCart([...cart, { id: generateId(), name: course, hours: 1, days: 1 }]) }}
+                                onClick={() => { 
+                                  if (cart.some(i => i.name === course)) return;
+                                  if (cart.length >= 3) {
+                                      alert("You can only request a maximum of 3 areas/courses.");
+                                      return;
+                                  }
+                                  setCart([...cart, { id: generateId(), name: course, hours: 1, days: 1 }]);
+                                }}
                                 className={`text-left px-5 py-4 rounded-2xl border-2 transition-all font-bold text-xs ${cart.some(i => i.name === course) ? 'bg-slate-50 border-slate-200 text-slate-300' : 'bg-white border-slate-100 text-slate-600 hover:border-amber-400'}`}
                                 >
                                 {course}
