@@ -44,6 +44,7 @@ const AdminBlogPage = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
   const [editCategory, setEditCategory] = useState("General");
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editLoading, setEditLoading] = useState(false);
 
   useEffect(() => {
@@ -159,6 +160,7 @@ const AdminBlogPage = () => {
     setEditTitle(post.title);
     setEditContent(post.content);
     setEditCategory(post.category || "General");
+    setEditImageFile(null);
     setEditModalShow(true);
   };
 
@@ -167,10 +169,61 @@ const AdminBlogPage = () => {
 
     setEditLoading(true);
     try {
+      let imageUrl = "";
+      
+      // Find the existing post to keep the old image if no new image is selected
+      const currentPost = posts.find(p => p.id === editPostId);
+      imageUrl = currentPost?.imageUrl || "";
+
+      if (editImageFile) {
+        try {
+          let fileToUpload = editImageFile;
+          
+          if (editImageFile.size > 1024 * 1024) {
+            const options = { 
+              maxSizeMB: 0.8, 
+              maxWidthOrHeight: 1200, 
+              useWebWorker: true,
+              initialQuality: 0.7 
+            };
+            try {
+              fileToUpload = await imageCompression(editImageFile, options);
+            } catch (compError) {
+              fileToUpload = editImageFile;
+            }
+          }
+
+          const imageRef = ref(storage, `blogImages/${Date.now()}_${editImageFile.name.replace(/\s+/g, '_')}`);
+          const uploadResult = await uploadBytes(imageRef, fileToUpload);
+          imageUrl = await getDownloadURL(uploadResult.ref);
+        } catch (storageError) {
+          console.warn("Firebase Storage upload failed on edit. Falling back to Base64.", storageError);
+          let b64TargetFile = editImageFile;
+          try {
+            b64TargetFile = await imageCompression(editImageFile, {
+              maxSizeMB: 0.04,
+              maxWidthOrHeight: 600,
+              useWebWorker: true
+            });
+          } catch (compressError) {}
+
+          const convertToBase64 = (file: File): Promise<string> => {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.readAsDataURL(file);
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = error => reject(error);
+            });
+          };
+          imageUrl = await convertToBase64(b64TargetFile);
+        }
+      }
+
       await updateDoc(doc(db, "blogs", editPostId), {
         title: editTitle,
         content: editContent,
         category: editCategory,
+        imageUrl,
         updatedAt: new Date(),
       });
       setEditModalShow(false);
@@ -365,6 +418,21 @@ const AdminBlogPage = () => {
               onChange={(e) => setEditContent(e.target.value)}
               className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-primary text-sm"
             />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-gray-500 uppercase">Cover Image (Optional)</label>
+            <div className="relative border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 transition-colors">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setEditImageFile(e.target.files ? e.target.files[0] : null)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <div className="flex flex-col items-center">
+                 <ImageIcon size={20} className="text-gray-400 mb-1" />
+                 <span className="text-xs text-gray-500">{editImageFile ? editImageFile.name : "Select Image to update..."}</span>
+              </div>
+            </div>
           </div>
           <div className="flex justify-end gap-3 pt-4">
             <button 

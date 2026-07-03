@@ -1,20 +1,20 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, Flag, ArrowRight, Check, X, ExternalLink, Loader2, LogOut, ChevronLeft } from 'lucide-react';
+import { Flag, ArrowRight, Check, X, ExternalLink, Loader2, LogOut, ChevronLeft } from 'lucide-react';
 import { getQuestionsForDay, updateUserProgress, getUserProfile, startChallengeDay } from '../../services/challengeService';
 import { ChallengeLevel, ChallengeQuestion, AlertConfig } from '../../types';
 import CustomAlert from '../../components/ui/CustomAlert';
 
 const DailyChallengeQuiz: React.FC = () => {
-  const { dayId } = useParams<{ dayId: string }>();
+  const { dayId } = useParams();
   const navigate = useNavigate();
   
   const [questions, setQuestions] = useState<ChallengeQuestion[]>([]);
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [timerSeconds, setTimerSeconds] = useState(30);
   const [timeLeft, setTimeLeft] = useState(30);
-  const [isAnswered, setIsAnswered] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
   const [topic, setTopic] = useState('');
@@ -37,14 +37,15 @@ const DailyChallengeQuiz: React.FC = () => {
     const init = async () => {
       try {
         const email = sessionStorage.getItem('studiRad_challenge_email') || localStorage.getItem('studiRad_challenge_email');
+        const nav = navigate;
         if (!email || !dayId) {
-          navigate('/challenge');
+          nav('/challenge');
           return;
         }
 
         const profile = await getUserProfile(email);
         if (!profile) {
-          navigate('/challenge');
+          nav('/challenge');
           return;
         }
         
@@ -56,7 +57,7 @@ const DailyChallengeQuiz: React.FC = () => {
 
         const dayNum = parseInt(dayId, 10);
         if (isNaN(dayNum)) {
-          navigate('/challenge/dashboard');
+          nav('/challenge/dashboard');
           return;
         }
 
@@ -68,6 +69,7 @@ const DailyChallengeQuiz: React.FC = () => {
         const { topic: loadedTopic, questions: loadedQuestions } = getQuestionsForDay(dayNum, profile.level);
         setTopic(loadedTopic);
         setQuestions(loadedQuestions);
+        setAnswers(new Array(loadedQuestions.length).fill(null));
       } catch (e) {
         console.error(e);
         navigate('/challenge');
@@ -78,42 +80,17 @@ const DailyChallengeQuiz: React.FC = () => {
     init();
   }, [dayId, navigate]);
 
-  // Wall-clock based timer logic
-  useEffect(() => {
-    if (quizFinished || isAnswered || questions.length === 0) return;
+  const isCurrentAnswered = answers[currentQIndex] !== null;
 
-    // Calculate target time when effect starts (new question or init)
-    // We use the current timeLeft value to determine the end point relative to now.
-    // NOTE: This assumes timeLeft is reset to timerSeconds before this effect runs for a new question.
-    const targetTime = Date.now() + timeLeft * 1000;
-
-    timerRef.current = setInterval(() => {
-      const now = Date.now();
-      const secondsRemaining = Math.ceil((targetTime - now) / 1000);
-
-      if (secondsRemaining <= 0) {
-        setTimeLeft(0);
-        handleTimeOut();
-        if (timerRef.current) clearInterval(timerRef.current);
-      } else {
-        setTimeLeft(secondsRemaining);
-      }
-    }, 200); // Check more frequently for responsiveness
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [currentQIndex, isAnswered, quizFinished, questions.length]);
-
-  const handleTimeOut = () => {
-    setIsAnswered(true);
-    setSelectedOption(-1); 
-  };
+  // Note: Wall-clock based timer has been removed per user request for an untimed, self-paced quiz.
 
   const handleOptionClick = (index: number) => {
-    if (isAnswered) return;
-    setIsAnswered(true);
-    setSelectedOption(index);
+    if (answers[currentQIndex] !== null) return;
+    
+    const updated = [...answers];
+    updated[currentQIndex] = index;
+    setAnswers(updated);
+    
     if (index === questions[currentQIndex].correctIndex) {
       setScore(s => s + 1);
     }
@@ -122,19 +99,28 @@ const DailyChallengeQuiz: React.FC = () => {
   const handleNext = () => {
     if (currentQIndex + 1 < questions.length) {
       setCurrentQIndex(prev => prev + 1);
-      setIsAnswered(false);
-      setSelectedOption(null);
       setTimeLeft(timerSeconds);
     } else {
       finishQuiz(true); 
     }
   };
 
+  const handlePrev = () => {
+    if (currentQIndex > 0) {
+      setCurrentQIndex(prev => prev - 1);
+      setTimeLeft(timerSeconds);
+    }
+  };
+
   const handleQuit = () => {
+    const currentScore = answers.reduce((sum, ans, idx) => {
+      return ans === questions[idx].correctIndex ? sum + 1 : sum;
+    }, 0);
+
     setAlertConfig({
         isOpen: true,
         title: 'End Session?',
-        message: `Are you sure you want to quit? You have ${score} points so far. These points will be counted, but the day won't be marked as 'Complete' unless you finish all questions.`,
+        message: `Are you sure you want to quit? You have ${currentScore} points so far. These points will be counted, but the day won't be marked as 'Complete' unless you finish all questions.`,
         type: 'warning',
         singleButton: false,
         confirmText: 'End Session',
@@ -145,6 +131,7 @@ const DailyChallengeQuiz: React.FC = () => {
   };
 
   const finishQuiz = async (completed: boolean) => {
+    const nav = navigate;
     setQuizFinished(true);
     setIsSaving(true);
     
@@ -152,14 +139,16 @@ const DailyChallengeQuiz: React.FC = () => {
     const email = sessionStorage.getItem('studiRad_challenge_email') || localStorage.getItem('studiRad_challenge_email');
     
     if (!email || !dayId) {
-      // Safety check: if data is missing, stop loading and redirect
       setIsSaving(false);
-      navigate('/challenge');
+      nav('/challenge');
       return;
     }
 
     try {
       const dayNum = parseInt(dayId, 10);
+      const currentScore = answers.reduce((sum, ans, idx) => {
+        return ans === questions[idx].correctIndex ? sum + 1 : sum;
+      }, 0);
       
       const profile = await getUserProfile(email);
       if (profile) {
@@ -167,15 +156,14 @@ const DailyChallengeQuiz: React.FC = () => {
         // the user finished all questions ('completed' param). 
         // An attempt counts as playing the day, starting the timer for the next day.
         const shouldAdvance = (profile.currentDay === dayNum);
-        await updateUserProgress(email, dayNum, score, shouldAdvance);
+        await updateUserProgress(email, dayNum, currentScore, shouldAdvance);
       }
     } catch (e) {
       console.error("Error saving progress", e);
-      // Optional: Show error alert here if needed
     } finally {
       setIsSaving(false);
       if (!completed) {
-          navigate('/challenge/dashboard');
+          nav('/challenge/dashboard');
       }
     }
   };
@@ -187,6 +175,10 @@ const DailyChallengeQuiz: React.FC = () => {
     </div>
   );
 
+  const calculatedScore = answers.reduce((sum, ans, idx) => {
+    return ans === questions[idx].correctIndex ? sum + 1 : sum;
+  }, 0);
+
   if (quizFinished) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
@@ -197,9 +189,9 @@ const DailyChallengeQuiz: React.FC = () => {
           <h2 className="text-3xl font-bold text-slate-900 mb-2">Day {dayId} Complete!</h2>
           <p className="text-slate-500 mb-8">You have completed the challenge for {topic}.</p>
           
-          <div className="text-6xl font-black text-slate-900 mb-2">{score} <span className="text-2xl text-slate-400 font-medium">/ {questions.length}</span></div>
+          <div className="text-6xl font-black text-slate-900 mb-2">{calculatedScore} <span className="text-2xl text-slate-400 font-medium">/ {questions.length}</span></div>
           <p className="text-emerald-600 font-bold mb-8">
-            {score > 25 ? 'Outstanding Performance!' : score > 15 ? 'Good Job!' : 'Keep Practicing!'}
+            {calculatedScore > (questions.length * 0.8) ? 'Outstanding Performance!' : calculatedScore > (questions.length * 0.5) ? 'Good Job!' : 'Keep Practicing!'}
           </p>
 
           <button 
@@ -219,6 +211,10 @@ const DailyChallengeQuiz: React.FC = () => {
   }
 
   const currentQ = questions[currentQIndex];
+
+  // Dynamic calculations for question navigation
+  const firstUnanswered = answers.findIndex(a => a === null);
+  const highestUnlocked = firstUnanswered === -1 ? questions.length - 1 : firstUnanswered;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
@@ -240,10 +236,6 @@ const DailyChallengeQuiz: React.FC = () => {
         </div>
         
         <div className="flex items-center">
-          <div className={`flex items-center space-x-2 font-mono font-bold text-xl mr-6 ${timeLeft < 5 ? 'text-red-500 animate-pulse' : 'text-slate-700'}`}>
-            <Clock className="w-5 h-5" />
-            <span>00:{timeLeft.toString().padStart(2, '0')}</span>
-          </div>
           <button 
             onClick={handleQuit}
             className="text-red-500 hover:text-red-700 flex items-center text-sm font-bold transition-colors border border-red-200 hover:bg-red-50 px-4 py-2 rounded-lg"
@@ -253,11 +245,52 @@ const DailyChallengeQuiz: React.FC = () => {
         </div>
       </div>
 
+      {/* Question Navigation Dots Map */}
+      <div className="bg-white border-b border-slate-200 px-6 py-3 flex flex-wrap gap-2 justify-center items-center shadow-inner">
+        {questions.map((_, idx) => {
+          const isCurrent = idx === currentQIndex;
+          const isAnswered = answers[idx] !== null;
+          const isUnlocked = idx <= highestUnlocked;
+
+          let bubbleClass = "border-slate-200 text-slate-400";
+          if (isCurrent) {
+            bubbleClass = "bg-amber-500 border-amber-500 text-white shadow-md font-bold scale-110";
+          } else if (isAnswered) {
+            if (answers[idx] === -1) {
+              bubbleClass = "bg-slate-200 border-slate-300 text-slate-500 font-medium";
+            } else {
+              const isCorrect = answers[idx] === questions[idx].correctIndex;
+              bubbleClass = isCorrect 
+                ? "bg-emerald-100 border-emerald-300 text-emerald-800 font-semibold" 
+                : "bg-red-100 border-red-300 text-red-800 font-semibold";
+            }
+          } else if (isUnlocked) {
+            bubbleClass = "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200 cursor-pointer font-semibold";
+          } else {
+            bubbleClass = "bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed opacity-50";
+          }
+
+          return (
+            <button
+              key={idx}
+              disabled={!isUnlocked}
+              onClick={() => {
+                setCurrentQIndex(idx);
+                setTimeLeft(timerSeconds);
+              }}
+              className={`w-8 h-8 rounded-full border text-xs flex items-center justify-center transition-all ${bubbleClass}`}
+            >
+              {idx + 1}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Progress Bar */}
-      <div className="h-1.5 bg-slate-200 w-full">
+      <div className="h-1 bg-slate-200 w-full">
         <div 
-          className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-300 ease-linear" 
-          style={{ width: `${((currentQIndex) / questions.length) * 100}%` }}
+          className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-300" 
+          style={{ width: `${((currentQIndex + (isCurrentAnswered ? 1 : 0)) / questions.length) * 100}%` }}
         />
       </div>
 
@@ -276,29 +309,30 @@ const DailyChallengeQuiz: React.FC = () => {
             <div className="bg-slate-50/50 p-6 space-y-3">
               {currentQ.options.map((option, idx) => {
                 let btnClass = "bg-white border-slate-200 hover:border-slate-400 text-slate-700 hover:shadow-md";
+                const selectedOptionForQ = answers[currentQIndex];
                 
-                if (isAnswered) {
+                if (isCurrentAnswered) {
                   if (idx === currentQ.correctIndex) {
-                    btnClass = "bg-emerald-100 border-emerald-500 text-emerald-800 shadow-none"; // Correct
-                  } else if (selectedOption === idx) {
-                    btnClass = "bg-red-100 border-red-500 text-red-800 shadow-none"; // Wrong selected
+                    btnClass = "bg-emerald-100 border-emerald-500 text-emerald-800 shadow-none"; // Correct option
+                  } else if (selectedOptionForQ === idx) {
+                    btnClass = "bg-red-100 border-red-500 text-red-800 shadow-none"; // Selected wrong option
                   } else {
                     btnClass = "bg-slate-100 border-slate-200 text-slate-400 opacity-60 shadow-none"; // Others
                   }
-                } else if (selectedOption === idx) {
+                } else if (selectedOptionForQ === idx) {
                   btnClass = "bg-slate-800 text-white shadow-lg scale-[1.01] border-slate-800";
                 }
 
                 return (
                   <button
                     key={idx}
-                    disabled={isAnswered}
+                    disabled={isCurrentAnswered}
                     onClick={() => handleOptionClick(idx)}
                     className={`w-full text-left p-5 rounded-xl border-2 font-medium transition-all duration-200 flex justify-between items-center ${btnClass}`}
                   >
                     <span>{option}</span>
-                    {isAnswered && idx === currentQ.correctIndex && <Check className="w-6 h-6 text-emerald-600" />}
-                    {isAnswered && selectedOption === idx && idx !== currentQ.correctIndex && <X className="w-6 h-6 text-red-600" />}
+                    {isCurrentAnswered && idx === currentQ.correctIndex && <Check className="w-6 h-6 text-emerald-600" />}
+                    {isCurrentAnswered && selectedOptionForQ === idx && idx !== currentQ.correctIndex && <X className="w-6 h-6 text-red-600" />}
                   </button>
                 );
               })}
@@ -306,7 +340,7 @@ const DailyChallengeQuiz: React.FC = () => {
           </div>
 
           {/* Explanation / Footer */}
-          {isAnswered && (
+          {isCurrentAnswered && (
             <div className="bg-white rounded-2xl shadow-lg border-l-4 border-blue-500 p-6 fade-in mb-8">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="font-bold text-slate-900 flex items-center"><div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div> Explanation</h3>
@@ -320,15 +354,25 @@ const DailyChallengeQuiz: React.FC = () => {
               {currentQ.referenceLink && (
                  <a href={currentQ.referenceLink} target="_blank" rel="noreferrer" className="text-blue-600 text-sm font-bold flex items-center hover:underline mb-6">
                     Confirm Answer <ExternalLink className="ml-1 w-3 h-3" />
-                 </a>
+                  </a>
               )}
               
-              <button 
-                onClick={handleNext}
-                className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold flex items-center justify-center hover:bg-slate-800 transition-colors shadow-lg"
-              >
-                {currentQIndex + 1 === questions.length ? 'Finish Quiz' : 'Next Question'} <ArrowRight className="ml-2 w-5 h-5" />
-              </button>
+              <div className="flex gap-4">
+                <button
+                  disabled={currentQIndex === 0}
+                  onClick={handlePrev}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-xl font-bold flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="mr-2 w-5 h-5" /> Previous Question
+                </button>
+                
+                <button 
+                  onClick={handleNext}
+                  className="flex-1 bg-slate-900 text-white py-4 rounded-xl font-bold flex items-center justify-center hover:bg-slate-800 transition-colors shadow-lg"
+                >
+                  {currentQIndex + 1 === questions.length ? 'Finish Quiz' : 'Next Question'} <ArrowRight className="ml-2 w-5 h-5" />
+                </button>
+              </div>
             </div>
           )}
 

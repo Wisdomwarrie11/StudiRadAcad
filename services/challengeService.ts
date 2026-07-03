@@ -206,12 +206,11 @@ export const updateUserProgress = async (
       // Natural progression: currentDay only moves forward if we completed the currentDay
       const nextDay = currentData.currentDay + 1;
       updatePayload.currentDay = Math.min(Math.max(currentData.currentDay, nextDay), 7);
-      // SET THE TIMER TIMESTAMP HERE
       updatePayload.lastPlayedDate = new Date().toISOString();
       
-      // NOTE: We do NOT automatically add nextDay to unlockedDays anymore.
-      // unlockedDays is reserved for Day 1 and PAIDs unlocks.
-      // Natural progression relies on currentDay and date checking in canPlayDay.
+      const currentUnlocked = new Set(currentData.unlockedDays || [1]);
+      currentUnlocked.add(Math.min(nextDay, 6));
+      updatePayload.unlockedDays = Array.from(currentUnlocked);
     }
 
     // Check for Level Completion (If Day 6 is finished)
@@ -276,8 +275,8 @@ export const switchLevel = async (email: string, newLevel: ChallengeLevel): Prom
         return true;
     }
 
-    // If not completed, need 3 coins
-    if (userData.coins < 3) {
+    // If not completed, need 1 coin
+    if (userData.coins < 1) {
         return false;
     }
 
@@ -285,7 +284,7 @@ export const switchLevel = async (email: string, newLevel: ChallengeLevel): Prom
         level: newLevel,
         currentDay: 1, // Reset day for new level
         unlockedDays: [1],
-        coins: userData.coins - 3
+        coins: userData.coins - 1
     });
 
     return true;
@@ -468,10 +467,27 @@ export const getQuestionsForDay = (day: number, level: ChallengeLevel): { topic:
 
   // Fallback to random questions if array is empty (mock safety)
   if (!rawQuestions || rawQuestions.length === 0) {
-    rawQuestions = [
-        { text: `Placeholder question for ${topic} (${level})`, options: ["A", "B", "C", "D"], correctIndex: 0, explanation: "Placeholder", referenceLink: "" },
-        { text: `Another question for ${topic}`, options: ["1", "2", "3", "4"], correctIndex: 1, explanation: "Placeholder", referenceLink: "" }
-    ]; 
+    rawQuestions = [];
+    for (let i = 0; i < 30; i++) {
+      rawQuestions.push({
+        text: `Radiography practice question #${i + 1} for ${topic} (${level})`,
+        options: ["Correct answer option", "Alternative option B", "Alternative option C", "Alternative option D"],
+        correctIndex: 0,
+        explanation: `This is a practice explanation for ${topic} question #${i + 1}.`,
+        referenceLink: "https://www.studirad.com"
+      });
+    }
+  }
+
+  // Ensure there are exactly 30 questions per topic across all levels by padding if needed
+  if (rawQuestions && rawQuestions.length > 0 && rawQuestions.length < 30) {
+    const originalLength = rawQuestions.length;
+    while (rawQuestions.length < 30) {
+      const srcQ = rawQuestions[rawQuestions.length % originalLength];
+      rawQuestions.push({
+        ...srcQ
+      });
+    }
   }
 
   const processedQuestions: ChallengeQuestion[] = rawQuestions.map((q, i) => {
@@ -497,61 +513,21 @@ export const getQuestionsForDay = (day: number, level: ChallengeLevel): { topic:
 };
 
 export const canPlayDay = (day: number, profile: UserChallengeProfile): { allowed: boolean, reason?: string, requiresUnlock?: boolean, canPayToUnlock?: boolean } => {
-  const unlockedDays = new Set(profile.unlockedDays || [1]);
-  
-  // 1. If previously unlocked (paid or Day 1), allow
-  if (unlockedDays.has(day)) return { allowed: true };
-  
-  // 2. Previous days can always be replayed
-  if (day < profile.currentDay) {
+  // If explicitly unlocked in user profile
+  if (profile.unlockedDays && profile.unlockedDays.includes(day)) {
     return { allowed: true };
   }
 
-  // 3. Current progression day
-  if (day === profile.currentDay) {
-    // Check Date logic
-    if (!profile.lastPlayedDate) {
-      return { allowed: true }; // First time playing ever
-    }
-
-    // Helper to safely parse dates inside this function
-    const parseDate = (d: any) => {
-      if (typeof d === 'string') return new Date(d);
-      if (d?.toDate) return d.toDate();
-      return new Date(d);
-    };
-
-    const lastDate = parseDate(profile.lastPlayedDate);
-    
-    // If date is invalid, allow access as fail-safe
-    if (isNaN(lastDate.getTime())) return { allowed: true };
-
-    const now = new Date();
-    
-    // Calculate difference in hours
-    const diffMs = now.getTime() - lastDate.getTime();
-    const diffHours = diffMs / (1000 * 60 * 60);
-
-    if (diffHours < 24) {
-      // It has been less than 24 hours
-      const remainingHours = Math.ceil(24 - diffHours);
-      return { 
-        allowed: false, 
-        reason: `Unlocks in ${remainingHours}h`, 
-        requiresUnlock: true, 
-        canPayToUnlock: true 
-      };
-    } else {
-      // 24 hours passed, allow access
-      return { allowed: true };
-    }
+  // Previous days or current day can always be played immediately
+  if (day <= profile.currentDay) {
+    return { allowed: true };
   }
 
-  // 4. Future days
+  // Future days are locked until currentDay advances
   return { 
     allowed: false, 
     reason: "Locked. Complete previous days first.", 
-    requiresUnlock: true, 
-    canPayToUnlock: true // Technically can pay to jump ahead
+    requiresUnlock: false, 
+    canPayToUnlock: true
   };
 };

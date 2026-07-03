@@ -79,12 +79,12 @@ const CoinPurchaseModal: React.FC<CoinPurchaseModalProps> = ({ isOpen, onClose, 
             <Coins size={32} />
           </div>
           <h4 className="text-xl font-black text-slate-900 mb-2">Refill Your Balance</h4>
-          <p className="text-slate-500 text-sm">Coins allow you to unlock past challenges and get hints.</p>
+          <p className="text-slate-500 text-sm">Coins allow you to unlock new levels early without finishing the current one.</p>
         </div>
 
         <div className="grid gap-4">
           <button 
-            onClick={() => handlePurchase(500, 50)}
+            onClick={() => handlePurchase(500, 1)}
             disabled={isProcessing}
             className="w-full p-4 bg-white border-2 border-slate-100 hover:border-amber-500 rounded-2xl flex items-center justify-between group transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -93,7 +93,7 @@ const CoinPurchaseModal: React.FC<CoinPurchaseModalProps> = ({ isOpen, onClose, 
                 {isProcessing ? <Loader2 size={20} className="animate-spin" /> : <Zap size={20} />}
               </div>
               <div className="text-left">
-                <p className="font-black text-slate-900">50 Coins</p>
+                <p className="font-black text-slate-900">1 Coin</p>
                 <p className="text-xs text-slate-400">Basic Pack</p>
               </div>
             </div>
@@ -101,7 +101,7 @@ const CoinPurchaseModal: React.FC<CoinPurchaseModalProps> = ({ isOpen, onClose, 
           </button>
 
           <button 
-            onClick={() => handlePurchase(1000, 120)}
+            onClick={() => handlePurchase(1000, 3)}
             disabled={isProcessing}
             className="w-full p-4 bg-white border-2 border-slate-100 hover:border-amber-500 rounded-2xl flex items-center justify-between group transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -110,8 +110,8 @@ const CoinPurchaseModal: React.FC<CoinPurchaseModalProps> = ({ isOpen, onClose, 
                 {isProcessing ? <Loader2 size={20} className="animate-spin" /> : <Zap size={20} />}
               </div>
               <div className="text-left">
-                <p className="font-black text-slate-900">120 Coins</p>
-                <p className="text-xs text-slate-400">Value Pack</p>
+                <p className="font-black text-slate-900">3 Coins</p>
+                <p className="text-xs text-slate-400">Value Pack (Save ₦500)</p>
               </div>
             </div>
             <span className="font-black text-brand-primary">₦1,000</span>

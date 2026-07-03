@@ -1,70 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
-// Fix: Use type-safe module import workaround for missing useNavigate export
-import * as ReactRouterDOM from 'react-router-dom';
-const { useNavigate } = ReactRouterDOM as any;
+import { useNavigate } from 'react-router-dom';
 import { Lock, CheckCircle, Play, Trophy, Star, Loader2, AlertCircle, Coins, Plus, Unlock, CalendarClock, ChevronDown, ChevronUp, X, Clock, Share2 } from 'lucide-react';
 import { UserChallengeProfile, ChallengeTopic, ChallengeLevel, AlertConfig } from '../../types';
 import { getLeaderboard, canPlayDay, getUserProfile, unlockDay, switchLevel, rewardShare } from '../../services/challengeService';
 import CoinPurchaseModal from './CoinPurchaseModal';
 import CustomAlert from '../../components/ui/CustomAlert';
-
-const safeParseDate = (dateInput: any): Date | null => {
-  if (!dateInput) return null;
-  if (typeof dateInput.toDate === 'function') {
-    return dateInput.toDate();
-  }
-  const d = new Date(dateInput);
-  return isNaN(d.getTime()) ? null : d;
-};
-
-const UnlockTimer = ({ targetDate, onComplete }: { targetDate: Date, onComplete: () => void }) => {
-  const [timeLeft, setTimeLeft] = useState<string>("Loading...");
-
-  useEffect(() => {
-    const calculateTime = () => {
-      const now = new Date().getTime();
-      const distance = targetDate.getTime() - now;
-
-      if (distance <= 0) {
-        onComplete();
-        return;
-      }
-
-      const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const s = Math.floor((distance % (1000 * 60)) / 1000);
-
-      setTimeLeft(`${h}h ${m}m ${s}s`);
-    };
-
-    calculateTime();
-    const interval = setInterval(calculateTime, 1000);
-
-    const handleVisibilityChange = () => {
-        if (document.visibilityState === 'visible') {
-            calculateTime();
-        }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-        clearInterval(interval);
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [targetDate, onComplete]);
-
-  return (
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-center animate-pulse">
-      <p className="text-xs text-amber-800 font-bold uppercase tracking-wider mb-1">Next Challenge Unlocks In</p>
-      <div className="text-xl font-mono font-black text-amber-600 flex justify-center items-center">
-        <Clock className="w-5 h-5 mr-2" />
-        {timeLeft}
-      </div>
-    </div>
-  );
-};
 
 const DailyChallengeDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -168,7 +109,7 @@ const DailyChallengeDashboard: React.FC = () => {
 
     // Construct a direct link to the challenge
     const baseUrl = window.location.origin;
-    const shareUrl = `${baseUrl}/#/challenge`;
+    const shareUrl = `${baseUrl}/challenge`;
     
     // Updated share message with "Nice!"
     const shareMessage = `StudiRad is Nice! 🚀\n\nI'm playing the Daily Radiography Challenge. Test your knowledge in Physics, MRI, CT, and more.\n\nUse my code *${profile.referralCode || 'RAD'}* to join!`;
@@ -239,7 +180,7 @@ const DailyChallengeDashboard: React.FC = () => {
     if (profile.coins < 2) {
       showAlert({
         title: 'Insufficient Coins',
-        message: 'You need 2 Coins to unlock this day early.',
+        message: 'You need 2 Coins (₦200) to unlock this day early.',
         type: 'warning',
         confirmText: 'Buy Coins',
         cancelText: 'Cancel',
@@ -317,10 +258,10 @@ const DailyChallengeDashboard: React.FC = () => {
         return;
     }
 
-    if (profile.coins < 3) {
+    if (profile.coins < 1) {
         showAlert({
             title: 'Insufficient Coins',
-            message: 'You need 3 Grey Coins to switch levels before completing your current one.',
+            message: 'You need 1 Grey Coin to switch levels before completing your current one.',
             type: 'warning',
             confirmText: 'Buy Coins',
             singleButton: false,
@@ -331,7 +272,7 @@ const DailyChallengeDashboard: React.FC = () => {
 
     showAlert({
         title: `Switch to ${targetLevel}?`,
-        message: `Since you haven't completed your current level, this will cost 3 Grey Coins (₦300).`,
+        message: `Since you haven't completed your current level, this will cost 1 Grey Coin (₦500).`,
         type: 'warning',
         confirmText: 'Pay & Switch',
         singleButton: false,
@@ -370,7 +311,7 @@ const DailyChallengeDashboard: React.FC = () => {
   ];
 
   const currentDayStatus = canPlayDay(profile.currentDay, profile);
-  const isCurrentDayLocked = !currentDayStatus.allowed && currentDayStatus.requiresUnlock;
+  const isCurrentDayLocked = false;
 
   // Format coins to handle floats gracefully
   const displayCoins = Number.isInteger(profile.coins) ? profile.coins : profile.coins.toFixed(1);
@@ -506,33 +447,7 @@ const DailyChallengeDashboard: React.FC = () => {
                 const isPlayed = score !== undefined;
                 const isLocked = !status.allowed;
                 
-                // Check if this day is locked because user hasn't waited 24h since completing previous
-                // This typically applies to the CURRENT day if they just finished the previous one.
-                const isTimeLocked = day.num === profile.currentDay && !status.allowed && status.requiresUnlock;
-                
-                // Check if this is the NEXT day, and the user has already started the CURRENT day.
-                // We only show this if the current day is NOT locked. If current day is locked, 
-                // any start time stored is likely stale or invalid for this purpose.
-                const isNextDayTimer = !isCurrentDayLocked && day.num === profile.currentDay + 1 && profile.lastChallengeStartedAt;
-
-                let targetUnlockDate = new Date();
-                
-                if (isTimeLocked && profile.lastPlayedDate) {
-                  // Standard wait time (24h after finishing previous day)
-                  const lastPlayed = safeParseDate(profile.lastPlayedDate);
-                  if (lastPlayed) {
-                     targetUnlockDate = new Date(lastPlayed.getTime() + 24 * 60 * 60 * 1000);
-                  }
-                } else if (isNextDayTimer && profile.lastChallengeStartedAt) {
-                  // Pre-emptive timer: 24h after starting current day
-                  const lastStarted = safeParseDate(profile.lastChallengeStartedAt);
-                  if (lastStarted) {
-                     targetUnlockDate = new Date(lastStarted.getTime() + 24 * 60 * 60 * 1000);
-                  }
-                }
-
-                // Determine if we should show the timer component
-                const showTimer = isTimeLocked || (isNextDayTimer && targetUnlockDate.getTime() > new Date().getTime());
+                const showTimer = false;
 
                 return (
                   <div 
@@ -561,20 +476,13 @@ const DailyChallengeDashboard: React.FC = () => {
 
                       <h3 className="text-xl font-bold text-slate-900 mb-2">{day.topic}</h3>
                       <p className="text-sm text-slate-500 mb-6">
-                        30 Questions • {profile.level === ChallengeLevel.BASIC ? '30s' : '40s'} per question
+                        30 Questions • Self-Paced
                       </p>
                     </div>
 
                     {isLocked ? (
                       <div>
-                        {showTimer ? (
-                          <UnlockTimer 
-                            targetDate={targetUnlockDate}
-                            onComplete={fetchProfileData}
-                          />
-                        ) : (
-                           status.reason && <p className="text-xs text-center text-slate-500 mb-3 font-medium flex items-center justify-center bg-slate-100 py-2 rounded-lg"><CalendarClock className="w-3 h-3 mr-1"/> {status.reason}</p>
-                        )}
+                        {status.reason && <p className="text-xs text-center text-slate-500 mb-3 font-medium flex items-center justify-center bg-slate-100 py-2 rounded-lg"><Lock className="w-3 h-3 mr-1"/> {status.reason}</p>}
                         
                         {status.canPayToUnlock ? (
                             <button 
