@@ -170,8 +170,9 @@ const TalentDirectoryPage = () => {
         
         {/* Page Header */}
         <div className="text-center mb-8 sm:mb-12">
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-600 block mb-2">Professional Imaging Directory</span>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif italic font-light text-slate-900 tracking-tight leading-tight sm:leading-none mb-4">
-            Open to Work <span className="font-sans font-black uppercase tracking-tighter text-amber-550">hub</span>
+            Open to Work <span className="font-sans font-black uppercase tracking-tighter text-amber-550">Directory</span>
           </h1>
           <p className="text-xs md:text-sm font-semibold text-slate-550 max-w-2xl mx-auto uppercase tracking-widest leading-relaxed">
             A direct directory connecting clinics and hospitals with available radiographers and imaging interns.
@@ -298,7 +299,12 @@ const TalentDirectoryPage = () => {
             ) : (
               <div className="grid md:grid-cols-2 gap-8">
                 {filteredProfiles.map((candidate, idx) => {
-                  const avatar = AVATARS.find((a) => a.id === candidate.avatarId) || AVATARS[2];
+                  const avatar = (AVATARS && AVATARS.find((a) => a.id === candidate.avatarId)) || (AVATARS && AVATARS[2]) || {
+                    id: "female_face_1",
+                    name: "Imaging Sonographer (Female)",
+                    emoji: "👩‍⚕️",
+                    bg: "bg-rose-50/50 border-rose-100"
+                  };
                   const isIntern = candidate.availableForInternship;
                   const gradientHeader = isIntern 
                     ? "from-indigo-50/60 via-slate-50/10 to-transparent" 
@@ -320,8 +326,8 @@ const TalentDirectoryPage = () => {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
                           <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
                             {/* Avatar bubble */}
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl border ${avatar.bg} shadow-md ring-4 ring-white transition-all duration-300 group-hover:scale-105 group-hover:rotate-2 flex-shrink-0`}>
-                              {avatar.emoji}
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl border ${avatar?.bg || "bg-rose-50/50 border-rose-100"} shadow-md ring-4 ring-white transition-all duration-300 group-hover:scale-105 group-hover:rotate-2 flex-shrink-0`}>
+                              {avatar?.emoji || "👩‍⚕️"}
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">

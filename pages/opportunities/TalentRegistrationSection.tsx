@@ -23,7 +23,7 @@ import {
 
 // Professional profile avatars with friendly, human-centric labels
 export const AVATARS = [
-  { id: "male_face_1", name: "Male Radiographer", emoji: "👨‍⚕️", bg: "bg-blue-50/50 border-blue-100" },
+    { id: "male_face_2", name: "Male Radiographer", emoji: "👨‍⚕️", bg: "bg-teal-50/50 border-teal-100" },
   { id: "female_face_1", name: "Female Radiographer", emoji: "👩‍⚕️", bg: "bg-rose-50/50 border-rose-100" },
 ];
 
@@ -71,6 +71,11 @@ export const TalentRegistrationSection: React.FC<TalentRegistrationSectionProps>
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
   const [formLoading, setFormLoading] = useState(false);
+
+  // Save feedback states
+  const [justSaved, setJustSaved] = useState(false);
+  const [lastSavedTime, setLastSavedTime] = useState<string>("");
+  const [leftCardSuccess, setLeftCardSuccess] = useState("");
 
   // Form Fields
   const [fullName, setFullName] = useState("");
@@ -276,6 +281,14 @@ export const TalentRegistrationSection: React.FC<TalentRegistrationSectionProps>
 
       setFormSuccess(isEditing ? "🎉 Your profile has been updated!" : "🎉 Your professional profile has been successfully published!");
       
+      // Set justSaved state for visual feedback on button
+      setJustSaved(true);
+      const now = new Date();
+      setLastSavedTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      setTimeout(() => {
+        setJustSaved(false);
+      }, 5000);
+
       // Refresh list in parent
       onProfileChange();
     } catch (err) {
@@ -329,6 +342,8 @@ export const TalentRegistrationSection: React.FC<TalentRegistrationSectionProps>
                         setLoggedInUser(updated);
                         localStorage.setItem("studirad_talent_session", JSON.stringify(updated));
                         setFormSuccess(`🎉 Visibility status updated to ${nextStatus ? "Online" : "Offline"}!`);
+                        setLeftCardSuccess(`✓ Status is now ${nextStatus ? "Online" : "Offline"}`);
+                        setTimeout(() => setLeftCardSuccess(""), 4000);
                         onProfileChange();
                       } catch (err) {
                         console.error("Failed to quick toggle status", err);
@@ -339,6 +354,11 @@ export const TalentRegistrationSection: React.FC<TalentRegistrationSectionProps>
                     Change Status
                   </button>
                 </div>
+                {leftCardSuccess && (
+                  <div className="p-2.5 text-center bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-xl text-xs font-semibold animate-fadeIn mt-2">
+                    {leftCardSuccess}
+                  </div>
+                )}
               </div>
 
               <button
@@ -465,7 +485,7 @@ export const TalentRegistrationSection: React.FC<TalentRegistrationSectionProps>
                 <Unlock size={26} />
               </div>
               <div className="space-y-2">
-                <h3 className="font-bold text-lg sm:text-xl text-slate-950 uppercase tracking-tight">Access Your Profile</h3>
+                <h3 className="font-bold text-lg sm:text-xl text-slate-950 uppercase tracking-tight">Access Your Directory Profile</h3>
                 <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
                   Please log into your verified professional account using the sign-in widget on the left to edit your specialties, update contact details, or toggle availability.
                 </p>
@@ -595,8 +615,8 @@ export const TalentRegistrationSection: React.FC<TalentRegistrationSectionProps>
                           onChange={(e) => setQualification(e.target.value)}
                           className="w-full h-11 pl-4 pr-10 bg-white border border-slate-200 text-slate-900 rounded-xl focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 text-sm font-semibold appearance-none transition-all duration-200 cursor-pointer"
                         >
-                          <option value="Qualified Radiographer" className="bg-white text-slate-900">Radiographer (B.Rad / BSc)</option>
-                          <option value="Clinical Sonographer" className="bg-white text-slate-900">Sonographer</option>
+                          <option value="Radiographer" className="bg-white text-slate-900">Radiographer </option>
+                          <option value="Sonographer" className="bg-white text-slate-900">Sonographer</option>
                           <option value="Radiation Therapist" className="bg-white text-slate-900">Radiation Therapist</option>
                           <option value="Nuclear Medicine Specialist" className="bg-white text-slate-900">Nuclear Medicine Specialist</option>
                         </select>
@@ -799,7 +819,7 @@ export const TalentRegistrationSection: React.FC<TalentRegistrationSectionProps>
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">About Your Clinical Experience</label>
                     <textarea
                       rows={4}
-                      placeholder="e.g. Describe your clinical background, years of experience and what makes you different."
+                      placeholder="e.g. Describe your clinical background, equipment you have worked with (e.g. GE, Siemens, Philips), and years of experience."
                       value={experience}
                       onChange={(e) => setExperience(e.target.value)}
                       className="w-full p-4 bg-white border border-slate-200 text-slate-900 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 text-sm font-medium placeholder:text-slate-400 transition-all duration-200 leading-relaxed"
@@ -836,7 +856,7 @@ export const TalentRegistrationSection: React.FC<TalentRegistrationSectionProps>
                             onChange={() => setPlacementType("internship")}
                             className="accent-amber-500 w-5 h-5 cursor-pointer"
                           />
-                          <span>Internship</span>
+                          <span>Clinical Internship</span>
                         </label>
                       </div>
                     </div>
@@ -878,16 +898,32 @@ export const TalentRegistrationSection: React.FC<TalentRegistrationSectionProps>
                 <button
                   type="submit"
                   disabled={formLoading}
-                  className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm uppercase tracking-wider rounded-2xl transition-all duration-200 shadow-md shadow-slate-900/15 active:scale-[0.985] flex items-center justify-center gap-2 cursor-pointer mt-4 hover:scale-[1.01]"
+                  className={`w-full h-12 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-2xl transition-all duration-300 shadow-md active:scale-[0.985] flex items-center justify-center gap-2 cursor-pointer mt-4 hover:scale-[1.01] ${
+                    justSaved 
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/10" 
+                      : "bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/15"
+                  }`}
                 >
                   {formLoading ? (
                     <Loader2 className="animate-spin" size={18} />
+                  ) : justSaved ? (
+                    <span className="flex items-center gap-1.5 animate-fadeIn">
+                      <Check size={16} /> All Changes Saved!
+                    </span>
                   ) : isEditing ? (
                     "Save Profile Changes"
                   ) : (
                     "Create Professional Profile"
                   )}
                 </button>
+                {lastSavedTime && (
+                  <div className="text-center mt-3 animate-fadeIn">
+                    <span className="text-[11px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-100/60 px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Profile changes saved at {lastSavedTime}
+                    </span>
+                  </div>
+                )}
               </form>
             </div>
           )}
@@ -907,9 +943,23 @@ export const TalentRegistrationSection: React.FC<TalentRegistrationSectionProps>
             type="button"
             onClick={() => handleRegisterOrUpdate()}
             disabled={formLoading}
-            className="h-11 px-6 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-slate-900/15 flex items-center gap-2 cursor-pointer"
+            className={`h-11 px-6 active:scale-95 text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer duration-300 ${
+              justSaved
+                ? "bg-emerald-600 text-white shadow-emerald-600/10"
+                : "bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/15"
+            }`}
           >
-            {formLoading ? <Loader2 className="animate-spin" size={14} /> : (isEditing ? "Save Changes" : "Submit Profile")}
+            {formLoading ? (
+              <Loader2 className="animate-spin" size={14} />
+            ) : justSaved ? (
+              <span className="flex items-center gap-1">
+                <Check size={12} /> Saved!
+              </span>
+            ) : isEditing ? (
+              "Save Changes"
+            ) : (
+              "Submit Profile"
+            )}
           </button>
         </div>
       )}
