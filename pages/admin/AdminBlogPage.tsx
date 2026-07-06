@@ -10,11 +10,70 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import imageCompression from "browser-image-compression";
 import { Edit2, Trash2, Image as ImageIcon, Plus, Save, X, Loader2 } from "lucide-react";
 import Modal from "../../components/ui/Modal";
 
 import { useNavigate } from "react-router-dom";
+
+const compressImage = (file: File, maxW = 800, maxH = 800, quality = 0.7): Promise<{ blob: Blob; base64: string }> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxW) {
+            height = Math.round((height * maxW) / width);
+            width = maxW;
+          }
+        } else {
+          if (height > maxH) {
+            width = Math.round((width * maxH) / height);
+            height = maxH;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Canvas context is null"));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const base64 = canvas.toDataURL("image/jpeg", quality);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve({ blob, base64 });
+          } else {
+            try {
+              const byteString = atob(base64.split(',')[1]);
+              const ab = new ArrayBuffer(byteString.length);
+              const ia = new Uint8Array(ab);
+              for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+              }
+              const fallbackBlob = new Blob([ab], { type: "image/jpeg" });
+              resolve({ blob: fallbackBlob, base64 });
+            } catch (err) {
+              reject(new Error("Blob conversion failed"));
+            }
+          }
+        }, "image/jpeg", quality);
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
 
 const AdminBlogPage = () => {
   const navigate = useNavigate();
@@ -71,50 +130,34 @@ const AdminBlogPage = () => {
 
       if (imageFile) {
         try {
-          let fileToUpload = imageFile;
+          // Fast native in-memory canvas compression
+          const compressed = await compressImage(imageFile, 800, 800, 0.7);
           
-          // Only attempt compression if the file is larger than 1MB to avoid library hangs on small files
-          if (imageFile.size > 1024 * 1024) {
-            const options = { 
-              maxSizeMB: 0.8, 
-              maxWidthOrHeight: 1200, 
-              useWebWorker: true,
-              initialQuality: 0.7 
-            };
-            try {
-              fileToUpload = await imageCompression(imageFile, options);
-            } catch (compError) {
-              console.warn("Image compression failed, proceeding with original file.", compError);
-              fileToUpload = imageFile;
-            }
-          }
-
-          const imageRef = ref(storage, `blogImages/${Date.now()}_${imageFile.name.replace(/\s+/g, '_')}`);
-          const uploadResult = await uploadBytes(imageRef, fileToUpload);
-          imageUrl = await getDownloadURL(uploadResult.ref);
-        } catch (storageError) {
-          console.warn("Firebase Storage upload failed on blog page. Failing back to robust compressed Base64 embedding.", storageError);
-          
-          let b64TargetFile = imageFile;
           try {
-            b64TargetFile = await imageCompression(imageFile, {
-              maxSizeMB: 0.04, // Compresses to fit within Firestore limit
-              maxWidthOrHeight: 600,
-              useWebWorker: true
-            });
-          } catch (compressError) {
-            console.error("Base64 compression pre-step failed for blog cover", compressError);
+            const imageRef = ref(storage, `blogImages/${Date.now()}_${imageFile.name.replace(/\s+/g, '_')}`);
+            const uploadResult = await uploadBytes(imageRef, compressed.blob);
+            imageUrl = await getDownloadURL(uploadResult.ref);
+          } catch (storageError) {
+            console.warn("Firebase Storage upload failed on blog page. Falling back to robust compressed Base64 embedding.", storageError);
+            imageUrl = compressed.base64;
           }
-
-          const convertToBase64 = (file: File): Promise<string> => {
-            return new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.readAsDataURL(file);
-              reader.onload = () => resolve(reader.result as string);
-              reader.onerror = error => reject(error);
-            });
-          };
-          imageUrl = await convertToBase64(b64TargetFile);
+        } catch (compressError) {
+          console.error("Compression failed, using original file as fallback", compressError);
+          try {
+            const imageRef = ref(storage, `blogImages/${Date.now()}_${imageFile.name.replace(/\s+/g, '_')}`);
+            const uploadResult = await uploadBytes(imageRef, imageFile);
+            imageUrl = await getDownloadURL(uploadResult.ref);
+          } catch (storageErr2) {
+            const convertToBase64 = (file: File): Promise<string> => {
+              return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = error => reject(error);
+              });
+            };
+            imageUrl = await convertToBase64(imageFile);
+          }
         }
       }
 
@@ -177,45 +220,34 @@ const AdminBlogPage = () => {
 
       if (editImageFile) {
         try {
-          let fileToUpload = editImageFile;
+          // Fast native in-memory canvas compression
+          const compressed = await compressImage(editImageFile, 800, 800, 0.7);
           
-          if (editImageFile.size > 1024 * 1024) {
-            const options = { 
-              maxSizeMB: 0.8, 
-              maxWidthOrHeight: 1200, 
-              useWebWorker: true,
-              initialQuality: 0.7 
-            };
-            try {
-              fileToUpload = await imageCompression(editImageFile, options);
-            } catch (compError) {
-              fileToUpload = editImageFile;
-            }
-          }
-
-          const imageRef = ref(storage, `blogImages/${Date.now()}_${editImageFile.name.replace(/\s+/g, '_')}`);
-          const uploadResult = await uploadBytes(imageRef, fileToUpload);
-          imageUrl = await getDownloadURL(uploadResult.ref);
-        } catch (storageError) {
-          console.warn("Firebase Storage upload failed on edit. Falling back to Base64.", storageError);
-          let b64TargetFile = editImageFile;
           try {
-            b64TargetFile = await imageCompression(editImageFile, {
-              maxSizeMB: 0.04,
-              maxWidthOrHeight: 600,
-              useWebWorker: true
-            });
-          } catch (compressError) {}
-
-          const convertToBase64 = (file: File): Promise<string> => {
-            return new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.readAsDataURL(file);
-              reader.onload = () => resolve(reader.result as string);
-              reader.onerror = error => reject(error);
-            });
-          };
-          imageUrl = await convertToBase64(b64TargetFile);
+            const imageRef = ref(storage, `blogImages/${Date.now()}_${editImageFile.name.replace(/\s+/g, '_')}`);
+            const uploadResult = await uploadBytes(imageRef, compressed.blob);
+            imageUrl = await getDownloadURL(uploadResult.ref);
+          } catch (storageError) {
+            console.warn("Firebase Storage upload failed on edit. Falling back to robust compressed Base64 embedding.", storageError);
+            imageUrl = compressed.base64;
+          }
+        } catch (compressError) {
+          console.error("Compression failed on edit, using original file as fallback", compressError);
+          try {
+            const imageRef = ref(storage, `blogImages/${Date.now()}_${editImageFile.name.replace(/\s+/g, '_')}`);
+            const uploadResult = await uploadBytes(imageRef, editImageFile);
+            imageUrl = await getDownloadURL(uploadResult.ref);
+          } catch (storageErr2) {
+            const convertToBase64 = (file: File): Promise<string> => {
+              return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = error => reject(error);
+              });
+            };
+            imageUrl = await convertToBase64(editImageFile);
+          }
         }
       }
 

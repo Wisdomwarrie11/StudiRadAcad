@@ -35,6 +35,7 @@ import OpportunitiesPage from './pages/opportunities/OpportunitiesPage';
 import JobsPage from './pages/opportunities/JobsPage';
 import InternshipsPage from './pages/opportunities/InternshipsPage';
 import ScholarshipsPage from './pages/opportunities/ScholarshipsPage';
+import TalentDirectoryPage from './pages/opportunities/TalentDirectoryPage';
 
 // Employer Routes
 import EmployerRegistration from './pages/opportunities/EmployerRegistration';
@@ -159,6 +160,7 @@ const App: React.FC = () => {
           <Route path="jobs" element={<JobsPage />} />
           <Route path="internship" element={<InternshipsPage />} />
           <Route path="scholarship" element={<ScholarshipsPage />} />
+          <Route path="opportunities/talent" element={<TalentDirectoryPage />} />
 
           <Route path="locum" element={<LocumPage />} />
           <Route path="locum/register" element={<LocumRegistration />} />
