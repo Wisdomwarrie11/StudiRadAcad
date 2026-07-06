@@ -20,7 +20,7 @@ const QuizChallenge = () => {
       title: "Daily Radiography Challenge",
       date: "Starts Daily",
       description:
-        "A 6-day intensive challenge tailored to your level. Physics, Technique, MRI, CT and more. Compete for the top spot on the leaderboard!",
+        "A daily intensive challenge tailored to your level. Physics, Technique, MRI, CT and more. Compete for the top spot on the leaderboard!",
       image: "Radstudent.jpg",
       link: loggedIn ? "/challenge/dashboard" : "/challenge",
       badge: loggedIn ? "In Progress" : "New Challenge",
@@ -38,8 +38,8 @@ const QuizChallenge = () => {
       link: "/locked-in",
       badge: "Final Call",
       isUrgent: true,
-      disabled: false,
-      buttonText: "Register Now"
+      disabled: true,
+      buttonText: "Coming Soon"
     },
 
   ];

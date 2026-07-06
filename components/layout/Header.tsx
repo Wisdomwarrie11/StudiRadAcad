@@ -46,7 +46,6 @@ const Header: React.FC = () => {
                   <Link to="/resources/materials" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Learning Materials</Link>
                   <Link to="/resources/QuizChallenge" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Radiography Quiz</Link>
                   <Link to="/resources/webinars" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">Webinars</Link>
-                  <Link to="https://studifocus.vercel.app" className="block px-4 py-2 hover:bg-gray-50 hover:text-brand-primary">StudiFocus App</Link>
 
                 </div>
               </div>
@@ -95,7 +94,6 @@ const Header: React.FC = () => {
                   <Link to="/resources/materials" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300">Learning Materials</Link>
                   <Link to="/resources/QuizChallenge" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300">Radiography Quiz</Link>
                   <Link to="/resources/webinars" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300">Webinars</Link>
-                  <Link to="https://studifocus.vercel.app" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300">StudiFocus App</Link>
 
                 </div>
               )}
