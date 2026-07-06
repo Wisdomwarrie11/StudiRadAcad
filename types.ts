@@ -214,6 +214,24 @@ export interface UserChallengeProfile {
   completedLevels: ChallengeLevel[];
 }
 
+export interface TalentProfile {
+  name: string;
+  email: string;
+  phone: string;
+  qualification: string;
+  experience: string;
+  certifications: string[];
+  skills: string[];
+  avatarId: string;
+  availableForJob: boolean;
+  availableForInternship: boolean;
+  isActiveAvailability?: boolean; // toggle off availability completely
+  passcode: string;
+  createdAt?: any;
+  updatedAt?: any;
+  likesCount?: number;
+}
+
 export interface QuestionReport {
   questionId: string;
   userEmail: string;

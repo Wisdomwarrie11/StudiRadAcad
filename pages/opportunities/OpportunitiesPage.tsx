@@ -118,7 +118,7 @@ const OpportunitiesPage = () => {
       </section>
 
       {/* Organization Portal - High Contrast */}
-      <section className="grid lg:grid-cols-2 min-h-[60vh] border-b border-slate-300">
+      {/* <section className="grid lg:grid-cols-2 min-h-[60vh] border-b border-slate-300">
         <div className="p-8 md:p-20 bg-slate-900 text-white flex flex-col justify-center">
            <motion.div
              initial={{ opacity: 0, scale: 0.98 }}
@@ -168,21 +168,16 @@ const OpportunitiesPage = () => {
               </div>
            </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Opportunity Types Grid - Technical Cards */}
       <section id="opportunities" className="py-24 px-4 border-b border-slate-300">
         <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-6">
+          <div className="flex flex-col md:flex-row justify-between mb-20 gap-6">
             <h2 className="text-4xl md:text-6xl font-serif italic font-light tracking-tight leading-none">
               Explore <br /> <span className="font-sans font-black uppercase tracking-tighter text-brand-primary">Pathways</span>
             </h2>
-            <div className="text-right">
-              <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-slate-400 block mb-1">Status: Online</span>
-              <p className="text-slate-500 font-bold text-[10px] tracking-[0.2em] uppercase">
-                Select a category to begin.
-              </p>
-            </div>
+            
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -202,7 +197,6 @@ const OpportunitiesPage = () => {
                       <div className={`w-16 h-16 bg-white text-slate-900 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 border border-slate-200 shadow-sm`}>
                         <item.icon size={28} />
                       </div>
-                      <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">Cat_0{idx + 1}</span>
                     </div>
                     
                     <h3 className="text-2xl font-black text-slate-900 mb-4 uppercase tracking-tight">{item.title}</h3>
