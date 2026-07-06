@@ -229,17 +229,9 @@ const TalentDirectoryPage = () => {
               <div className="bg-slate-50 text-slate-800 rounded-2xl p-4 md:p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-slate-200">
                 <div className="flex items-start sm:items-center gap-3">
                   <Check className="text-emerald-600 flex-shrink-0 mt-0.5 sm:mt-0" size={18} />
-                  <span className="text-xs font-mono uppercase tracking-widest text-slate-600 leading-relaxed">Notice accepted: Contact details unlocked.</span>
+                  <span className="text-xs font-mono uppercase tracking-widest text-slate-600 leading-relaxed">Notice accepted</span>
                 </div>
-                <button
-                  onClick={() => {
-                    localStorage.removeItem("studirad_employer_talent_agreement");
-                    setEmployerAgreed(false);
-                  }}
-                  className="text-[9px] font-mono text-slate-450 hover:text-slate-700 underline uppercase tracking-wider whitespace-nowrap self-end sm:self-auto cursor-pointer"
-                >
-                  Lock Contacts
-                </button>
+        
               </div>
             )}
 
@@ -268,7 +260,7 @@ const TalentDirectoryPage = () => {
                     onChange={(e) => setFilterJob(e.target.checked)}
                     className="accent-amber-500 w-4 h-4 cursor-pointer"
                   />
-                  Permanent Candidates
+                  Job seekers
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer bg-white border border-slate-200 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 select-none shadow-sm transition-colors cursor-pointer">
                   <input
