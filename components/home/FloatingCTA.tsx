@@ -18,7 +18,7 @@ const FloatingCTA: React.FC = () => {
     return () => window.removeEventListener('scroll', toggleVisibility);
   }, []);
 
-  const whatsappNumber = "2348166780303";
+  const whatsappNumber = "2347041197027";
   const message = encodeURIComponent("Hello StudiRad! I'd like to learn more about your services.");
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
