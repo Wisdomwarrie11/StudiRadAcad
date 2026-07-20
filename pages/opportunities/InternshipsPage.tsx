@@ -65,8 +65,8 @@ const InternshipsPage = () => {
       <div className="fixed inset-0 pointer-events-none opacity-20 z-0" style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
 
       <div className="container mx-auto px-4 max-w-5xl relative z-10">
-        <Link to="/opportunities" className="inline-flex items-center text-slate-500 hover:text-brand-primary mb-8 font-mono text-[10px] uppercase tracking-widest transition-colors">
-          <span className="mr-2"><FaArrowLeft /></span> Back to System.Opportunities
+        <Link to="/opportunities" className="inline-flex items-center text-slate-500 hover:text-brand-primary mb-8 font-mono text-[20px] tracking-widest transition-colors">
+          <span className="mr-2"><FaArrowLeft /></span> Back
         </Link>
 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-12 gap-8">
