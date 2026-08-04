@@ -113,7 +113,7 @@ const Header: React.FC = () => {
             </div>
 
             <Link to="/opportunities" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium">Opportunities</Link>
-            <Link to="/opportunities" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium">Our Community</Link>
+            <Link to="/community" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium">Our Community</Link>
 
             <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-medium">About Us</Link>
 
