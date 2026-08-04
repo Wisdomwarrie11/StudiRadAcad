@@ -17,7 +17,7 @@ const Home: React.FC = () => {
     <div className="flex flex-col min-h-screen">
       <Hero />
       <Stats />
-      <TargetAudience />
+      {/* <TargetAudience /> */}
       {/* <Features /> */}
       <ClassesPreview />
       <TargetAudienceNew />
