@@ -5,75 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase';
 import ClassModal from '../classes/ClassModal';
-// import CourseInfoExtras from '../classes/CourseInfoExtras';
+import CourseInfoExtras from '../classes/CourseInfoExtras';
 import SEO from '../../components/SEO';
 import { Calendar, Clock, Video, ArrowRight } from 'lucide-react';
 
 // Use any to bypass environment-specific Framer Motion type issues
 const MotionDiv = motion.div as any;
 
+import { ACTIVE_CLASSES, COMING_SOON_CLASSES } from '../../components/home/ClassesData';
+
 const categories = ["X-ray", "Ultrasound", "MRI", "CT", "Nuclear Medicine"];
-
-const ACTIVE_CLASSES = [
-  {
-    id: "chest-critique-2026",
-    title: "Radiographic Image Critique: Systematic Evaluation of Chest Radiographs",
-    category: "X-ray",
-    level: "All Levels",
-    status: "completed",
-    price: "FREE",
-    isPaid: false,
-    duration: "5 Days (22nd – 26th June 2026)",
-    time: "8:30 PM Daily",
-    venue: "StudiRad Google Classroom",
-    thumbnail: "/Critiquing.jpeg",
-    hasCustomRegistration: true,
-    customConfirmationMessage: "Congratulations! Your registration is complete. To successfully join the class, please use the secure Google Classroom invitation link below.",
-    description: "Master the art and science of chest radiograph interpretation. This intensive five-day cohort is designed for radiography students, pre-interns, interns, and practicing radiographers who want to perfect their systematic approach to chest X-ray quality evaluation and pattern recognition.",
-    features: [
-      "Live Classes",
-      "Case-Based Sessions",
-      "Guided Image Critique"
-    ],
-    whatYouWillLearn: [
-      "Systematic assessment of chest radiograph image quality",
-      "Recognition of major chest radiographic patterns",
-      "Identification of common chest pathologies",
-      "And more…"
-    ],
-    technologies: ["Google Classroom", "Google Meet"]
-  }
-];
-
-const COMING_SOON_CLASSES = [
-  {
-    id: "cs-class-1",
-    title: "Foundation of Abdominal Ultrasound",
-    category: "X-ray",
-    level: "Beginner",
-    status: "coming-soon",
-    thumbnail: "/Abd.jpg",
-    price: "",
-    isPaid: false,
-    duration: "4 Weeks (Online)",
-    registrationLink: "https://docs.google.com/forms/...",
-    description: "A clinical masterclass on interpreting chest X-rays. Perfect for students and interns preparing for clinical rotations.",
-    technologies: ["Google Meet", "WhatsApp"]
-  },
-  {
-    id: "cs-class-2",
-    title: "Advanced Ultrasound Cohort: OB/GYN",
-    category: "Ultrasound",
-    level: "Advanced",
-    status: "coming-soon",
-    price: "₦5,000",
-    isPaid: true,
-    duration: "6 Weeks (Intensive)",
-    registrationLink: "https://docs.google.com/forms/...",
-    description: "Join our intensive cohort focused on advanced obstetric and gynecological ultrasound techniques.",
-    technologies: ["Zoom", "Google Classroom"]
-  }
-];
 
 export default function ClassesPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -81,6 +22,7 @@ export default function ClassesPage() {
   const [visibleCounts, setVisibleCounts] = useState<Record<string, number>>({});
   const [showModal, setShowModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<any | null>(null);
+  const [directRegister, setDirectRegister] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
   const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,6 +61,8 @@ export default function ClassesPage() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const catParam = params.get('category');
+    const classIdParam = params.get('classId') || params.get('id');
+    const shouldRegister = params.get('register') === 'true' || params.get('enroll') === 'true';
 
     if (catParam) {
       const formatted = catParam.replace(/-/g, " ").toLowerCase() === "x ray"
@@ -136,25 +80,52 @@ export default function ClassesPage() {
         setActiveAccordion(categories[0]);
       }
     }
-  }, [location.search, selectedCategory]);
 
-  const openModal = (course: any) => {
+    if (classIdParam && classes.length > 0) {
+      const targetClass = classes.find((c) => c.id === classIdParam);
+      if (targetClass) {
+        setSelectedCourse(targetClass);
+        setDirectRegister(shouldRegister);
+        setShowModal(true);
+        if (targetClass.category && categories.includes(targetClass.category)) {
+          setSelectedCategory(targetClass.category);
+          setActiveAccordion(targetClass.category);
+        }
+      }
+    }
+  }, [location.search, classes]);
+
+  const openModal = (course: any, registerDirectly = false) => {
     setSelectedCourse(course);
+    setDirectRegister(registerDirectly);
     setShowModal(true);
   };
 
   const closeModal = () => {
     setSelectedCourse(null);
+    setDirectRegister(false);
     setShowModal(false);
   };
 
-  const filteredClasses = classes.filter((c) => {
-    const titleMatch = c.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const descMatch = c.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSearch = titleMatch || descMatch;
-    const matchesCategory = selectedCategory === "All" || c.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredClasses = classes
+    .filter((c) => {
+      const titleMatch = c.title.toLowerCase().includes(searchTerm.toLowerCase());
+      const descMatch = c.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = titleMatch || descMatch;
+      const matchesCategory = selectedCategory === "All" || c.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      // Prioritize active, then coming-soon, then completed
+      const statusPriority: Record<string, number> = { active: 1, 'coming-soon': 2, completed: 3 };
+      const pA = statusPriority[a.status] || 2;
+      const pB = statusPriority[b.status] || 2;
+      if (pA !== pB) return pA - pB;
+
+      const timeA = typeof a.createdAt === 'number' ? a.createdAt : (a.createdAt?.seconds || 0);
+      const timeB = typeof b.createdAt === 'number' ? b.createdAt : (b.createdAt?.seconds || 0);
+      return timeB - timeA;
+    });
 
   const handleLoadMore = (cat: string) => {
     setVisibleCounts((prev) => ({ ...prev, [cat]: (prev[cat] || 4) + 4 }));
@@ -414,7 +385,7 @@ export default function ClassesPage() {
       </div>
 
       {/* <CourseInfoExtras /> */}
-      <ClassModal isOpen={showModal} onClose={closeModal} classItem={selectedCourse} />
+      <ClassModal isOpen={showModal} onClose={closeModal} classItem={selectedCourse} initialRegister={directRegister} />
     </div>
   );
 }

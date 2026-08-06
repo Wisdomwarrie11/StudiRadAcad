@@ -1,9 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { Star, Clock, ChevronRight, Zap, Activity, Brain, Disc, Loader2 } from 'lucide-react';
-import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Link } from 'react-router-dom';
+import { ACTIVE_CLASSES, COMING_SOON_CLASSES } from '../home/ClassesData';
 
 const modalities = [
   { id: "xray", title: "X-ray", icon: Zap, color: "text-blue-500", bg: "bg-blue-50" },
@@ -12,122 +13,61 @@ const modalities = [
   { id: "ct", title: "CT", icon: Brain, color: "text-teal-500", bg: "bg-teal-50" },
 ];
 
-const ACTIVE_CLASSES = [
-  {
-    id: "chest-critique-2026",
-    title: "Radiographic Image Critique: Systematic Evaluation of Chest Radiographs",
-    category: "X-ray",
-    level: "All Levels",
-    status: "active",
-    price: "FREE",
-    isPaid: false,
-    duration: "5 Days (22nd – 26th June 2026)",
-    time: "8:30 PM Daily",
-    venue: "StudiRad Google Classroom",
-    thumbnail: "/Critiquing.jpeg",
-    hasCustomRegistration: true,
-    description: "Master the art and science of chest radiograph interpretation. Perfect your systematic approach to quality evaluation and pattern recognition.",
-    itemType: 'class'
-  }
-];
-
-const COMING_SOON_CLASSES = [
-  {
-    id: "cs-class-1",
-    title: "Skull X-ray Clinical Interpretation",
-    category: "X-ray",
-    level: "Beginner",
-    status: "coming-soon",
-    thumbnail: "/skull.jpg",
-    isPaid: true,
-    description: "A clinical masterclass on interpreting chest X-rays. Perfect for students and interns preparing for clinical rotations.",
-    itemType: 'class'
-  },
-  {
-    id: "cs-class-2",
-    title: "Advanced Ultrasound Cohort: OB/GYN",
-    category: "Ultrasound",
-    level: "Advanced",
-    status: "coming-soon",
-    thumbnail: "/ultrasound.jpeg",
-    isPaid: true,
-    description: "Join our intensive cohort focused on advanced obstetric and gynecological ultrasound techniques.",
-    itemType: 'class'
-  }
-];
-
-const COMING_SOON_COURSES = [
-  {
-    id: "cs-1",
-    title: "Advanced MRI Cardiac Imaging",
-    category: "MRI",
-    level: "Advanced",
-    price: "Coming Soon",
-    status: "coming-soon",
-    thumbnail: "/MRIpro.jpeg",
-    description: "Deep dive into cardiac MRI protocols, pathologies, and advanced post-processing techniques.",
-    itemType: 'course'
-  }
-];
-
 const ClassesPreview: React.FC = () => {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch latest classes
-    const classesQuery = query(collection(db, 'classes'), orderBy('createdAt', 'desc'), limit(4));
-    const coursesQuery = query(collection(db, 'courses'), orderBy('createdAt', 'desc'), limit(4));
+    // Fetch latest classes from Firestore and combine with static cohort classes
+    const q = query(
+      collection(db, 'classes'),
+      orderBy('createdAt', 'desc')
+    );
 
-    let classesData: any[] = [];
-    let coursesData: any[] = [];
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const dbClasses = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        itemType: 'class'
+      }));
 
-    const unsubClasses = onSnapshot(classesQuery, (snapshot) => {
-      classesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), itemType: 'class' }));
-      combineAndSet();
-    });
+      const allMerged = [...ACTIVE_CLASSES, ...dbClasses, ...COMING_SOON_CLASSES].map(item => ({
+        ...item,
+        itemType: 'class'
+      }));
 
-    const unsubCourses = onSnapshot(coursesQuery, (snapshot) => {
-      coursesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), itemType: 'course' }));
-      combineAndSet();
-    });
+      // Sort so active classes & most recent classes are shown first
+      allMerged.sort((a: any, b: any) => {
+        const statusPriority: Record<string, number> = { active: 1, 'coming-soon': 2, completed: 3 };
+        const pA = statusPriority[a.status] || 2;
+        const pB = statusPriority[b.status] || 2;
+        if (pA !== pB) return pA - pB;
 
-    const combineAndSet = () => {
-      // Sort database entries by creation time
-      const databaseItems = [...classesData, ...coursesData]
-        .sort((a, b) => {
-          const timeA = a.createdAt?.seconds || 0;
-          const timeB = b.createdAt?.seconds || 0;
-          return timeB - timeA;
-        });
-
-      // Maintain a set to avoid duplicate displays
-      const seenIds = new Set(databaseItems.map(x => x.id));
-      const allMerged = [...databaseItems];
-
-      // Merge standard static programs
-      const staticPrograms = [
-        ...ACTIVE_CLASSES,
-        ...COMING_SOON_CLASSES,
-        ...COMING_SOON_COURSES
-      ];
-
-      staticPrograms.forEach(item => {
-        if (!seenIds.has(item.id)) {
-          allMerged.push(item);
-          seenIds.add(item.id);
-        }
+        const timeA = typeof a.createdAt === 'number' ? a.createdAt : (a.createdAt?.seconds || 0);
+        const timeB = typeof b.createdAt === 'number' ? b.createdAt : (b.createdAt?.seconds || 0);
+        return timeB - timeA;
       });
 
-      // Display up to 8 of our top programs on home page
-      setItems(allMerged.slice(0, 8));
+      setItems(allMerged);
       setLoading(false);
-    };
+    }, (error) => {
+      console.error("Error fetching classes for preview:", error);
+      const allMerged = [...ACTIVE_CLASSES, ...COMING_SOON_CLASSES];
+      allMerged.sort((a: any, b: any) => {
+        const statusPriority: Record<string, number> = { active: 1, 'coming-soon': 2, completed: 3 };
+        const pA = statusPriority[a.status] || 2;
+        const pB = statusPriority[b.status] || 2;
+        if (pA !== pB) return pA - pB;
 
-    return () => {
-      unsubClasses();
-      unsubCourses();
-    };
+        const timeA = typeof a.createdAt === 'number' ? a.createdAt : (a.createdAt?.seconds || 0);
+        const timeB = typeof b.createdAt === 'number' ? b.createdAt : (b.createdAt?.seconds || 0);
+        return timeB - timeA;
+      });
+      setItems(allMerged);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   return (
@@ -193,6 +133,11 @@ const ClassesPreview: React.FC = () => {
                         Soon
                       </span>
                     )}
+                    {item.status === 'completed' && (
+                      <span className="bg-rose-600 text-white px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-lg">
+                        Completed
+                      </span>
+                    )}
                   </div>
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-brand-dark shadow-sm">
                     {item.category || 'General'}
@@ -215,9 +160,16 @@ const ClassesPreview: React.FC = () => {
                       <span className="text-amber-500 text-xs font-black uppercase tracking-wider bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-100">
                         Coming Soon
                       </span>
+                    ) : item.status === 'completed' ? (
+                      <Link 
+                        to={`/classes?classId=${item.id}`}
+                        className="text-slate-400 text-xs font-black uppercase tracking-wider hover:text-slate-600"
+                      >
+                        View Class
+                      </Link>
                     ) : (
                       <Link 
-                        to={item.itemType === 'class' ? `/classes` : `/courses`}
+                        to={item.itemType === 'class' ? `/classes?classId=${item.id}&register=true` : `/courses`}
                         className="text-brand-primary text-sm font-bold hover:underline"
                       >
                         Enroll Now

@@ -27,12 +27,15 @@ interface ClassModalProps {
   isOpen: boolean;
   onClose: () => void;
   classItem: any | null;
+  initialRegister?: boolean;
 }
 
-const ClassModal: React.FC<ClassModalProps> = ({ isOpen, onClose, classItem }) => {
+const ClassModal: React.FC<ClassModalProps> = ({ isOpen, onClose, classItem, initialRegister = false }) => {
   const [showRegistration, setShowRegistration] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [hasJoinedWhatsApp, setHasJoinedWhatsApp] = useState(false);
+  const [showWhatsAppReminder, setShowWhatsAppReminder] = useState(false);
   const [regError, setRegError] = useState('');
   const [formValues, setFormValues] = useState<Record<string, string>>({
     fullname: '',
@@ -43,9 +46,11 @@ const ClassModal: React.FC<ClassModalProps> = ({ isOpen, onClose, classItem }) =
 
   useEffect(() => {
     if (isOpen) {
-      setShowRegistration(false);
+      setShowRegistration(!!initialRegister);
       setSuccess(false);
       setSubmitting(false);
+      setHasJoinedWhatsApp(false);
+      setShowWhatsAppReminder(false);
       setRegError('');
       setFormValues({
         fullname: '',
@@ -54,9 +59,17 @@ const ClassModal: React.FC<ClassModalProps> = ({ isOpen, onClose, classItem }) =
         qualification: ''
       });
     }
-  }, [isOpen, classItem]);
+  }, [isOpen, classItem, initialRegister]);
 
   if (!classItem) return null;
+
+  const handleAttemptClose = () => {
+    if (success && !hasJoinedWhatsApp) {
+      setShowWhatsAppReminder(true);
+      return;
+    }
+    onClose();
+  };
 
   const handleInputChange = (fieldId: string, value: string) => {
     setFormValues(prev => ({
@@ -112,14 +125,15 @@ const ClassModal: React.FC<ClassModalProps> = ({ isOpen, onClose, classItem }) =
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={handleAttemptClose}>
       <div className="relative max-h-[90vh] overflow-y-auto scrollbar-hide">
         {success ? (
-          /* High-fidelity custom live class registration success screen */
+          /* Custom live class registration success screen - requires WhatsApp join */
           <div className="p-8 md:p-12 text-center space-y-6">
             <button 
-              onClick={onClose}
+              onClick={handleAttemptClose}
               className="absolute top-4 right-4 p-2 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-full transition-colors"
+              title="Close modal"
             >
               <X size={18} />
             </button>
@@ -129,48 +143,91 @@ const ClassModal: React.FC<ClassModalProps> = ({ isOpen, onClose, classItem }) =
             </div>
 
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-1 bg-brand-primary/10 text-brand-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
-                <Sparkles size={12} className="text-brand-primary animate-pulse" /> Successful Registration
+              <div className="inline-flex items-center gap-1 bg-brand-primary/10 text-brand-primary px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+                <Sparkles size={12} className="text-brand-primary animate-pulse" /> Step 2: Finalize Registration
               </div>
-              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Registration Complete!</h2>
-              <p className="text-sm font-semibold text-slate-400">Thank you for registering for {classItem.title}</p>
-            </div>
-
-            <div className="text-slate-600 font-medium leading-relaxed whitespace-pre-line text-sm max-w-lg mx-auto">
-              Congratulations! Your registration is complete. To successfully join the class, please use the secure Google Classroom invitation link below.
-            </div>
-
-            {/* Google Classroom access card */}
-            <div className="bg-emerald-50 border border-emerald-200/60 rounded-3xl p-6 text-left max-w-md mx-auto space-y-4 shadow-sm shadow-emerald-500/5">
-              <div className="flex items-center gap-2 text-emerald-800 font-extrabold text-xs uppercase tracking-wider">
-                <Sparkles size={14} className="text-emerald-500 animate-pulse" /> Final Step to Join Class:
-              </div>
-              
-              <p className="text-xs text-slate-600 font-semibold leading-relaxed">
-                Click the access link below to join our interactive Google Classroom immediately. If prompted, please use the class code.
+              <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+                {hasJoinedWhatsApp ? "Registration Complete!" : "One Last Step!"}
+              </h2>
+              <p className="text-sm font-semibold text-slate-400">
+                {classItem.title}
               </p>
-              
-              <div className="bg-white/90 p-3.5 rounded-2xl border border-emerald-100 flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-extrabold uppercase tracking-widest text-[9px]">Class Code</span>
-                <span className="font-mono font-black text-emerald-600 px-2.5 py-1 bg-emerald-50 rounded-lg select-all">g5bxu3tn</span>
-              </div>
-              
-              <a
-                href="https://classroom.google.com/c/ODY1MjQ3MzU5MzI0?cjc=g5bxu3tn"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 px-6 py-4.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl text-xs uppercase tracking-widest hover:scale-[1.01] active:scale-[0.99] transition-all shadow-lg shadow-emerald-600/20"
-              >
-                Access Google Classroom <ArrowRight size={14} />
-              </a>
             </div>
 
-            <button 
-              onClick={onClose}
-              className="mt-6 px-10 py-4 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-lg active:scale-95"
-            >
-              Close Window
-            </button>
+            {/* Reminder Alert Banner if user tried to exit without joining */}
+            {showWhatsAppReminder && !hasJoinedWhatsApp && (
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-900 text-xs font-bold flex items-center gap-3 text-left shadow-sm animate-pulse">
+                <AlertCircle size={22} className="text-amber-600 shrink-0" />
+                <div>
+                  <span className="font-extrabold block">WhatsApp Channel Join Required</span>
+                  You must click "Join WhatsApp Channel" below to receive class access, schedule updates, and learning materials.
+                </div>
+              </div>
+            )}
+
+            {!hasJoinedWhatsApp ? (
+              <div className="space-y-5 max-w-md mx-auto">
+                <p className="text-xs text-slate-600 font-semibold leading-relaxed">
+                  To complete your registration, you must join our official WhatsApp channel. This is where live class links, lecture schedules, and study resources will be communicated.
+                </p>
+
+                {/* WhatsApp Channel Access Card */}
+                <div className={`bg-emerald-500/10 border ${showWhatsAppReminder ? 'border-amber-400 ring-4 ring-amber-400/20' : 'border-emerald-500/30'} rounded-3xl p-6 text-left space-y-4 shadow-sm transition-all`}>
+                  <div className="flex items-center gap-2 text-emerald-900 font-extrabold text-xs uppercase tracking-wider">
+                    <MessageCircle size={18} className="text-emerald-600" /> Official WhatsApp Channel
+                  </div>
+                  
+                  <p className="text-xs text-slate-600 font-semibold leading-relaxed">
+                    Click the button below to join the channel. Once opened, your registration will be marked complete.
+                  </p>
+                  
+                  <a
+                    href="https://whatsapp.com/channel/0029Vb9GsLfCsU9HB6jtK50T"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => {
+                      setHasJoinedWhatsApp(true);
+                      setShowWhatsAppReminder(false);
+                    }}
+                    className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-5 bg-[#25D366] hover:bg-[#20bd5a] text-white font-extrabold rounded-2xl text-xs uppercase tracking-widest hover:scale-[1.01] active:scale-[0.99] transition-all shadow-lg shadow-emerald-500/25"
+                  >
+                    <MessageCircle size={18} /> Join WhatsApp Channel <ArrowRight size={16} />
+                  </a>
+                </div>
+
+                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+                  ⚠️ Note: Click "Join WhatsApp Channel" to finish registration.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6 max-w-md mx-auto">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 text-center space-y-3 shadow-sm">
+                  <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                    <CheckCircle2 size={26} />
+                  </div>
+                  <h4 className="text-base font-black text-emerald-900">WhatsApp Channel Joined!</h4>
+                  <p className="text-xs text-emerald-700 font-semibold leading-relaxed">
+                    Thank you! Your registration is now fully completed. You'll receive all upcoming class notifications and updates directly in the channel.
+                  </p>
+                  
+                  <a
+                    href="https://whatsapp.com/channel/0029Vb9GsLfCsU9HB6jtK50T"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:text-emerald-900 font-bold underline pt-1"
+                  >
+                    Open WhatsApp Channel again <ArrowRight size={12} />
+                  </a>
+                </div>
+
+                <button 
+                  onClick={onClose}
+                  className="w-full py-5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-emerald-600/25 active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <CheckCircle2 size={16} /> Complete Registration & Exit
+                </button>
+              </div>
+            )}
           </div>
         ) : showRegistration ? (
           /* Live Class Registration Form */
