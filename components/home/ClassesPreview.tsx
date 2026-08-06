@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Star, Clock, ChevronRight, Zap, Activity, Brain, Disc, Loader2 } from 'lucide-react';
+import { Star, Clock, ChevronRight, Zap, Activity, Brain, Disc, Loader2, Video } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Link } from 'react-router-dom';
@@ -117,14 +117,29 @@ const ClassesPreview: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {items.map((item) => (
               <div key={item.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col">
-                <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src={item.thumbnail || 'https://picsum.photos/seed/radiology/800/600'} 
-                    alt={item.title} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute top-4 left-4 flex gap-1.5 flex-wrap">
+                <div className="relative aspect-[4/3] sm:aspect-[16/10] overflow-hidden bg-slate-950">
+                  {item.thumbnail ? (
+                    <>
+                      {/* Blurred backdrop to fill the aspect wrapper */}
+                      <img 
+                        src={item.thumbnail} 
+                        alt="" 
+                        className="absolute inset-0 w-full h-full object-cover filter blur-lg opacity-40 scale-110 pointer-events-none"
+                      />
+                      {/* Crisp foreground image */}
+                      <img 
+                        src={item.thumbnail} 
+                        alt={item.title} 
+                        className="relative w-full h-full object-contain transition-transform duration-500 group-hover:scale-[1.03]"
+                        referrerPolicy="no-referrer"
+                      />
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                      <Video size={40} />
+                    </div>
+                  )}
+                  <div className="absolute top-4 left-4 flex gap-1.5 flex-wrap z-10">
                     <span className="bg-brand-primary text-white px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-lg">
                       {item.itemType === 'class' ? 'Live Class' : 'Course'}
                     </span>
@@ -139,7 +154,7 @@ const ClassesPreview: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-brand-dark shadow-sm">
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-brand-dark shadow-sm z-10">
                     {item.category || 'General'}
                   </div>
                 </div>
