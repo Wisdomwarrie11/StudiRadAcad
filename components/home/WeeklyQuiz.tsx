@@ -11,16 +11,12 @@ const WeeklyQuiz: React.FC = () => {
               <BrainCircuit size={40} />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-brand-dark mb-2">Weekly Radiography Quiz</h3>
+              <h3 className="text-2xl font-bold text-brand-dark mb-2">Do not forget</h3>
               <p className="text-gray-600 max-w-lg">
-                Test your knowledge on <strong>Chest X-Ray Pathologies</strong>. Top scorers this week win a 50% discount on Advanced Courses!
+                We are the eyes of modern medicine.
               </p>
             </div>
           </div>
-          <button className="w-full md:w-auto px-8 py-3 bg-brand-dark text-white font-bold rounded-lg hover:bg-brand-primary transition-colors flex items-center justify-center gap-2">
-            <a href="#quiz">Take Quiz Now</a>
-             <ArrowRight size={18} />
-          </button>
         </div>
       </div>
     </section>
