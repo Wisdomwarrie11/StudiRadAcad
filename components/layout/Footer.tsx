@@ -11,7 +11,6 @@ const Footer: React.FC = () => {
           {/* Brand Column */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Radiation className="text-brand-accent" size={28} />
               <span className="text-2xl font-bold">Studi<span className="text-brand-accent">Rad</span></span>
             </div>
             <p className="text-gray-400 mb-6 leading-relaxed">

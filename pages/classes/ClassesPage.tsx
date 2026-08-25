@@ -216,11 +216,8 @@ export default function ClassesPage() {
             </div>
             <h3 className="text-2xl font-black text-slate-900 mb-2">No courses/classes available yet</h3>
             <p className="text-slate-500 font-medium max-w-md mx-auto">
-              We're currently planning our next live cohorts. Check back soon or explore our pre-recorded courses!
+              We're currently planning our next live cohorts. Check back soon!
             </p>
-            <Link to="/courses" className="mt-8 inline-flex items-center gap-2 px-8 py-4 bg-brand-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-brand-dark transition-all">
-              Explore Courses <ArrowRight size={16} />
-            </Link>
           </div>
         ) : (
           <div className="space-y-8">
