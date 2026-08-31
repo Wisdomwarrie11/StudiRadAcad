@@ -56,18 +56,16 @@ export default function AdminRegistrationsPage() {
   const getDynamicMessage = (fullName: string): string => {
     const greetingName = fullName && fullName !== "—" ? fullName.trim() : "Colleague";
     return `Hello ${greetingName},
-We are delighted to have you join StudiRad flagship class. Please take note of the following details;
+We are delighted to have you join this StudiRad Class on Artifacts in Abdominal Ultrasound. Please take note of the following details;
 
-Date: Monday, 22nd June 2026.
-*7:45 PM:* Welcome & Onboarding Session
-*8:00 PM:* Commencement of the Core Lecture.
-*Link :* https://meet.google.com/xgn-etgn-zyf (Admittance into the class will be open by 7:45 PM)
+Date: Tuesday, 1st september 2026.
+*6:50PM (WAT):* Onboarding Session/Introduction to Abdominal Ultrasound Artifact.
+*Link :* https://meet.google.com/gzy-muac-ber (Admittance into the class will be open by 6:50PM)
 
 To maximize your experience, we kindly request that you adjust your schedule accordingly and ensure you are logged in promptly before the onboarding session. 
 
-If you are yet to join the Google Classroom, please click on this link to join: https://classroom.google.com/c/ODY1MjQ3MzU5MzI0?cjc=g5bxu3tn
-
-We look forward to your active participation.
+If you are yet to join the WhatsApp Channel, please click on this link to join: https://whatsapp.com/channel/0029Vb9GsLfCsU9HB6jtK50T 
+All information about the class will be shared only on the channel. For enquiries or complain, please contact +2349029729621.
 
 
 Best Regards,
