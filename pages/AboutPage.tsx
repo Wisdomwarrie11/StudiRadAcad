@@ -42,7 +42,7 @@ const TeamMemberCard: React.FC<{ member: TeamMember }> = ({ member }) => {
   return (
     <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center text-center group hover:-translate-y-1">
       {/* Avatar Container */}
-      <div className="relative w-28 h-28 sm:w-32 sm:h-32 mb-4 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 border-2 border-white shadow-inner flex items-center justify-center">
+      <div className="relative w-28 h-30 sm:w-33 sm:h-32 mb-4 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 border-2 border-white shadow-inner flex items-center justify-center">
         {!imageError && member.image ? (
           <img
             src={member.image}
@@ -149,83 +149,7 @@ const AboutPage: React.FC = () => {
 
       <div className="container mx-auto px-4 py-16 md:py-20 max-w-6xl">
         {/* What We Stand For */}
-        <div className="text-center mb-16 md:mb-24">
-          <span className="text-xs font-black tracking-widest text-brand-primary uppercase bg-brand-primary/10 px-3.5 py-1 rounded-full">
-            Our Foundation
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3 mb-6 tracking-tight">
-            What We Stand For
-          </h2>
-          <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed font-normal">
-            StudiRad stands for academic excellence, continuous professional growth, accessible learning, ethical practice, and strong mentorship.
-          </p>
-        </div>
 
-        {/* Mission Section */}
-        <div className="grid md:grid-cols-2 gap-10 md:gap-14 items-center mb-20 md:mb-28">
-          <MotionDiv 
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="order-1"
-          >
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[4/3] bg-slate-900">
-              <img 
-                src="/mission1.jpeg" 
-                alt="Our Mission" 
-                className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
-                onError={(e) => { (e.target as HTMLImageElement).src = '/radlearning1.jpeg'; }}
-              />
-            </div>
-          </MotionDiv>
-          <div className="order-2">
-            <div className="flex items-center gap-3.5 mb-4">
-              <div className="p-3 bg-indigo-100 rounded-2xl text-indigo-600 shadow-sm">
-                <Lightbulb size={24} />
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Our Mission</h3>
-            </div>
-            <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-              StudiRad is committed to supporting radiography students and professionals by providing accessible, high-quality digital education, structured mentorship, and timely information on career opportunities—including jobs, internships, and scholarships—thereby bridging the gap between academic training and professional success.
-            </p>
-          </div>
-        </div>
-
-        {/* Vision Section */}
-        <div className="grid md:grid-cols-2 gap-10 md:gap-14 items-center mb-20 md:mb-28">
-          <MotionDiv 
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="order-1 md:order-2"
-          >
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[4/3] bg-slate-900">
-              <img 
-                src="/vision.jpeg" 
-                alt="Our Vision" 
-                className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
-                onError={(e) => { (e.target as HTMLImageElement).src = '/visionpeople.jpg'; }}
-              />
-            </div>
-          </MotionDiv>
-          <div className="order-2 md:order-1">
-            <div className="flex items-center gap-3.5 mb-4">
-              <div className="p-3 bg-amber-100 rounded-2xl text-amber-600 shadow-sm">
-                <Globe size={24} />
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Our Vision</h3>
-            </div>
-            <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-              To become the leading digital learning and mentorship hub that empowers radiography students and professionals globally to achieve academic excellence, clinical competence, and sustainable career growth.
-            </p>
-          </div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* MEET THE TEAM SECTION (Team Members & Volunteers) */}
-        {/* ========================================================================= */}
         <section id="team" className="mb-24 scroll-mt-24">
           <div className="text-center mb-10">
             <span className="text-xs font-black tracking-widest text-indigo-600 uppercase bg-indigo-50 px-3.5 py-1 rounded-full border border-indigo-100">
@@ -235,7 +159,7 @@ const AboutPage: React.FC = () => {
               Meet the Team
             </h2>
             <p className="text-slate-600 text-base max-w-2xl mx-auto">
-              Our community is powered by dedicated academic mentors, and passionate volunteers.
+              Our community is powered by dedicated academic educators, and passionate volunteers.
             </p>
 
             {/* Category Filter Tabs */}
@@ -368,23 +292,74 @@ const AboutPage: React.FC = () => {
               </AnimatePresence>
             </div>
           )}
-
-          {/* Volunteer CTA banner */}
-          <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-brand-dark rounded-3xl p-8 text-white text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
-            <div className="space-y-2 max-w-xl">
-              <h4 className="text-xl sm:text-2xl font-black tracking-tight">Want to join as a Volunteer or Tutor?</h4>
-              <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
-                We're always looking for radiography enthusiasts, student coordinators, and experienced mentors to expand our peer-learning reach.
-              </p>
-            </div>
-            <a
-              href="mailto:studiradinfo@gmail.com?subject=Volunteering%20at%20StudiRad"
-              className="inline-flex items-center gap-2 px-6 py-3.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-2xl text-xs uppercase tracking-widest shrink-0 transition-transform active:scale-95 shadow-lg shadow-amber-400/20"
-            >
-              <Mail size={16} /> Join the Community <ArrowRight size={14} />
-            </a>
-          </div>
         </section>
+
+        {/* Mission Section */}
+        <div className="grid md:grid-cols-2 gap-10 md:gap-14 items-center mb-20 md:mb-28">
+          <MotionDiv 
+            initial={{ opacity: 0, x: -40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="order-1"
+          >
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[4/3] bg-slate-900">
+              <img 
+                src="/mission1.jpeg" 
+                alt="Our Mission" 
+                className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
+                onError={(e) => { (e.target as HTMLImageElement).src = '/radlearning1.jpeg'; }}
+              />
+            </div>
+          </MotionDiv>
+          <div className="order-2">
+            <div className="flex items-center gap-3.5 mb-4">
+              <div className="p-3 bg-indigo-100 rounded-2xl text-indigo-600 shadow-sm">
+                <Lightbulb size={24} />
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Our Mission</h3>
+            </div>
+            <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
+              StudiRad is committed to supporting radiography students and professionals by providing accessible, high-quality digital education, structured mentorship, and timely information on career opportunities—including jobs, internships, and scholarships—thereby bridging the gap between academic training and professional success.
+            </p>
+          </div>
+        </div>
+
+        {/* Vision Section */}
+        <div className="grid md:grid-cols-2 gap-10 md:gap-14 items-center mb-20 md:mb-28">
+          <MotionDiv 
+            initial={{ opacity: 0, x: 40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="order-1 md:order-2"
+          >
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[4/3] bg-slate-900">
+              <img 
+                src="/vision.jpeg" 
+                alt="Our Vision" 
+                className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
+                onError={(e) => { (e.target as HTMLImageElement).src = '/visionpeople.jpg'; }}
+              />
+            </div>
+          </MotionDiv>
+          <div className="order-2 md:order-1">
+            <div className="flex items-center gap-3.5 mb-4">
+              <div className="p-3 bg-amber-100 rounded-2xl text-amber-600 shadow-sm">
+                <Globe size={24} />
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Our Vision</h3>
+            </div>
+            <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
+              To become the leading digital learning and mentorship hub that empowers radiography students and professionals globally to achieve academic excellence, clinical competence, and sustainable career growth.
+            </p>
+          </div>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* MEET THE TEAM SECTION (Team Members & Volunteers) */}
+        {/* ========================================================================= */}
+       
 
         {/* Collaboration Section */}
         <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-20 border border-slate-100">

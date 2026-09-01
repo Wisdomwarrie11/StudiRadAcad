@@ -11,14 +11,14 @@ export interface TeamMember {
   export const TEAM_MEMBERS: TeamMember[] = [
     {
       id: 'tm-1',
-      name: 'Rad Wisdom Warrie',
+      name: 'Rad. Wisdom Warrie',
       role: 'Founder and Educator',
       type: 'member',
       image: 'Warrie.jpeg',
     },
     {
       id: 'tm-2',
-      name: 'Rad Cletus Ogbu',
+      name: 'Rad. Aniekeme Samuel (Cranium)',
       role: 'Educator & Community Lead ',
 
       type: 'member',
@@ -26,21 +26,21 @@ export interface TeamMember {
     },
     {
       id: 'tm-3',
-      name: 'Academic Coordinator',
+      name: 'Rad. Cletus Ogbu',
       role: 'Curriculum & Course Creator',
       type: 'member',
       image: 'Cletus.jpeg',
     },
     {
       id: 'tm-4',
-      name: 'Hannah Ekanem',
+      name: 'Rad. Hannah Ekanem',
       role: 'Community Educator',
       type: 'member',
-      image: '/team/team-4.jpg',
+      image: 'Hannah.jpeg',
     },
     {
         id: 'tm-4',
-        name: 'Peter Emieje',
+        name: 'Rad. Peter Emieje',
         role: 'Community Educator',
         type: 'member',
         image: 'Peter.jpg',
@@ -64,14 +64,14 @@ export interface TeamMember {
     },
     {
       id: 'vol-3',
-      name: 'Henry ',
+      name: 'Rad. Lebari Henry ',
       role: 'Chief Graphic Designer',
       type: 'volunteer',
       image: 'henri.jpeg',
     },
     {
       id: 'vol-4',
-      name: 'Wofai Ibor',
+      name: 'Rad. Wofai Ibor',
       role: 'Virtual Assistant',
       type: 'volunteer',
       image: 'Wofai.jpeg',
@@ -86,7 +86,7 @@ export interface TeamMember {
     {
       id: 'vol-6',
       name: 'Obiazikwor Rejoice',
-      role: 'Creative content Assistant',
+      role: 'Course content Creator',
       type: 'volunteer',
       image: 'Rejoice.jpeg',
     },
@@ -106,31 +106,32 @@ export interface TeamMember {
       },
       {
         id: 'vol-9',
-        name: 'Fortune Emmanuel',
+        name: 'Rad. Fortune Emmanuel',
         role: 'Editor & Event planner',
         type: 'volunteer',
         image: 'Fortune.jpeg',
       },
       {
         id: 'vol-10',
-        name: 'Grace Ijeh',
-        role: 'Course Content creator',
+        name: 'Rad. Grace Ijeh',
+        role: 'Opportunity Curator',
         type: 'volunteer',
         image: 'GraceIjeh.jpeg',
       },
       {
         id: 'vol-11',
-        name: 'Etan Mark',
-        role: 'Opportunity Sourcing',
-        type: 'volunteer',
-        image: 'EtanMark.png',
-      },
-      {
-        id: 'vol-11',
-        name: 'Okoro Magdalene',
+        name: 'Rad. Okoro Magdalene',
         role: 'Content Creator & Writer ',
         type: 'volunteer',
         image: 'okoro.jpeg',
+      },
+      {
+        id: 'vol-11',
+        name: 'Etan Mark',
+        role: 'Opportunity Curator',
+        type: 'volunteer',
+        image: 'EtanMark.png',
       }
+     
   ];
   
