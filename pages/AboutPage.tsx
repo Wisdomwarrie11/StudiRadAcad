@@ -124,10 +124,7 @@ const AboutPage: React.FC = () => {
           <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-[2px]"></div>
         </div>
 
-        <div className="relative z-10 container mx-auto px-4 mt-12 max-w-4xl">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-amber-300 text-xs font-bold uppercase tracking-widest mb-6">
-            <Sparkles size={14} className="text-amber-400 animate-pulse" /> Digital Radiography Hub
-          </div>
+        <div className="relative z-10 container mx-auto px-4 mt-2 max-w-4xl">
           <MotionH1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
