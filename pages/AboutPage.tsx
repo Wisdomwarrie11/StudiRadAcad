@@ -42,7 +42,7 @@ const TeamMemberCard: React.FC<{ member: TeamMember }> = ({ member }) => {
   return (
     <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center text-center group hover:-translate-y-1">
       {/* Avatar Container */}
-      <div className="relative w-28 h-30 sm:w-33 sm:h-32 mb-4 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 border-2 border-white shadow-inner flex items-center justify-center">
+      <div className="relative w-32 h-40 sm:w-33 sm:h-32 mb-4 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 border-2 border-white shadow-inner flex items-center justify-center">
         {!imageError && member.image ? (
           <img
             src={member.image}
