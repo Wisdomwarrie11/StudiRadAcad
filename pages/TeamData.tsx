@@ -20,14 +20,13 @@ export interface TeamMember {
       id: 'tm-2',
       name: 'Rad. Aniekeme Samuel (Cranium)',
       role: 'Educator & Community Lead ',
-
       type: 'member',
       image: 'Cranium.jpg',
     },
     {
       id: 'tm-3',
       name: 'Rad. Cletus Ogbu',
-      role: 'Curriculum & Course Creator',
+      role: 'Curriculum Creator',
       type: 'member',
       image: 'Cletus.jpeg',
     },
@@ -51,7 +50,7 @@ export interface TeamMember {
     {
       id: 'vol-1',
       name: 'Akanji Oluwaseun',
-      role: 'Course Creation Assistant',
+      role: 'Course Content Creator',
       type: 'Contributor',
       image: 'Akanji.jpeg',
     },
@@ -65,7 +64,7 @@ export interface TeamMember {
     {
       id: 'vol-3',
       name: 'Rad. Lebari Henry ',
-      role: 'Chief Graphic Designer',
+      role: 'Lead Graphic Designer',
       type: 'volunteer',
       image: 'henri.jpeg',
     },
