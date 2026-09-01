@@ -39,7 +39,7 @@ export interface TeamMember {
     },
     {
         id: 'tm-4',
-        name: 'Rad. Peter Emieje',
+        name: 'Rad. Peter Emiaji',
         role: 'Community Educator',
         type: 'member',
         image: 'Peter.jpg',
