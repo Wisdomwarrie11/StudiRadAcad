@@ -257,7 +257,6 @@ const AboutPage: React.FC = () => {
                         {VOLUNTEERS.length}
                       </span>
                     </h3>
-                    <p className="text-xs text-slate-500 font-medium">Campus leaders, peer tutors, content contributors, and moderators</p>
                   </div>
                 </div>
 

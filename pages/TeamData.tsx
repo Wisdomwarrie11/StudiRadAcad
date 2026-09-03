@@ -26,7 +26,7 @@ export interface TeamMember {
     {
       id: 'tm-3',
       name: 'Rad. Cletus Ogbu',
-      role: 'Curriculum Creator',
+      role: 'Curriculum Coordinator',
       type: 'member',
       image: 'Cletus.jpeg',
     },
@@ -130,7 +130,13 @@ export interface TeamMember {
         role: 'Opportunity Curator',
         type: 'volunteer',
         image: 'EtanMark.png',
+      },
+      {
+        id: 'vol-11',
+        name: 'Udowong Godwin Joshua',
+        role: 'Opportunity Curator',
+        type: 'volunteer',
+        image: 'Design.jpeg',
       }
-     
   ];
   

@@ -11,6 +11,7 @@ import FloatingCTA from '../components/home/FloatingCTA';
 import HowItWorks from '../components/home/HowItWorks';
 import TargetAudience from '../components/home/TargetAudience';
 import TargetAudienceNew from './TargetAudienceNew';
+import CommunitySpotlight from '../components/home/CommunitySpotlight';
 
 const Home: React.FC = () => {
   return (
