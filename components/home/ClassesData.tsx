@@ -4,7 +4,7 @@ export const ACTIVE_CLASSES = [
       title: "Artifacts in Abdominal Ultrasound: Recognition, Interpretation, and Clinical Application",
       category: "Ultrasound",
       level: "All Levels",
-      status: "active",
+      status: "completed",
       price: "FREE",
       isPaid: false,
       duration: "4 Days (1st – 4th September 2026)",
