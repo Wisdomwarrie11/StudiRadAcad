@@ -1,7 +1,7 @@
 import React from 'react';
 
 const stats = [
-  { value: "800", label: "Community members", suffix: "+" },
+  { value: "1K", label: "Community members", suffix: "+" },
   { value: "10", label: "Expert Tutors", suffix: "+" },
   { value: "50", label: "Materials", suffix: "+" },
   { value: "24", label: "Career Placement", suffix: "%" },
