@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { adminAuth } from "../../firebase";
+import { getAllGroupsForAdmin } from "../../services/CommunityGroups";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -17,16 +18,23 @@ import {
   Settings,
   Video,
   PlayCircle,
-  Calendar
+  Calendar,
+  MessageSquare
 } from 'lucide-react';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const [pendingGroupsCount, setPendingGroupsCount] = useState<number>(0);
 
   useEffect(() => {
     const unsubscribe = adminAuth.onAuthStateChanged((user) => {
       if (!user) {
         navigate("/admin/login");
+      } else {
+        getAllGroupsForAdmin().then((groups) => {
+          const pending = groups.filter((g) => g.status === "pending");
+          setPendingGroupsCount(pending.length);
+        }).catch(() => {});
       }
     });
     return () => unsubscribe();
@@ -106,6 +114,14 @@ const AdminDashboard = () => {
       color: 'bg-amber-50 text-amber-600'
     },
     {
+      title: 'Community Groups',
+      description: 'Approve, edit, or remove user-created radiography groups.',
+      icon: MessageSquare,
+      path: '/admin/groups',
+      color: 'bg-blue-50 text-[#002147]',
+      badge: pendingGroupsCount > 0 ? `${pendingGroupsCount} Pending` : undefined
+    },
+    {
       title: "Settings",
       description: "Manage admin preferences and account details.",
       icon: Settings,
@@ -148,8 +164,13 @@ const AdminDashboard = () => {
             <Link 
               key={index} 
               to={item.path}
-              className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 p-6 group border border-gray-100"
+              className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 p-6 group border border-gray-100 relative"
             >
+              {item.badge && (
+                <span className="absolute top-4 right-4 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-[#002147] shadow-sm animate-pulse">
+                  {item.badge}
+                </span>
+              )}
               <div className={`w-14 h-14 ${item.color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
                 <item.icon size={28} />
               </div>

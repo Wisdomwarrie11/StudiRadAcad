@@ -8,6 +8,7 @@ const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const [academyOpen, setAcademyOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
 
   const location = useLocation();
 
@@ -18,6 +19,16 @@ const Header: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleSectionClick = (sectionId: string) => {
+    setMobileMenuOpen(false);
+    if (location.pathname === '/services') {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  };
 
   const headerBgClass = isScrolled || location.pathname !== '/' 
     ? 'bg-brand-dark/95 backdrop-blur-md shadow-lg py-3' 
@@ -50,6 +61,41 @@ const Header: React.FC = () => {
                 </div>
               </div>
             </div>
+             {/* Services Dropdown */}
+             <div className="relative group">
+              <Link 
+                to="/services" 
+                className="flex items-center gap-1 text-sm font-medium hover:text-brand-accent transition-colors py-1"
+              >
+                Services <ChevronDown size={14} />
+              </Link>
+              <div className="absolute top-full left-0 w-64 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                <div className="bg-white rounded-xl shadow-xl overflow-hidden py-2 text-gray-800 border border-slate-100">
+                  <Link 
+                    to="/services#research" 
+                    onClick={() => handleSectionClick('research')}
+                    className="flex items-center justify-between px-4 py-2.5 hover:bg-emerald-50/70 hover:text-emerald-700 transition-colors"
+                  >
+                    <span className="font-semibold text-sm">Research Work</span>
+                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      Active
+                    </span>
+                  </Link>
+
+                  <Link 
+                    to="/services#private-classes" 
+                    onClick={() => handleSectionClick('private-classes')}
+                    className="flex items-center justify-between px-4 py-2.5 hover:bg-amber-50/70 hover:text-amber-800 transition-colors"
+                  >
+                    <span className="font-semibold text-sm">Private Classes</span>
+                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                      Coming Soon
+                    </span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
             
             <div className="relative group">
               <button className="flex items-center gap-1 text-sm font-medium hover:text-brand-accent transition-colors">
@@ -95,6 +141,32 @@ const Header: React.FC = () => {
                   {/* <Link to="/resources/QuizChallenge" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300">Radiography Quiz</Link> */}
                   <Link to="/resources/webinars" onClick={() => setMobileMenuOpen(false)} className="block text-gray-300">Webinars</Link>
 
+                </div>
+              )}
+            </div>
+            {/* Services on Mobile */}
+            <div className="space-y-2">
+              <button onClick={() => setServicesOpen(!servicesOpen)} className="flex items-center justify-between w-full text-white text-lg font-medium">
+                Services <ChevronDown size={16} className={`transition-transform ${servicesOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {servicesOpen && (
+                <div className="pl-4 space-y-2 border-l border-gray-700 ml-2">
+                  <Link 
+                    to="/services#research" 
+                    onClick={() => handleSectionClick('research')} 
+                    className="flex items-center justify-between text-gray-300 py-1"
+                  >
+                    <span>Research Work</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-900/60 text-emerald-300 border border-emerald-700/50">Active</span>
+                  </Link>
+                  <Link 
+                    to="/services#private-classes" 
+                    onClick={() => handleSectionClick('private-classes')} 
+                    className="flex items-center justify-between text-gray-300 py-1"
+                  >
+                    <span>Private Classes</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-900/60 text-amber-300 border border-amber-700/50">Coming Soon</span>
+                  </Link>
                 </div>
               )}
             </div>

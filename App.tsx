@@ -11,6 +11,8 @@ import ActivitiesPage from './pages/ActivitiesPage';
 import FreshersPage from './pages/FreshersPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
+import ServicesPage from './pages/services/ServicesPage';
+import CommunityPage from './pages/CommunityPage';
 
 // Resources
 import BlogPage from './pages/resources/BlogPage';
@@ -60,6 +62,7 @@ import AdminCoursesPage from './pages/admin/AdminCoursesPage';
 import AdminOpportunitiesSpreadsheet from './pages/admin/SpreadSheet';
 import AdminEmployerList from './pages/opportunities/AdminEmployerList';
 import AdminCreateCoursePage from './pages/admin/AdminCreateCoursePage';
+import AdminGroupsPage from './pages/admin/AdminGroupsPage';
 
 import LocumPage from "./pages/opportunities/LocumPage";
 import LocumRegistration from "./pages/opportunities/LocumRegistration";
@@ -131,6 +134,7 @@ const App: React.FC = () => {
           <Route path="webinars" element={<ActivitiesPage />} />
           <Route path="freshers" element={<FreshersPage />} />
           <Route path="terms" element={<TermsOfService />} />
+          <Route path="services" element={<ServicesPage />} />
 
 
           {/* Resources */}
@@ -142,6 +146,7 @@ const App: React.FC = () => {
           <Route path="quiz" element={<QuizPage />} />
           <Route path="resources/videos" element={<VideosPage />} />
           <Route path="resources/QuizChallenge" element={<QuizChallenge />} />
+          <Route path="community" element={<CommunityPage />} />
 
 
           {/* Classes Route */}
@@ -210,6 +215,7 @@ const App: React.FC = () => {
         <Route path="admin/create-course" element={<AdminCreateCoursePage />} />
         <Route path="admin/employers-database" element={<AdminEmployerList />} />
         <Route path="admin/registrations" element={<AdminRegistrationsPage />} />
+        <Route path="admin/groups" element={<AdminGroupsPage />} />
         <Route path= 'admin/flagshipregistration' element={<FlagshipRegistrationsPage/>} />
 
       </Routes>

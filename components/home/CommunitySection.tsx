@@ -1,9 +1,33 @@
 
-import React from 'react';
-import { MessageCircle, Facebook, Users, ArrowRight, Linkedin } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { MessageCircle, Users, ArrowRight, Compass, PlusCircle, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getApprovedGroups, CommunityGroup } from '../../services/CommunityGroups';
 
 const CommunitySection: React.FC = () => {
+  const [groups, setGroups] = useState<CommunityGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    getApprovedGroups()
+      .then((data) => {
+        if (isMounted) {
+          setGroups(data);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const totalJoins = groups.reduce((acc, g) => acc + (g.joinsCount || 0), 0);
+
   return (
     <section className="py-20 bg-brand-light relative overflow-hidden">
       {/* Decorative background elements */}
@@ -19,7 +43,7 @@ const CommunitySection: React.FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2 bg-brand-primary/10 text-brand-primary rounded-full text-sm font-bold mb-6"
           >
             <Users size={16} />
-            <span>Join the Movement</span>
+            <span>Community Hub</span>
           </motion.div>
           
           <motion.h2 
@@ -39,89 +63,71 @@ const CommunitySection: React.FC = () => {
             transition={{ delay: 0.2 }}
             className="text-xl text-gray-600"
           >
-            Don't study in isolation. Join our vibrant community to share knowledge, 
-            discuss cases, and stay updated with the latest in radiography.
+            Don't study or practice in isolation. Join peer-led study groups, licensing exam circles, research teams, and locum alerts.
           </motion.p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-         
-          {/* WhatsApp Card */}
-          <motion.a
-            href="https://chat.whatsapp.com/LIV2MPAaxgfHF0NsXLzlaf" // Placeholder
-            target="_blank"
-            rel="noopener noreferrer"
+          {/* Explore Community Groups Card */}
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             whileHover={{ y: -5 }}
-            className="group bg-white p-8 rounded-3xl shadow-xl shadow-brand-dark/5 border border-gray-100 flex flex-col items-center text-center transition-all hover:border-green-500/30"
+            className="group bg-white p-8 rounded-3xl shadow-xl shadow-brand-dark/5 border border-gray-100 flex flex-col items-center text-center transition-all hover:border-[#002147]/30"
           >
-            <div className="w-20 h-20 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-              <MessageCircle size={40} fill="currentColor" className="opacity-20 absolute" />
-              <MessageCircle size={40} className="relative z-10" />
+            <div className="w-20 h-20 bg-blue-50 text-[#002147] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <Compass size={40} className="relative z-10" />
             </div>
-            <h3 className="text-2xl font-bold text-brand-dark mb-3">WhatsApp Community</h3>
+            <h3 className="text-2xl font-bold text-brand-dark mb-3">Browse Community Groups</h3>
             <p className="text-gray-600 mb-8">
-              Get instant updates, daily challenge reminders, and quick tips directly on your phone.
+              Explore verified groups in Research, Licensing Exams, Scholarships, Jobs, Internships, Outreach, and Networking.
             </p>
-            <div className="mt-auto flex items-center gap-2 font-bold text-green-600 group-hover:gap-4 transition-all">
-              Join WhatsApp Group <ArrowRight size={18} />
-            </div>
-          </motion.a>
+            <Link 
+              to="/community"
+              className="mt-auto inline-flex items-center gap-2 font-bold text-[#002147] hover:text-[#001733] group-hover:gap-3 transition-all"
+            >
+              <span>Explore Directory</span> <ArrowRight size={18} />
+            </Link>
+          </motion.div>
 
-          {/* Facebook Card */}
-          <motion.a
-            href="https://www.facebook.com/share/1DaojaT3tc/?mibextid=wwXIfr" // Placeholder
-            target="_blank"
-            rel="noopener noreferrer"
+          {/* Create a Community Group Card */}
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             whileHover={{ y: -5 }}
-            className="group bg-white p-8 rounded-3xl shadow-xl shadow-brand-dark/5 border border-gray-100 flex flex-col items-center text-center transition-all hover:border-blue-600/30"
+            className="group bg-white p-8 rounded-3xl shadow-xl shadow-brand-dark/5 border border-gray-100 flex flex-col items-center text-center transition-all hover:border-amber-500/30"
           >
-            <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-              <Facebook size={40} fill="currentColor" className="opacity-20 absolute" />
-              <Facebook size={40} className="relative z-10" />
+            <div className="w-20 h-20 bg-amber-50 text-[#f59e0b] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <PlusCircle size={40} className="relative z-10" />
             </div>
-            <h3 className="text-2xl font-bold text-brand-dark mb-3">Facebook Group</h3>
+            <h3 className="text-2xl font-bold text-brand-dark mb-3">Create Your Own Group</h3>
             <p className="text-gray-600 mb-8">
-              Engage in deep discussions, share resources, and network with professionals worldwide.
+              Start and administer a WhatsApp, Telegram, or Slack group for your school, hospital, or study team. (Max 2 groups per creator).
             </p>
-            <div className="mt-auto flex items-center gap-2 font-bold text-blue-600 group-hover:gap-4 transition-all">
-              Join Facebook Group <ArrowRight size={18} />
-            </div>
-          </motion.a>
-
-           {/* WhatsApp Card */}
-           <motion.a
-            href="https://chat.whatsapp.com/LIV2MPAaxgfHF0NsXLzlaf" // Placeholder
-            target="_blank"
-            rel="noopener noreferrer"
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            whileHover={{ y: -5 }}
-            className="group bg-white p-8 rounded-3xl shadow-xl shadow-brand-dark/5 border border-gray-100 flex flex-col items-center text-center transition-all hover:border-green-500/30"
-          >
-            <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-              <Linkedin size={40} fill="currentColor" className="opacity-20 absolute" />
-              <Linkedin size={40} className="relative z-10" />
-            </div>
-            <h3 className="text-2xl font-bold text-brand-dark mb-3">LinkedIn Page</h3>
-            <p className="text-gray-600 mb-8">
-              Get instant updates, daily challenge reminders, and quick tips directly on your phone.
-            </p>
-            <div className="mt-auto flex items-center gap-2 font-bold text-green-600 group-hover:gap-4 transition-all">
-              Follow LinkedIn Page <ArrowRight size={18} />
-            </div>
-          </motion.a>
+            <Link 
+              to="/community"
+              className="mt-auto inline-flex items-center gap-2 font-bold text-amber-600 hover:text-amber-700 group-hover:gap-3 transition-all"
+            >
+              <span>Start a Group</span> <ArrowRight size={18} />
+            </Link>
+          </motion.div>
         </div>
 
-        
+        {/* Directory Callout */}
+        <div className="mt-12 text-center">
+          <Link
+            to="/community"
+            className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-full bg-[#002147] hover:bg-[#001733] text-white font-bold text-sm shadow-md transition-all hover:gap-3.5"
+          >
+            <Compass size={18} className="text-[#f59e0b]" />
+            <span>Open Radiography Community Hub</span>
+            <ArrowRight size={16} />
+          </Link>
+        </div>
 
-        {/* Community Stats */}
+        {/* Live Synchronized Stats from Firebase */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -129,16 +135,20 @@ const CommunitySection: React.FC = () => {
           className="mt-20 pt-10 border-t border-gray-200 flex flex-wrap justify-center gap-12 text-center"
         >
           <div>
-            <div className="text-3xl font-bold text-brand-primary">500+</div>
-            <div className="text-sm text-gray-500 uppercase tracking-wider font-semibold">Members</div>
+            <div className="text-3xl font-bold text-brand-primary">
+              {loading ? '...' : groups.length}
+            </div>
+            <div className="text-sm text-gray-500 uppercase tracking-wider font-semibold">Active Groups</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-brand-primary">12+</div>
-            <div className="text-sm text-gray-500 uppercase tracking-wider font-semibold">States</div>
+            <div className="text-3xl font-bold text-brand-primary">7</div>
+            <div className="text-sm text-gray-500 uppercase tracking-wider font-semibold">Categories</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-brand-primary">Weekly</div>
-            <div className="text-sm text-gray-500 uppercase tracking-wider font-semibold">Discussions</div>
+            <div className="text-3xl font-bold text-brand-primary">
+              {loading ? '...' : totalJoins}
+            </div>
+            <div className="text-sm text-gray-500 uppercase tracking-wider font-semibold">Community Joins</div>
           </div>
         </motion.div>
       </div>
