@@ -70,7 +70,6 @@ import LocumDashboard from "./pages/opportunities/LocumDashboard";
 import LocumPayment from "./pages/opportunities/LocumPayment";
 import LocumEditProfile from "./pages/opportunities/LocumEditProfile";
 import LocumLogin from './pages/opportunities/LocumLogin';
-import CommunitySection from './components/home/CommunitySection';
 import CoursesPage from './pages/classes/CoursesPage';
 import WebinarsPage from './pages/resources/WebinarsPage';
 import AdminRegistrationsPage from './pages/admin/AdminRegistrationPage';
@@ -191,7 +190,6 @@ const App: React.FC = () => {
         {/* Admin Login (Public) */}
         <Route path="admin/login" element={<AdminLoginPage />} />
 
-        <Route path="community" element={<CommunitySection/>} />
         <Route path="admin/classes" element={<AdminClassesPage />} />
           <Route path="admin/classes/create" element={<AdminCreateClassPage />} />
           <Route path="admin/courses" element={<AdminCoursesPage />} />

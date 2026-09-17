@@ -11,6 +11,7 @@ import {
   Bell, 
   ExternalLink,
   MessageSquare,
+  MessageCircle,
   Sparkles,
   BookOpen,
   Briefcase,
@@ -202,14 +203,14 @@ export const CommunityPage: React.FC = () => {
 
       {/* Success Toast */}
       {successToast && (
-        <div className="fixed bottom-6 right-6 z-50 p-4 bg-[#002d47] text-white rounded-2xl shadow-xl flex items-center gap-3 border border-blue-800 animate-fadeIn">
+        <div className="fixed bottom-6 right-6 z-50 p-4 bg-[#003947] text-white rounded-2xl shadow-xl flex items-center gap-3 border border-blue-800 animate-fadeIn">
           <CheckCircle2 size={20} className="text-[#f59e0b] shrink-0" />
           <span className="text-xs sm:text-sm font-semibold">{successToast}</span>
         </div>
       )}
 
       {/* Hero Header in Oxford Blue */}
-      <section className="bg-[#003047] text-white pt-28 pb-14 px-4 sm:px-6 lg:px-8 border-b border-blue-900">
+      <section className="bg-[#003247] text-white pt-28 pb-14 px-4 sm:px-6 lg:px-8 border-b border-blue-900">
         <div className="max-w-6xl mx-auto">
           {/* Admin trigger notification banner */}
           {isStudiRadAdmin && pendingAdminGroupsCount > 0 && (
@@ -242,8 +243,10 @@ export const CommunityPage: React.FC = () => {
               </p>
             </div>
 
-            {/* Action Button: Create Group */}
-            <div className="flex items-center gap-3">
+            {/* Action Buttons: Join Official Community & Create Group */}
+            <div className="flex flex-wrap items-center gap-3">
+           
+
               <button
                 onClick={() => {
                   setEditingGroup(null);
@@ -297,7 +300,7 @@ export const CommunityPage: React.FC = () => {
             onClick={() => setActiveTab('my-groups')}
             className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${
               activeTab === 'my-groups'
-                ? 'bg-[#002f47] text-white shadow-sm'
+                ? 'bg-[#002147] text-white shadow-sm'
                 : 'text-gray-600 hover:text-[#002147] hover:bg-gray-100'
             }`}
           >
@@ -322,7 +325,7 @@ export const CommunityPage: React.FC = () => {
 
         {activeTab === 'explore' ? (
           <div>
-            {/* Category Filter Pills */}
+                     {/* Category Filter Pills */}
             <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 hide-scrollbar">
               {CATEGORIES.map((cat) => (
                 <button
@@ -338,6 +341,7 @@ export const CommunityPage: React.FC = () => {
                 </button>
               ))}
             </div>
+            
 
             {/* Search and Secondary Filters Bar */}
             <div className="bg-white p-4 rounded-2xl border border-gray-200 mb-8 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
@@ -395,15 +399,28 @@ export const CommunityPage: React.FC = () => {
                     ? 'No community groups have been created yet. Be the first to start a verified group for research, exams, scholarships, jobs, or networking!'
                     : 'There are currently no approved groups matching your query. Try resetting filters or search keywords.'}
                 </p>
-                <button
-                  onClick={() => {
-                    setEditingGroup(null);
-                    setIsCreateModalOpen(true);
-                  }}
-                  className="px-5 py-2.5 bg-[#002147] hover:bg-[#001733] text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
-                >
-                  {approvedGroups.length === 0 ? 'Create the First Group' : `Create Group Under ${selectedCategory !== 'All' ? selectedCategory : 'Community'}`}
-                </button>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <a
+                    href="https://chat.whatsapp.com/IUdVHb0WusrJoi8qHY1biS"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2"
+                  >
+                    <MessageCircle size={15} />
+                    <span>Join Official WhatsApp</span>
+                    <ExternalLink size={13} />
+                  </a>
+
+                  <button
+                    onClick={() => {
+                      setEditingGroup(null);
+                      setIsCreateModalOpen(true);
+                    }}
+                    className="w-full sm:w-auto px-5 py-2.5 bg-[#002e47] hover:bg-[#001733] text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
+                  >
+                    {approvedGroups.length === 0 ? 'Create the First Group' : `Create Group Under ${selectedCategory !== 'All' ? selectedCategory : 'Community'}`}
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -543,6 +560,44 @@ export const CommunityPage: React.FC = () => {
           </div>
         </div>
       )}
+         {/* Pinned Official StudiRad Discussion Community Banner */}
+         <div className="mb-8 rounded-2xl bg-gradient-to-br from-[#003447] via-[#003f5c] to-[#01566e] p-5 sm:p-6 text-white shadow-lg border border-blue-800/80 relative overflow-hidden">
+              <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-48 h-48 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+              <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0 text-emerald-400 shadow-inner">
+                    <MessageCircle size={28} />
+                  </div>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-white shadow-sm flex items-center gap-1">
+                        <CheckCircle2 size={11} /> Official Community
+                      </span>
+                      <span className="text-xs text-blue-200 font-semibold">Verified WhatsApp Group</span>
+                    </div>
+                    <h2 className="text-base sm:text-lg font-black text-white">
+                      StudiRad Official Discussion Community
+                    </h2>
+                    <p className="text-xs sm:text-sm text-blue-100/90 max-w-2xl mt-1 leading-relaxed">
+                      Connect directly with tutors, clinical radiographers, and fellow students globally. Discuss daily cases, licensing exams, research ideas, and platform announcements.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                  <a
+                    href="https://chat.whatsapp.com/IUdVHb0WusrJoi8qHY1biS"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xs sm:text-sm shadow-md hover:shadow-emerald-500/25 transition-all flex items-center justify-center gap-2.5"
+                  >
+                    <MessageCircle size={18} />
+                    <span>Join Official WhatsApp</span>
+                    <ExternalLink size={15} />
+                  </a>
+                </div>
+              </div>
+            </div>
 
       {/* Join Group Modal */}
       <JoinGroupModal
@@ -586,6 +641,8 @@ export const CommunityPage: React.FC = () => {
         onReportSuccess={() => {
           showToast('Thank you. Your report has been submitted to StudiRad administrators.');
         }}
+
+        
       />
     </div>
   );
