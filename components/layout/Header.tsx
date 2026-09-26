@@ -76,7 +76,7 @@ const Header: React.FC = () => {
                     onClick={() => handleSectionClick('research')}
                     className="flex items-center justify-between px-4 py-2.5 hover:bg-emerald-50/70 hover:text-emerald-700 transition-colors"
                   >
-                    <span className="font-semibold text-sm">Research Work</span>
+                    <span className="font-semibold text-sm">Research Assistance</span>
                     <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
                       Active
                     </span>
@@ -156,7 +156,7 @@ const Header: React.FC = () => {
                     onClick={() => handleSectionClick('research')} 
                     className="flex items-center justify-between text-gray-300 py-1"
                   >
-                    <span>Research Work</span>
+                    <span>Research Assistance</span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-900/60 text-emerald-300 border border-emerald-700/50">Active</span>
                   </Link>
                   <Link 

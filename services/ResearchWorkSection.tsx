@@ -248,7 +248,7 @@ export const ResearchWorkSection: React.FC = () => {
             Active Service
           </span>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#002147] tracking-tight">
-            Research Work Support
+            StudiRad Research Assistance
           </h2>
           <p className="mt-2 text-gray-600 text-sm sm:text-base max-w-xl mx-auto">
             Guidance for undergraduate projects, postgraduate dissertations, master’s theses, and clinical papers.

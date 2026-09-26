@@ -76,10 +76,10 @@ export const ServicesPage: React.FC = () => {
                   </span>
                 </div>
                 <h3 className="font-bold text-white text-base">
-                  Research Work
+                  Research Assistance
                 </h3>
                 <p className="text-xs text-blue-100 mt-1">
-                  Assistance with topics, project editing, and statistical data analysis.
+                  Assistance with topics, project editing, Data collection and statistical data analysis.
                 </p>
               </div>
               <div className="mt-3 flex items-center gap-1 text-xs font-bold text-[#f59e0b]">
