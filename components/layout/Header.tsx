@@ -62,7 +62,7 @@ const Header: React.FC = () => {
               </div>
             </div>
              {/* Services Dropdown */}
-             <div className="relative group">
+             {/* <div className="relative group">
               <Link 
                 to="/services" 
                 className="flex items-center gap-1 text-sm font-medium hover:text-brand-accent transition-colors py-1"
@@ -94,7 +94,7 @@ const Header: React.FC = () => {
                   </Link>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             
             <div className="relative group">
@@ -145,7 +145,7 @@ const Header: React.FC = () => {
               )}
             </div>
             {/* Services on Mobile */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <button onClick={() => setServicesOpen(!servicesOpen)} className="flex items-center justify-between w-full text-white text-lg font-medium">
                 Services <ChevronDown size={16} className={`transition-transform ${servicesOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -169,7 +169,7 @@ const Header: React.FC = () => {
                   </Link>
                 </div>
               )}
-            </div>
+            </div> */}
             
             <div className="space-y-2">
               <button onClick={() => setAcademyOpen(!academyOpen)} className="flex items-center justify-between w-full text-white text-lg font-medium">
